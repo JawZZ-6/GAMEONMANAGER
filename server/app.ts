@@ -2,7 +2,8 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import { z } from 'zod';
 import { Auth } from './auth';
 import { JsonStore } from './store';
-import { AppError, publicEvent, entrantName } from '../shared/domain';
+import { AppError, publicEvent, entrantName, moneySummary } from '../shared/domain';
+import { registrationCatalogue } from '../shared/registration';
 
 function token(req:Request){return req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('gameon_session='))?.slice(15);}
 function csv(rows:unknown[][]){return '\uFEFF'+rows.map(row=>row.map(cell=>{let s=String(cell??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}).join(',')).join('\r\n');}
@@ -18,10 +19,30 @@ export function createApp({store,auth,origin}:{store:JsonStore;auth:Auth;origin:
   app.post('/api/login',async(req,res)=>{auth.throttle(req.ip||'local');await auth.login(req.body.password);session(res);});
   app.post('/api/logout',(req,res)=>{auth.logout(token(req));res.clearCookie('gameon_session',{path:'/'});res.json({ok:true});});
   app.get('/api/live',(_req,res)=>res.json(publicEvent(store.read())));
+  app.get('/api/registration',(_req,res)=>res.json(registrationCatalogue(store.read())));
+  // Use the socket address, not an untrusted forwarded header. Behind a proxy
+  // this is a shared burst limit; the deployment guide documents that boundary.
+  const registrationAttempts=new Map<string,{count:number;until:number}>();
+  app.post('/api/register',async(req,res)=>{
+    const now=Date.now();const key=req.ip||'local';
+    for(const [ip,entry] of registrationAttempts)if(entry.until<=now)registrationAttempts.delete(ip);
+    if(!registrationAttempts.has(key)){
+      if(registrationAttempts.size>=1000)throw new AppError('Registration is busy. Please try again in a minute.',429);
+      registrationAttempts.set(key,{count:0,until:now+60000});
+    }
+    const entry=registrationAttempts.get(key)!;
+    if(++entry.count>60){res.set('Retry-After','60');throw new AppError('Too many registration attempts. Please wait a minute and try again.',429);}
+    res.status(201).json(await store.register(req.body));
+  });
   app.get('/api/state',privateOnly,(_req,res)=>res.json(store.read()));
   app.post('/api/command',privateOnly,async(req,res)=>{const command=z.object({revision:z.number().int().min(0),type:z.string().max(100),payload:z.record(z.unknown())}).parse(req.body);res.json(await store.transact(command.revision,command));});
   app.get('/api/backup',privateOnly,(_req,res)=>{res.attachment(`gameon-backup-${new Date().toISOString().slice(0,10)}.json`);res.type('application/json').send(JSON.stringify(store.read(),null,2));});
-  app.get('/api/export/:kind',privateOnly,(req,res)=>{const s=store.read();let rows:unknown[][];switch(req.params.kind){case 'participants':rows=[['Name','Department','Contact','Checked in'],...s.participants.map(p=>[p.name,p.department,p.contact,p.checkedIn?'Yes':'No'])];break;case 'matches':rows=[['Tournament','Round','Entrant A','Entrant B','Status','Score A','Score B','Winner','Scheduled time','Station'],...s.matches.map(m=>[s.tournaments.find(t=>t.id===m.tournamentId)?.name,m.round,entrantName(s,m.a),entrantName(s,m.b),m.bye?'bye':m.status,m.scoreA,m.scoreB,m.winnerId?entrantName(s,m.winnerId):'',m.scheduledAt,s.stations.find(x=>x.id===m.stationId)?.name])];break;case 'ledger':rows=[['Date','Type','Amount (LKR)','Participant','Description','Voided'],...s.ledger.map(e=>[e.createdAt,e.kind,e.amount,e.participantId?entrantName(s,e.participantId):'',e.note,e.voided?'Yes':'No'])];break;default:throw new AppError('Unknown export',404);}res.attachment(`gameon-${req.params.kind}.csv`).type('text/csv').send(csv(rows));});
+  app.get('/api/export/registrations',privateOnly,(_req,res)=>{
+    const s=store.read();const balances=moneySummary(s).balances;
+    const rows:unknown[][]=[['Reference','Registered at','Name','Email','Department / organisation','Phone','Bundle','Games','Bundle price (LKR)','Participant balance (LKR)'],...s.registrations.map(r=>{const p=s.participants.find(p=>p.id===r.participantId);return [r.id,r.createdAt,p?.name,p?.email,p?.department,p?.phone,r.bundleName,r.gameNames.join(', '),r.amount,balances.find(b=>b.id===r.participantId)?.balance];})];
+    res.attachment('gameon-registrations.csv').type('text/csv').send(csv(rows));
+  });
+  app.get('/api/export/:kind',privateOnly,(req,res)=>{const s=store.read();let rows:unknown[][];switch(req.params.kind){case 'participants':rows=[['Name','Department','Email','Phone','Contact','Checked in'],...s.participants.map(p=>[p.name,p.department,p.email,p.phone,p.contact,p.checkedIn?'Yes':'No'])];break;case 'matches':rows=[['Tournament','Round','Entrant A','Entrant B','Status','Score A','Score B','Winner','Scheduled time','Station'],...s.matches.map(m=>[s.tournaments.find(t=>t.id===m.tournamentId)?.name,m.round,entrantName(s,m.a),entrantName(s,m.b),m.bye?'bye':m.status,m.scoreA,m.scoreB,m.winnerId?entrantName(s,m.winnerId):'',m.scheduledAt,s.stations.find(x=>x.id===m.stationId)?.name])];break;case 'ledger':rows=[['Date','Type','Amount (LKR)','Participant','Description','Voided'],...s.ledger.map(e=>[e.createdAt,e.kind,e.amount,e.participantId?entrantName(s,e.participantId):'',e.note,e.voided?'Yes':'No'])];break;default:throw new AppError('Unknown export',404);}res.attachment(`gameon-${req.params.kind}.csv`).type('text/csv').send(csv(rows));});
   app.use('/api',(_req,_res,next)=>next(new AppError('API route not found',404)));
   app.use((error:unknown,_req:Request,res:Response,_next:NextFunction)=>{if(error instanceof z.ZodError){res.status(400).json({error:error.issues.map(e=>`${e.path.join('.')}: ${e.message}`).join('; ')});return;}const status=error instanceof AppError?error.status:500;if(status===500)console.error(error);res.status(status).json({error:status===500?'The operation could not be saved. Your previous data is preserved. Check the server log.':(error as Error).message});});
   return app;

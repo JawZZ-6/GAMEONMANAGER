@@ -23,6 +23,7 @@ gameon-backup-*.json
 gameon-participants*.csv
 gameon-matches*.csv
 gameon-ledger*.csv
+gameon-registrations*.csv
 
 # Local logs, test artifacts and agent scratch files
 *.log

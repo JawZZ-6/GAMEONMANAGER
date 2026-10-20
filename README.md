@@ -1,6 +1,6 @@
 # Retro & Cyber GameON · CISI
 
-Event administration and a separate read-only live tournament board. React/TypeScript, Node.js/Express, and local JSON files. Requires Node.js 22 or later.
+Event administration, public participant registration and a read-only live tournament board. React/TypeScript, Node.js/Express, and local JSON files. Requires Node.js 22 or later.
 
 ## Run
 
@@ -17,6 +17,8 @@ Dependencies and the production build are already present on this computer, so n
 
 - Organisers: http://127.0.0.1:4310/admin
 - Live tournament viewer: http://127.0.0.1:4310/live
+- Public participant registration: http://127.0.0.1:4310/register
+- Registrations and bundle management: http://127.0.0.1:4310/admin/registrations
 - Development with automatic UI updates: `npm.cmd run dev`
 - Separate sample event on port 4311: `npm.cmd run demo`
 - Tests: `npm.cmd test`
@@ -33,7 +35,7 @@ The real event is stored outside the repository and outside OneDrive:
 
 The demo uses `%LOCALAPPDATA%\CISI-GameON\demo` and does not populate the real event. Set `GAMEON_DATA_DIR` to use a different persistent local directory; do not point two server processes at the same directory. `auth.json` in that directory contains the password hash. Do not commit it.
 
-Changes use a serial transaction queue, revision checks, and a flushed temporary file followed by replacement. The server keeps `event.last-good.json` and up to 50 prior snapshots in `backups`. Settings → Download JSON backup exports the complete event. CSV exports are available for participants, matches and money.
+Changes use a serial transaction queue, revision checks, and a flushed temporary file followed by replacement. The server keeps `event.last-good.json` and up to 50 prior snapshots in `backups`. Settings → Download JSON backup exports the complete event. CSV exports are available for participants, registrations, matches and money.
 
 ### Offline restore
 
@@ -61,4 +63,61 @@ Archiving a game can prevent editing its existing tournaments; unpublish those t
 
 The default binds only to this computer. For internal network access, use one persistent server behind a trusted HTTPS reverse proxy. Set `GAMEON_ORIGIN` to the exact browser-facing HTTPS origin and `HOST` to the required bind address; `PORT` defaults to 4310. Complete password setup on localhost first, or supply `GAMEON_ADMIN_PASSWORD` securely on first startup. Do not commit credentials. The live viewer is read-only but accessible to anyone who can reach the server; contacts, the financial ledger and audit history are excluded from its API.
 
-Online payments, public hosting, self-registration, SSO and email/SMS are outside this version.
+Online payments, SSO and email/SMS are outside this version. Deploying the service to Hetzner remains a separate step.
+
+## Registration and bundles
+
+After updating the code, stop the old server with Ctrl+C, run `npm.cmd run build`,
+and start it again with `npm.cmd start`. Reload open browser tabs.
+
+Share `/register` on your event subdomain. Participants enter their name, email,
+department/organisation and optional phone, then select one bundle:
+
+| Bundle | Included games | Price |
+|---|---|---:|
+| Social | UNO + Pictionary + Charades | LKR 1,200 |
+| Brainpower | Chess + Scrabble + Omi | LKR 1,200 |
+| Arcade | Any 3 video game tournaments | LKR 1,600 |
+| Best of Both Worlds | 2 board games + 1 console game | LKR 1,400 |
+| Ultimate Gamer | 1 board game + 2 console games | LKR 1,600 |
+
+Retro and board categories count as board/card/party games; cyber counts as
+console. Only active tournament games are offered. Games are distinct within a
+bundle. Available places include existing participant, team and tournament
+enrolments, counting each person once. Organisers still choose teams and add
+entrants to tournaments before generating fixtures.
+
+A successful submission creates the participant, game enrolments, a registration
+snapshot and an **unpaid charge** together. No payment is collected online. In
+**Registrations & bundles**, find a participant and select **Record payment** only
+when money has been received. The balance is the participant's total across the
+Money ledger; receipts and exported registrations retain the original bundle
+price and game names. Edit participant information in **People & teams**.
+
+The **Bundle offers** tab lets organisers edit offer names/prices and enable or
+disable an offer. These changes apply to future registrations. Settings controls
+the public registration switch and deadline. Registration closes at midnight
+after the deadline in Asia/Colombo; to extend it, update the date and open switch.
+Refresh event data in the admin header to load registrations received since the
+page opened.
+
+Existing JSON files receive the default offers and Chess on load, preserving
+existing records and game IDs. The next normal save persists this upgrade through
+the existing backup mechanism. If a fixed bundle's games were renamed or removed
+before upgrading, that offer is unavailable until its game references are
+reconciled in the data; custom bundle composition is not editable in this version.
+
+One public registration per email is accepted. Existing entries must be handled
+by an organiser. Submissions use an idempotency ID to prevent duplicate charges.
+If a response is lost, keep the page open and use **Check previous registration**
+to recover the original receipt, even if registration has closed or the games
+are now full. Refreshing or closing the browser tab loses that recovery control;
+an organiser can locate the saved registration by email. Email ownership is not
+verified and automatic email/SMS confirmation is not sent.
+
+The public APIs expose only offers, games, remaining places and the submitter's
+receipt. They never list contact details or private registration records. The
+POST endpoint validates the configured Origin and applies a 60-attempts/minute
+limit per socket IP. Behind a reverse proxy that is a shared limit; configure
+additional proxy-side abuse protection to suit your event traffic. Do not expose
+the Node port directly. Keep `GAMEON_ORIGIN` equal to the public HTTPS subdomain.

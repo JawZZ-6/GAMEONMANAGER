@@ -7,3 +7,60 @@
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 @media(max-width:680px){.sidebar{visibility:hidden}.sidebar.open{visibility:visible}}
+
+/* Public participant registration */
+.registration-page{min-height:100vh;background:radial-gradient(ellipse at 95% 0,#12343f88,transparent 38%),var(--bg);font-size:15px;line-height:1.6}
+.registration-main{max-width:1250px;margin:auto;padding:48px 36px 0}
+.registration-hero{display:flex;justify-content:space-between;align-items:center;gap:48px;margin-bottom:48px}
+.registration-hero h1{font-family:'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;font-size:72px;line-height:1;letter-spacing:0;margin:16px 0 22px}
+.registration-hero h1 span{color:var(--orange)}
+.registration-hero>div>p:last-child{max-width:590px;color:#aebdd1;font-size:15px}
+.registration-cause{border-left:1px solid var(--line);padding-left:35px;min-width:255px;display:grid;gap:15px}
+.registration-cause>svg{color:var(--cyan)}
+.registration-cause>strong{font-size:18px;font-weight:500;line-height:1.5}
+.registration-cause>span{font-size:13px;color:#e4be90}.registration-cause small{display:block;color:#aebdd1;font-size:12px}
+.registration-form{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:28px;align-items:start}
+.registration-wide{grid-column:1/-1;margin-bottom:0}
+.registration-form fieldset{border:0;padding:0;margin:0;min-width:0}
+.registration-form legend,.registration-games h2{font-size:22px;font-weight:600;line-height:1.4;margin-bottom:8px}
+.registration-form legend>span:first-child,.registration-games h2>span{color:var(--orange);font-family:'Barlow Condensed',sans-serif;margin-right:10px;font-size:24px}
+.registration-help{font-size:13px;line-height:1.65;color:#a6b7cc;margin:8px 0 20px}
+.bundle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.bundle-card{position:relative;display:flex;flex-direction:column;gap:8px;padding:21px;border:1px solid #344155;background:var(--surface);border-radius:12px;cursor:pointer;transition:border-color .15s,background .15s;min-width:0}
+.bundle-card:last-child{grid-column:1/-1}
+.bundle-card input{position:absolute;opacity:0;width:1px;height:1px}
+.bundle-card:focus-within{outline:3px solid var(--cyan);outline-offset:3px}
+.bundle-card:hover{border-color:#aa794e}.bundle-card.selected{border-color:var(--orange);background:#2c241f;box-shadow:inset 0 0 0 1px var(--orange)}
+.bundle-card.unavailable{cursor:not-allowed;background:#131b28}.bundle-card.unavailable>strong{color:#a2b1c7}
+.bundle-card-top{display:flex;justify-content:space-between;align-items:center;color:var(--cyan);margin-bottom:5px}
+.bundle-card:nth-child(odd) .bundle-card-top{color:var(--orange)}
+.bundle-check{display:grid;place-items:center;width:21px;height:21px;border:1px solid #62728a;border-radius:50%}
+.selected .bundle-check{background:var(--orange);border-color:var(--orange);color:#15100c}
+.bundle-card>strong{font-size:18px;line-height:1.25;letter-spacing:-.2px}
+.bundle-description{font-size:13px;line-height:1.5;color:#b8c5d8;min-height:39px}
+.bundle-price{font-size:22px;font-weight:650;margin-top:auto;line-height:1.3;padding-top:10px}
+.bundle-price small{font-size:11px;font-weight:400;color:#a6b7cc;margin-left:7px}
+.bundle-unavailable{font-size:12px;color:#edbc91}
+.registration-games{margin-top:33px;padding:25px;background:#101925;border:1px solid var(--line);border-radius:12px}
+.included-games{display:grid;gap:10px}.included-games>div{display:flex;gap:10px;align-items:center;padding:14px;background:#172432;border-radius:7px}
+.included-games svg{color:var(--cyan);flex-shrink:0}.included-games strong{font-size:14px}.included-games span{margin-left:auto;font-size:11px;color:#b8c5d8}
+.registration-form .game-options{margin-top:20px}.registration-form .game-options legend{font-size:14px;font-weight:500;width:100%;display:flex;justify-content:space-between;gap:10px}
+.registration-form .game-options legend>span{font-size:12px;font-family:inherit;color:var(--cyan);margin:0}
+.game-options label{display:flex;align-items:center;gap:12px;min-height:50px;padding:12px;border:1px solid #344155;border-radius:7px;margin-top:8px;cursor:pointer;font-size:13px}
+.game-options label.selected{border-color:#58aabb;background:#152d38}.game-options label:has(input:disabled){cursor:not-allowed}.game-options input{flex-shrink:0}.game-options strong{font-weight:500}
+.game-options label>small{margin-left:auto;white-space:nowrap;font-size:11px;color:#aebdd1}.game-options label>span>small{display:block;font-size:12px;color:#aebdd1;white-space:pre-wrap}
+.refresh-offers{display:flex;align-items:center;gap:8px;min-height:44px;margin-top:18px;font-size:12px}
+.registration-details{position:sticky;top:24px;padding:27px;background:var(--surface);border:1px solid #354459;border-radius:12px}
+.registration-details .field{margin:17px 0}.registration-details .field label{font-size:13px}.registration-details input:not([type=checkbox]){min-height:46px;font-size:15px}
+.registration-total{display:grid;gap:5px;border-block:1px solid #36445a;padding:18px 0;margin:25px 0 20px}.registration-total>span{font-size:14px;color:#c6d1e2}.registration-total>strong{font-size:32px;line-height:1.2;color:var(--orange);letter-spacing:-.5px}.registration-total small{font-size:12px;color:#aebdd1}
+.registration-consent{display:flex;align-items:flex-start;gap:11px;margin-bottom:22px;font-size:12px;line-height:1.65;color:#bccbdd;cursor:pointer}.registration-consent input{margin-top:4px;flex-shrink:0}
+.registration-details .primary{min-height:49px;font-size:14px}.registration-help.payment-help{display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:0;font-size:11px}
+.registration-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.registration-receipt{max-width:730px;margin:20px auto;text-align:center;background:var(--surface);border:1px solid #3c5e56;border-radius:16px;padding:44px 36px;outline-offset:5px}
+.registration-receipt>svg{color:var(--cyan);margin-bottom:16px}.registration-receipt h2{font-size:36px;line-height:1.2;margin-bottom:15px}.registration-receipt p{color:#b6c5d9;margin:14px 0;font-size:14px}
+.receipt-reference{display:block;overflow-wrap:anywhere;font-family:monospace;font-size:16px;margin:20px 0;padding:15px;border:1px dashed #657789;border-radius:8px}
+.receipt-details{display:grid;justify-items:center;border-block:1px solid var(--line);padding:20px 0;margin:23px 0;gap:10px}.receipt-details h3{font-size:23px}.receipt-details p{margin:0}.receipt-details>strong{font-size:30px;color:var(--orange)}
+.registration-receipt .actions{justify-content:center;margin-top:26px}.registration-cell-note{display:block;color:#a6b7cc;font-size:11px;margin-top:6px;max-width:270px}td>.text-link{margin-top:9px;font-size:11px}
+@media(max-width:1000px){.registration-form{grid-template-columns:minmax(0,1.2fr) minmax(285px,1fr)}.registration-main{padding-inline:25px}.registration-details{padding:22px}.bundle-grid{grid-template-columns:1fr}.bundle-card:last-child{grid-column:auto}.bundle-description{min-height:0}.registration-hero h1{font-size:61px}.registration-cause{min-width:220px;padding-left:25px}}
+@media(max-width:730px){.registration-main{padding:30px 18px 0}.registration-hero{display:block;margin-bottom:30px}.registration-hero h1{font-size:53px}.registration-hero>div>p:last-child{font-size:14px}.registration-cause{border-left:0;border-top:1px solid var(--line);padding:20px 0 0;margin-top:24px;display:flex;align-items:center;flex-wrap:wrap;gap:15px}.registration-cause>strong{font-size:14px}.registration-cause>span{flex-basis:100%}.registration-form{grid-template-columns:1fr;gap:25px}.registration-details{position:static;padding:22px}.registration-games{padding:21px}.bundle-card{padding:19px}.registration-receipt{padding:28px 20px}.registration-receipt h2{font-size:30px}.receipt-reference{font-size:13px}.registration-receipt .actions{flex-direction:column}.registration-receipt .actions>*{width:100%}.registration-cell-note{max-width:210px}}
+@media print{.registration-page .live-header,.registration-hero,.registration-page .live-footer,.registration-receipt .actions{display:none}.registration-page,.registration-main,.registration-receipt{background:white;color:black;margin:0;max-width:none;padding:10px;border:0}.registration-receipt p,.receipt-details>strong{color:black}.registration-receipt .badge{color:black;border:1px solid black}.registration-receipt svg{color:black}}

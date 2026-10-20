@@ -3,7 +3,7 @@ import { X,LoaderCircle,Clock,MapPin,ArrowUpRight,Gamepad2 } from 'lucide-react'
 import type { EventState,Match } from '../shared/model';
 export type Run=(type:string,payload:Record<string,unknown>,revision?:number)=>Promise<void>;
 export type PageProps={state:EventState;run:Run};
-export type Field={name:string;label:string;type?:'text'|'number'|'date'|'datetime-local'|'textarea'|'select'|'multi'|'checkbox'|'password';required?:boolean;options?:{value:string;label:string}[];help?:string;min?:number;max?:number;step?:string};
+export type Field={name:string;label:string;type?:'text'|'number'|'date'|'datetime-local'|'textarea'|'select'|'multi'|'checkbox'|'password'|'email'|'tel';required?:boolean;options?:{value:string;label:string}[];help?:string;min?:number;max?:number;step?:string};
 export const options=(values:string[])=>values.map(value=>({value,label:value.replaceAll('-',' ')}));
 export const amount=(value:number)=>`LKR ${value.toLocaleString('en-LK',{maximumFractionDigits:2})}`;
 export function timeLabel(value:string){return value?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Colombo',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value)):'Time TBC';}

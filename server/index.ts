@@ -19,7 +19,7 @@ const app=createApp({store,auth,origin});
 let vite:Awaited<ReturnType<typeof import('vite')['createServer']>>|undefined;
 if(dev){const {createServer}=await import('vite');vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);}
 else {app.use(express.static(resolve('dist')));app.get('/{*path}',async(_req,res)=>{try{res.type('html').send(await readFile(resolve('dist/index.html'),'utf8'));}catch{res.status(503).send('Run npm run build before starting GameON.');}});}
-const server=app.listen(port,host,()=>{console.log(`GameON ${demo?'DEMO':'event'}: ${origin}/admin`);console.log(`Live viewer: ${origin}/live`);console.log(`Data directory: ${dir}`);});
+const server=app.listen(port,host,()=>{console.log(`GameON ${demo?'DEMO':'event'}: ${origin}/admin`);console.log(`Live viewer: ${origin}/live`);console.log(`Registration: ${origin}/register`);console.log(`Data directory: ${dir}`);});
 let closing=false;async function shutdown(){if(closing)return;closing=true;server.close(async()=>{await vite?.close();await store.close();process.exit(0);});server.closeIdleConnections();}
 process.on('SIGINT',shutdown);process.on('SIGTERM',shutdown);
 server.on('error',async error=>{console.error(error);await store.close();process.exit(1);});

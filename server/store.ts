@@ -1,7 +1,9 @@
 import { open, mkdir, readFile, rename, copyFile, readdir, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { eventSchema, type EventState, type Command } from '../shared/model';
+import { createHash } from 'node:crypto';
+import { eventSchema, registrationInputSchema, type EventState, type Command, type RegistrationReceipt } from '../shared/model';
 import { createEvent, applyCommand, AppError } from '../shared/domain';
+import { addRegistrationDefaults, applyRegistration, registrationReceipt } from '../shared/registration';
 
 export class JsonStore {
   private state!:EventState;
@@ -13,12 +15,29 @@ export class JsonStore {
     try {const lock=await open(join(dir,'server.lock'),'wx',0o600);await lock.writeFile(JSON.stringify({pid:process.pid,startedAt:new Date().toISOString()}));await lock.close();}
     catch(e){if((e as NodeJS.ErrnoException).code==='EEXIST')throw new AppError('Another server owns this data directory, or a stale server.lock needs manual removal.',409);throw e;}
     try {
-      try{store.state=eventSchema.parse(JSON.parse(await readFile(join(dir,'event.json'),'utf8')));}
+      try{store.state=addRegistrationDefaults(eventSchema.parse(JSON.parse(await readFile(join(dir,'event.json'),'utf8'))));}
       catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw new Error('Event data is corrupt or invalid. Restore a verified backup; the original file was preserved.',{cause:e});store.state=eventSchema.parse(initial);await store.write(store.state,false);}
       return store;
     }catch(e){await store.close();throw e;}
   }
   read():EventState{return structuredClone(this.state);}
+  register(value:unknown):Promise<RegistrationReceipt>{
+    const task=this.queue.then(async()=>{
+      if(this.closed)throw new AppError('The server is closing',503);
+      const input=registrationInputSchema.parse(value);
+      const requestHash=createHash('sha256').update(JSON.stringify({...input,gameIds:[...input.gameIds].sort()})).digest('hex');
+      const previous=this.state.registrations.find(r=>r.requestId===input.requestId);
+      if(previous){
+        if(previous.requestHash!==requestHash)throw new AppError('This request was already submitted with different details. Start a new registration attempt.',409);
+        return registrationReceipt(previous);
+      }
+      const next=structuredClone(this.state);
+      const registration=applyRegistration(next,input,requestHash);
+      next.revision++;next.updatedAt=new Date().toISOString();
+      const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;
+      return registrationReceipt(registration);
+    });this.queue=task.catch(()=>{});return task;
+  }
   transact(revision:number,command:Command):Promise<EventState>{
     const task=this.queue.then(async()=>{
       if(this.closed)throw new AppError('The server is closing',503);

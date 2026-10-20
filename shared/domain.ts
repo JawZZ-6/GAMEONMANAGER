@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { participantSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
+import { addRegistrationDefaults } from './registration';
+import { AppError } from './errors';
+export { AppError } from './errors';
 
-export class AppError extends Error { constructor(message:string, public status=400) {super(message);} }
 export const uid = () => globalThis.crypto.randomUUID();
 const now = () => new Date().toISOString();
 function requireValue(condition:unknown,message:string):asserts condition {if(!condition)throw new AppError(message);}
@@ -11,7 +13,7 @@ const withId = (p:Record<string,unknown>) => ({...p,id:p.id||uid()});
 const roundMoney = (n:number) => Math.round(n*100)/100;
 
 export function createEvent():EventState {
-  return eventSchema.parse({schemaVersion:1,revision:0,updatedAt:now(),settings:{name:'Retro & Cyber GameON',venue:'CISI · Venue to be confirmed',startDate:'2026-11-16',endDate:'2026-11-27',registrationDeadline:'2026-10-30',finalNight:'To be confirmed',charityName:'For charity',charityTarget:0,currency:'LKR',timezone:'Asia/Colombo',retroFee:500,cyberFee:300},participants:[],teams:[],games:['UNO','Scrabble','Carrom','Pictionary','Charades','Omi','FC 26','Mortal Kombat','Call of Duty'].map((name,i)=>({id:`game-${i+1}`,name,category:i<6?'retro':'cyber',mode:'tournament',fee:0,capacity:32,rules:'',location:'',archived:false})),tournaments:[],matches:[],stations:[],queue:[],sessions:[],ledger:[],announcements:[],audit:[]});
+  return addRegistrationDefaults(eventSchema.parse({schemaVersion:1,revision:0,updatedAt:now(),settings:{name:'Retro & Cyber GameON',venue:'CISI · Venue to be confirmed',startDate:'2026-11-16',endDate:'2026-11-27',registrationDeadline:'2026-10-30',finalNight:'To be confirmed',charityName:'For charity',charityTarget:0,currency:'LKR',timezone:'Asia/Colombo',retroFee:500,cyberFee:300},participants:[],teams:[],games:['UNO','Scrabble','Carrom','Pictionary','Charades','Omi','FC 26','Mortal Kombat','Call of Duty'].map((name,i)=>({id:`game-${i+1}`,name,category:i<6?'retro':'cyber',mode:'tournament',fee:0,capacity:32,rules:'',location:'',archived:false})),tournaments:[],matches:[],stations:[],queue:[],sessions:[],ledger:[],announcements:[],audit:[]}));
 }
 export function entrantName(s:Pick<EventState,'participants'|'teams'>,id:string|null) {return id ? s.participants.find(p=>p.id===id)?.name||s.teams.find(t=>t.id===id)?.name||'Unknown entrant' : 'To be decided';}
 export function members(s:EventState,t:Tournament,id:string|null):string[] {return !id?[]:t.entryType==='individual'?[find(s.participants,id).id]:find(s.teams,id).memberIds;}
@@ -56,6 +58,7 @@ function generate(s:EventState,t:Tournament) {
 export function applyCommand(s:EventState,command:Command):void {
   const {type,payload:p}=command;
   switch(type){
+    case 'bundle.save':{const v=z.object({id:z.string(),name:z.string().trim().min(1).max(120),price:z.number().finite().positive().max(100000000).refine(n=>Math.abs(n*100-Math.round(n*100))<0.00001,'Use at most two decimal places'),active:z.boolean()}).strict().parse(p);Object.assign(find(s.bundles,v.id),v);break;}
     case 'participant.save':{const person=participantSchema.parse(withId(p));for(const g of person.gameIds)find(s.games,g);save(s.participants,person);break;}
     case 'team.save':{const team=teamSchema.parse(withId(p));for(const id of team.memberIds)find(s.participants,id);for(const id of team.gameIds)find(s.games,id);const old=s.teams.find(t=>t.id===team.id);if(old&&JSON.stringify(old.memberIds)!==JSON.stringify(team.memberIds))requireValue(!s.tournaments.some(t=>t.generated&&t.entryType==='team'&&t.entrantIds.includes(team.id)),'Reset generated tournaments before changing team members');save(s.teams,team);break;}
     case 'game.save':{const game=gameSchema.parse(withId(p));requireValue(!s.tournaments.some(t=>t.gameId===game.id&&t.generated&&game.mode!=='tournament'),'Cannot change mode while tournaments exist');save(s.games,game);break;}
