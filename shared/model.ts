@@ -1,0 +1,37 @@
+import { z } from 'zod';
+
+const id = z.string().min(1).max(100);
+const text = z.string().trim().max(2000).default('');
+const name = z.string().trim().min(1, 'A name is required').max(120);
+const money = z.number().finite().min(0).max(100000000).refine(n => Math.abs(n*100-Math.round(n*100))<0.00001, 'Use at most two decimal places');
+const ids = z.array(id).max(256).refine(a=>new Set(a).size===a.length,'Duplicate entries are not allowed');
+export const participantSchema = z.object({id,name,department:text,contact:text,checkedIn:z.boolean().default(false),gameIds:ids.default([])});
+export const teamSchema = z.object({id,name,memberIds:ids.refine(a=>a.length>0,'Choose at least one member'),gameIds:ids.default([])});
+export const gameSchema = z.object({id,name,category:z.enum(['retro','cyber','board']),mode:z.enum(['tournament','free-play']),capacity:z.number().int().min(2).max(256).default(32),fee:money.default(0),rules:text,location:text,archived:z.boolean().default(false)});
+export const tournamentSchema = z.object({id,name,gameId:id,format:z.enum(['elimination','round-robin']),entryType:z.enum(['individual','team']),entrantIds:ids.default([]),published:z.boolean().default(false),generated:z.boolean().default(false),winPoints:z.number().int().min(0).max(100).default(3),drawPoints:z.number().int().min(0).max(100).default(1),lossPoints:z.number().int().min(0).max(100).default(0)});
+export const matchSchema = z.object({id,tournamentId:id,round:z.number().int().min(1),position:z.number().int().min(0),a:id.nullable(),b:id.nullable(),sourceA:id.optional(),sourceB:id.optional(),status:z.enum(['scheduled','live','completed','cancelled']).default('scheduled'),winnerId:id.nullable().default(null),scoreA:z.number().int().min(0).nullable().default(null),scoreB:z.number().int().min(0).nullable().default(null),bye:z.boolean().default(false),forfeit:z.boolean().default(false),stationId:z.string().default(''),scheduledAt:z.string().default(''),duration:z.number().int().min(1).max(480).default(30)});
+export const stationSchema = z.object({id,name,notes:text,available:z.boolean().default(true)});
+export const queueSchema = z.object({id,gameId:id,participantIds:ids.refine(a=>a.length>0),status:z.enum(['waiting','called','playing','completed','cancelled']),createdAt:z.string()});
+export const sessionSchema = z.object({id,queueId:id,gameId:id,participantIds:ids,stationId:id,startedAt:z.string(),endedAt:z.string().default(''),duration:z.number().int().min(1).max(480),status:z.enum(['live','completed'])});
+export const ledgerSchema = z.object({id,kind:z.enum(['charge','payment','donation','refund','expense','transfer']),amount:money.refine(n=>n>0,'Amount must be greater than zero'),participantId:z.string().default(''),note:z.string().trim().min(1,'A description is required').max(500),createdAt:z.string(),voided:z.boolean().default(false)});
+export const announcementSchema = z.object({id,title:name,body:text,published:z.boolean().default(true)});
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid date');
+export const settingsSchema = z.object({name,venue:text,startDate:date,endDate:date,registrationDeadline:date,finalNight:text,charityName:text,charityTarget:money,currency:z.literal('LKR'),timezone:z.literal('Asia/Colombo'),retroFee:money,cyberFee:money});
+export const eventSchema = z.object({schemaVersion:z.literal(1),revision:z.number().int().min(0),updatedAt:z.string(),settings:settingsSchema,participants:z.array(participantSchema),teams:z.array(teamSchema),games:z.array(gameSchema),tournaments:z.array(tournamentSchema),matches:z.array(matchSchema),stations:z.array(stationSchema),queue:z.array(queueSchema),sessions:z.array(sessionSchema),ledger:z.array(ledgerSchema),announcements:z.array(announcementSchema),audit:z.array(z.object({id,at:z.string(),action:z.string(),detail:z.string()}))});
+export type EventState = z.infer<typeof eventSchema>;
+export type Participant = z.infer<typeof participantSchema>;
+export type Team = z.infer<typeof teamSchema>;
+export type Game = z.infer<typeof gameSchema>;
+export type Tournament = z.infer<typeof tournamentSchema>;
+export type Match = z.infer<typeof matchSchema>;
+export type Station = z.infer<typeof stationSchema>;
+export type LedgerEntry = z.infer<typeof ledgerSchema>;
+export type Command = {type:string;payload:Record<string,unknown>};
+export type PublicEvent = {
+  revision:number;updatedAt:string;settings:EventState['settings'];
+  games:Pick<Game,'id'|'name'|'category'|'mode'|'rules'>[];
+  tournaments:Tournament[];matches:Match[];stations:Pick<Station,'id'|'name'|'available'>[];
+  entrants:{id:string;name:string}[];announcements:EventState['announcements'];
+  ladders:Record<string,Standing[]>;
+};
+export type Standing = {id:string;name:string;rank:number;played:number;won:number;drawn:number;lost:number;for:number;against:number;points:number};

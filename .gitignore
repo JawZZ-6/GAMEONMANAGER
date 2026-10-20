@@ -1,0 +1,36 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Local environment and credentials (keep only sanitised examples)
+.env
+.env.*
+!.env.example
+auth.json
+
+# Runtime event data, locks, automatic backups and downloaded exports
+# Match these names anywhere if a copy lands outside the usual data directory.
+data/
+event.json
+event.json.tmp
+event.last-good.json
+server.lock
+backups/
+gameon-backup-*.json
+gameon-participants*.csv
+gameon-matches*.csv
+gameon-ledger*.csv
+
+# Local logs, test artifacts and agent scratch files
+*.log
+.superpowers/
+test-results/
+playwright-report/
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
