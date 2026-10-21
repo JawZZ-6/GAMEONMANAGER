@@ -40,6 +40,7 @@ export class JsonStore {
   private state!:EventState;
   private queue:Promise<unknown>=Promise.resolve();
   private closed=false;
+  private listeners=new Set<()=>void>();
   private constructor(public readonly dir:string){}
   static async open(dir:string,initial=createEvent()):Promise<JsonStore>{
     await mkdir(dir,{recursive:true});const store=new JsonStore(dir);
@@ -51,6 +52,9 @@ export class JsonStore {
     }catch(e){await store.close();throw e;}
   }
   read():EventState{return structuredClone(this.state);}
+  // Called after every committed change, so the live board can push updates instead of waiting for a poll.
+  subscribe(listener:()=>void){this.listeners.add(listener);return ()=>{this.listeners.delete(listener);};}
+  private changed(){for(const listener of this.listeners)try{listener();}catch(e){console.warn('Live update listener failed:',(e as Error).message);}}
   register(value:unknown):Promise<RegistrationReceipt>{
     const task=this.queue.then(async()=>{
       if(this.closed)throw new AppError('The server is closing',503);
@@ -67,7 +71,7 @@ export class JsonStore {
       const next=structuredClone(this.state);
       const registration=applyRegistration(next,input,requestHash);
       next.revision++;next.updatedAt=new Date().toISOString();
-      const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;
+      const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;this.changed();
       return registrationReceipt(registration);
     });this.queue=task.catch(()=>{});return task;
   }
@@ -75,7 +79,7 @@ export class JsonStore {
     const task=this.queue.then(async()=>{
       if(this.closed)throw new AppError('The server is closing',503);
       if(revision!==this.state.revision)throw new AppError('This event changed in another window. Refresh and try again; your changes were not saved.',409);
-      const next=structuredClone(this.state);applyCommand(next,command);next.revision++;next.updatedAt=new Date().toISOString();const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;return this.read();
+      const next=structuredClone(this.state);applyCommand(next,command);next.revision++;next.updatedAt=new Date().toISOString();const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;this.changed();return this.read();
     });this.queue=task.catch(()=>{});return task;
   }
   private async write(next:EventState,backup:boolean){

@@ -46,13 +46,15 @@ export function registrationCatalogue(s:EventState,now=new Date()):RegistrationC
     } else if(tournamentGames.filter(g=>g.remaining>0&&g.category!=='cyber').length<b.boardCount||tournamentGames.filter(g=>g.remaining>0&&g.category==='cyber').length<b.consoleCount)unavailableReason='Not enough games have available places for this bundle.';
     return {...b,available:!unavailableReason,unavailableReason};
   });
-  return {settings:{name,venue,startDate,endDate,registrationDeadline,timezone},open,closeReason:open?'':`Registration is closed. Please contact an event organiser.`,games,bundles,entryOptions};
+  return {settings:{name,venue,startDate,endDate,registrationDeadline,timezone},open,inviteOnly:s.emailAllowlist.enabled,closeReason:open?'':`Registration is closed. Please contact an event organiser.`,games,bundles,entryOptions};
 }
 
 export function applyRegistration(s:EventState,value:unknown,requestHash:string,now=new Date()):Registration {
   const input=registrationInputSchema.parse(value);
   const catalogue=registrationCatalogue(s,now);
   if(!catalogue.open)throw new AppError(catalogue.closeReason,409);
+  // Checked before the duplicate test so an uninvited visitor cannot probe which addresses have registered.
+  if(s.emailAllowlist.enabled&&!s.emailAllowlist.emails.includes(input.email))throw new AppError('This email address is not on the invitation list. Use the address your organiser invited, or contact an organiser.',403);
   if(s.participants.some(p=>p.email.toLowerCase()===input.email||p.contact.trim().toLowerCase()===input.email))throw new AppError('This email is already registered. Contact an organiser to update the entry.',409);
   const games=input.gameIds.map(id=>{
     const game=catalogue.games.find(g=>g.id===id);
