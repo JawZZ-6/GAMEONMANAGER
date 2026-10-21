@@ -57,3 +57,18 @@ Publication to Hetzner and online payment processing were not part of this chang
   `http://127.0.0.1:4310/register`. A read-only browser check confirmed individual
   mode and selectable board games. No real registration was submitted.
 - No fresh independent second-agent review was run in this continuation.
+
+## Registration email allowlist - 21 October 2026
+
+- Organisers manage a private list of invited emails under Registrations & bundles >
+  Email allowlist. It is off by default, so existing events behave as before.
+- With it on, `/api/register` rejects any email not on the list (403) before the
+  duplicate-email check, so uninvited visitors cannot probe who has registered.
+  Already-registered emails are still rejected (409). The list is never included
+  in `/api/registration` or `/api/live`; the public form only shows an
+  "invitation only" hint.
+- New tests: `tests/email-allowlist.test.ts` (5 tests). Full suite **87 passed
+  across nine files**; the production TypeScript/Vite build passed.
+- Browser check on a temporary data directory (port 4399): invalid address
+  rejected with a readable message, uninvited email got 403, invited email
+  registered and showed as Registered on the organiser screen.

@@ -7,7 +7,7 @@ import { registrationCatalogue } from '../shared/registration';
 
 function token(req:Request){return req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('gameon_session='))?.slice(15);}
 function csv(rows:unknown[][]){return '\uFEFF'+rows.map(row=>row.map(cell=>{let s=String(cell??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}).join(',')).join('\r\n');}
-export function createApp({store,auth,origin,trustProxy=0,registrationLimit=300}:{store:JsonStore;auth:Auth;origin:string;trustProxy?:number;registrationLimit?:number}){
+export function createApp({store,auth,origin,trustProxy=0,registrationLimit=300,liveStreamLimit=500}:{store:JsonStore;auth:Auth;origin:string;trustProxy?:number;registrationLimit?:number;liveStreamLimit?:number}){
   const app=express();app.disable('x-powered-by');
   // Behind a reverse proxy the socket address is the proxy, so req.ip must come from its forwarded header.
   if(trustProxy>0)app.set('trust proxy',trustProxy);
@@ -22,6 +22,20 @@ export function createApp({store,auth,origin,trustProxy=0,registrationLimit=300}
   app.post('/api/login',async(req,res)=>{const ip=req.ip||'local';auth.guard(ip);try{await auth.login(req.body?.password);}catch(e){if(e instanceof AppError&&e.status===401)auth.fail(ip);throw e;}auth.clear(ip);session(res);});
   app.post('/api/logout',(req,res)=>{auth.logout(token(req));res.clearCookie('gameon_session',{path:'/'});res.json({ok:true});});
   app.get('/api/live',(_req,res)=>res.json(publicEvent(store.read())));
+  // Server-sent events: each viewer gets the public board on connect and again after every saved change.
+  // The cap keeps a crowd of open tabs from exhausting the server; extra viewers fall back to polling /api/live.
+  const liveViewers=new Set<Response>();
+  const pushLive=()=>{if(!liveViewers.size)return;const message=`data: ${JSON.stringify(publicEvent(store.read()))}\n\n`;for(const viewer of liveViewers)viewer.write(message);};
+  store.subscribe(pushLive);
+  setInterval(()=>{for(const viewer of liveViewers)viewer.write(': keep-alive\n\n');},25000).unref();
+  app.get('/api/live/stream',(req,res)=>{
+    if(liveViewers.size>=liveStreamLimit)throw new AppError('The live board is busy. Updates will continue every few seconds.',503);
+    res.set({'Content-Type':'text/event-stream','Cache-Control':'no-store','X-Accel-Buffering':'no'});res.flushHeaders();
+    res.write(`retry: 5000\ndata: ${JSON.stringify(publicEvent(store.read()))}\n\n`);
+    liveViewers.add(res);req.on('close',()=>liveViewers.delete(res));
+  });
+  // Open streams never finish on their own, so shutdown ends them before waiting for requests to drain.
+  app.locals.closeLiveViewers=()=>{for(const viewer of liveViewers)viewer.end();liveViewers.clear();};
   app.get('/api/registration',(_req,res)=>res.json(registrationCatalogue(store.read())));
   // With GAMEON_TRUST_PROXY unset this is the socket address, so behind a proxy it is one shared limit.
   // Office networks also share one public address, so the limit must allow many colleagues per minute.

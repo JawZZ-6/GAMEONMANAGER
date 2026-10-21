@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { participantSchema,entryOptionSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
+import { participantSchema,entryOptionSchema,emailAllowlistSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
 import { addRegistrationDefaults } from './registration';
 import { AppError } from './errors';
 export { AppError } from './errors';
@@ -65,6 +65,7 @@ export function applyCommand(s:EventState,command:Command):void {
     case 'game.save':{const game=gameSchema.parse(withId(p));requireValue(!s.tournaments.some(t=>t.gameId===game.id&&t.generated&&game.mode!=='tournament'),'Cannot change mode while tournaments exist');save(s.games,game);break;}
     case 'station.save':{const station=stationSchema.parse(withId(p));if(!station.available)requireValue(!s.matches.some(m=>m.stationId===station.id&&m.status==='live')&&!s.sessions.some(x=>x.stationId===station.id&&x.status==='live'),'End the live session before marking this station unavailable');save(s.stations,station);break;}
     case 'settings.save':{const settings=settingsSchema.parse({...s.settings,...p});requireValue(settings.endDate>=settings.startDate,'End date must be after start date');s.settings=settings;break;}
+    case 'emailAllowlist.save':{const v=z.object({enabled:z.boolean(),emails:z.array(z.string()).max(5000)}).strict().parse(p);const emails=[...new Set(v.emails.map(e=>e.trim().toLowerCase()).filter(Boolean))];const invalid=emails.filter(e=>!z.string().email().max(254).safeParse(e).success);requireValue(!invalid.length,`These are not valid email addresses: ${invalid.slice(0,5).join(', ')}${invalid.length>5?` and ${invalid.length-5} more`:''}`);requireValue(!v.enabled||emails.length,'Add at least one email before turning on the allowlist');s.emailAllowlist=emailAllowlistSchema.parse({enabled:v.enabled,emails});break;}
     case 'announcement.save':save(s.announcements,announcementSchema.parse(withId(p)));break;
     case 'tournament.save':{
       const old=s.tournaments.find(t=>t.id===p.id);const t=tournamentSchema.parse({...withId(p),generated:old?.generated||false});
@@ -116,5 +117,13 @@ export function moneySummary(s:EventState){
 }
 export function publicEvent(s:EventState):PublicEvent{
   const tournaments=s.tournaments.filter(t=>t.published);const publicIds=new Set(tournaments.map(t=>t.id));const entrantIds=new Set(tournaments.flatMap(t=>t.entrantIds));
-  return {revision:s.revision,updatedAt:s.updatedAt,settings:{...s.settings},games:s.games.filter(g=>!g.archived).map(({id,name,category,mode,rules})=>({id,name,category,mode,rules})),tournaments:tournaments.map(t=>({...t})),matches:s.matches.filter(m=>publicIds.has(m.tournamentId)).map(m=>({...m})),stations:s.stations.map(({id,name,available})=>({id,name,available})),entrants:[...s.participants,...s.teams].filter(x=>entrantIds.has(x.id)).map(({id,name})=>({id,name})),announcements:s.announcements.filter(a=>a.published).map(a=>({...a})),ladders:Object.fromEntries(tournaments.filter(t=>t.format==='round-robin').map(t=>[t.id,standings(s,t.id)]))};
+  return {revision:s.revision,updatedAt:s.updatedAt,settings:{...s.settings},games:s.games.filter(g=>!g.archived).map(({id,name,category,mode,rules})=>({id,name,category,mode,rules})),tournaments:tournaments.map(t=>({...t})),matches:s.matches.filter(m=>publicIds.has(m.tournamentId)).map(m=>({...m})),stations:s.stations.map(({id,name,available})=>({id,name,available})),entrants:[...s.participants,...s.teams].filter(x=>entrantIds.has(x.id)).map(({id,name})=>({id,name})),announcements:s.announcements.filter(a=>a.published).map(a=>({...a})),ladders:Object.fromEntries(tournaments.filter(t=>t.format==='round-robin').map(t=>[t.id,standings(s,t.id)])),...spectators(s,tournaments)};
+}
+function spectators(s:EventState,tournaments:EventState['tournaments']):Pick<PublicEvent,'players'|'nowPlaying'|'waiting'>{
+  const games=new Set(s.games.filter(g=>!g.archived).map(g=>g.id));const members=(id:string|null)=>!id?[]:s.teams.find(t=>t.id===id)?.memberIds||[id];const name=(id:string|null)=>id?entrantName(s,id):'To be decided';
+  const players=s.participants.map(p=>{const teams=s.teams.filter(t=>t.memberIds.includes(p.id));const ids=new Set([...p.gameIds,...teams.flatMap(t=>t.gameIds),...tournaments.filter(t=>t.entrantIds.some(id=>members(id).includes(p.id))).map(t=>t.gameId)]);return {id:p.id,name:p.name,gameIds:[...ids].filter(id=>games.has(id)),teams:teams.map(t=>t.name),checkedIn:p.checkedIn};}).filter(p=>p.gameIds.length>0).sort((a,b)=>a.name.localeCompare(b.name));
+  const matches=s.matches.filter(m=>m.status==='live'&&!m.bye).flatMap(m=>{const t=tournaments.find(t=>t.id===m.tournamentId);return t?[{id:m.id,kind:'match' as const,gameId:t.gameId,tournamentId:t.id,stationId:m.stationId,startedAt:m.scheduledAt,duration:m.duration,playerIds:[...members(m.a),...members(m.b)],sides:[name(m.a),name(m.b)]}]:[];});
+  const sessions=s.sessions.filter(x=>x.status==='live'&&games.has(x.gameId)).map(x=>({id:x.id,kind:'free-play' as const,gameId:x.gameId,tournamentId:'',stationId:x.stationId,startedAt:x.startedAt,duration:x.duration,playerIds:[...x.participantIds],sides:x.participantIds.map(name)}));
+  const waiting=[...games].map(gameId=>({gameId,groups:s.queue.filter(q=>q.gameId===gameId&&(q.status==='waiting'||q.status==='called')).length})).filter(w=>w.groups>0);
+  return {players,nowPlaying:[...matches,...sessions],waiting};
 }
