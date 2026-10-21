@@ -72,3 +72,21 @@ Publication to Hetzner and online payment processing were not part of this chang
 - Browser check on a temporary data directory (port 4399): invalid address
   rejected with a readable message, uninvited email got 403, invited email
   registered and showed as Registered on the organiser screen.
+
+## Registration form import - 21 October 2026
+
+- Organisers import people who registered through an earlier form under
+  Registrations & bundles > Import from form. It takes a CSV export (such as a
+  Microsoft Forms response sheet saved from Excel, UTF-8 or Windows-1252).
+- The file is read in the browser. Email and Name columns are required; answers in
+  the "Which ... would you like to enter?" columns are matched to tournament games
+  by name, with "2 vs 2" answers using the team play option. A preview shows each
+  row as to import, skipped (already registered, or replaced by a later
+  submission from the same email) or needs attention (unknown game, bad email).
+- The `registration.import` command re-checks everything on the server, then adds
+  each person as a participant with an individual registration and a charge at the
+  current play-option prices. Imported emails count as registered, so the person
+  cannot register again. Team partners are not on the form and are added later.
+- New tests: `tests/registration-import.test.tsx` (4 tests). Full suite **98 passed
+  across 12 files**; the production TypeScript/Vite build passed. A dry run on the
+  real 26-row export matched every answer; the export itself is not in the repo.

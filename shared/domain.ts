@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { participantSchema,entryOptionSchema,emailAllowlistSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
 import { addRegistrationDefaults } from './registration';
+import { applyRegistrationImport } from './registration-import';
 import { AppError } from './errors';
 export { AppError } from './errors';
 
@@ -66,6 +67,7 @@ export function applyCommand(s:EventState,command:Command):void {
     case 'station.save':{const station=stationSchema.parse(withId(p));if(!station.available)requireValue(!s.matches.some(m=>m.stationId===station.id&&m.status==='live')&&!s.sessions.some(x=>x.stationId===station.id&&x.status==='live'),'End the live session before marking this station unavailable');save(s.stations,station);break;}
     case 'settings.save':{const settings=settingsSchema.parse({...s.settings,...p});requireValue(settings.endDate>=settings.startDate,'End date must be after start date');s.settings=settings;break;}
     case 'emailAllowlist.save':{const v=z.object({enabled:z.boolean(),emails:z.array(z.string()).max(5000)}).strict().parse(p);const emails=[...new Set(v.emails.map(e=>e.trim().toLowerCase()).filter(Boolean))];const invalid=emails.filter(e=>!z.string().email().max(254).safeParse(e).success);requireValue(!invalid.length,`These are not valid email addresses: ${invalid.slice(0,5).join(', ')}${invalid.length>5?` and ${invalid.length-5} more`:''}`);requireValue(!v.enabled||emails.length,'Add at least one email before turning on the allowlist');s.emailAllowlist=emailAllowlistSchema.parse({enabled:v.enabled,emails});break;}
+    case 'registration.import':applyRegistrationImport(s,p);break;
     case 'announcement.save':save(s.announcements,announcementSchema.parse(withId(p)));break;
     case 'tournament.save':{
       const old=s.tournaments.find(t=>t.id===p.id);const t=tournamentSchema.parse({...withId(p),generated:old?.generated||false});
