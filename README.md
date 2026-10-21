@@ -167,3 +167,4 @@ generous). Set `GAMEON_TRUST_PROXY=1` behind a reverse proxy; otherwise all
 visitors share one limit. Organiser sign-in locks an address for 15 minutes after
 10 wrong passwords. Do not expose
 the Node port directly. Keep `GAMEON_ORIGIN` equal to the public HTTPS subdomain.
+test
