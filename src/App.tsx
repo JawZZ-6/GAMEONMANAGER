@@ -8,11 +8,12 @@ import { People,Games,Settings as EventSettings } from './pages/Manage';
 import Tournaments from './pages/Tournaments';
 import { Schedule,FreePlay,Money } from './pages/Operations';
 import Live from './pages/Live';
+import Rules from './pages/Rules';
 import Register from './pages/Register';
 import Registrations from './pages/Registrations';
 const pages=[{id:'overview',label:'Overview',icon:LayoutDashboard},{id:'registrations',label:'Registrations & bundles',icon:Users},{id:'people',label:'People & teams',icon:Users},{id:'games',label:'The games',icon:Gamepad2},{id:'tournaments',label:'Tournaments',icon:Trophy},{id:'schedule',label:'Schedule & stations',icon:CalendarDays},{id:'free-play',label:'Free play',icon:Joystick},{id:'money',label:'Money & charity',icon:Wallet},{id:'settings',label:'Event settings',icon:Settings}];
 type Session={authenticated:boolean;configured:boolean;setupAllowed:boolean};
-export default function App(){if(location.pathname.startsWith('/register'))return <Register/>;if(location.pathname.startsWith('/live'))return <Live/>;return <Admin/>;}
+export default function App(){if(location.pathname.startsWith('/register'))return <Register/>;if(location.pathname.startsWith('/live/rules'))return <Rules/>;if(location.pathname.startsWith('/live'))return <Live/>;return <Admin/>;}
 function Admin(){const [session,setSession]=useState<Session|null>(null),[state,setState]=useState<EventState|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[mobile,setMobile]=useState(false),[page,setPage]=useState(location.pathname.split('/')[2]||'overview');
 async function load(){try{const current=await api<Session>('session');setSession(current);if(current.authenticated)setState(await api<EventState>('state'));}catch(e){setError((e as Error).message);}}
 useEffect(()=>{void load();const pop=()=>setPage(location.pathname.split('/')[2]||'overview');window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);

@@ -93,3 +93,39 @@
 .display-mode .live-players .search{display:none}
 @media(max-width:900px){.live-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.live-stats{gap:10px}.live-stats>div{padding:13px 12px}.live-stats strong{font-size:20px}.live-players .search{flex-basis:100%}.player-grid{grid-template-columns:1fr}}
+/* A bright arc sweeps round the banner's border while a blurred copy glows behind it. --arc is registered so the conic gradient can animate. */
+@property --arc{syntax:'<angle>';inherits:true;initial-value:0deg}
+@keyframes rules-arc{to{--arc:360deg}}
+.live-main{position:relative;z-index:0}
+.rules-banner{--arc-colors:transparent 0 50%,#ff7a2e 68%,#ffd29c 80%,#6bddec 90%,transparent 97%;position:relative;display:flex;align-items:center;gap:14px;margin-bottom:28px;padding:14px 18px;border:2px solid transparent;border-radius:10px;background:linear-gradient(90deg,#2a1d12,#171e2b) padding-box,conic-gradient(from var(--arc),var(--arc-colors)) border-box,linear-gradient(#5a4126,#5a4126) border-box;box-shadow:0 0 28px #ffa45c1f;animation:rules-arc 4s linear infinite}
+.rules-banner::before{content:'';position:absolute;inset:-3px;z-index:-1;border-radius:inherit;background:conic-gradient(from var(--arc),var(--arc-colors));filter:blur(18px);opacity:.95;transition:opacity .2s,filter .2s}
+.rules-banner:hover::before{opacity:1;filter:blur(22px)}
+@media(prefers-reduced-motion:reduce){.rules-banner{animation:none;--arc:200deg}}
+.rules-banner>svg:first-child{color:var(--orange)}
+.rules-banner>span{flex:1;min-width:0}
+.rules-banner strong{display:block;font-size:14px}
+.rules-banner small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.rules-banner>svg:last-child{color:var(--orange)}
+.display-mode .rules-banner{display:none}
+.rules-main{max-width:960px}
+.rules-title{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+.rules-title h1{font-family:'Barlow Condensed',Impact,sans-serif;font-size:60px;text-transform:uppercase;letter-spacing:0;line-height:1}
+.rules-title h1 span{color:var(--orange)}
+.rules-title p.muted{margin-top:14px;max-width:560px}
+.rules-list{display:grid;gap:12px}
+.rules-tile{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.rules-tile[open]{border-color:#3a4659}
+.rules-tile summary{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;list-style:none}
+.rules-tile summary::-webkit-details-marker{display:none}
+.rules-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:9px;background:#2a1d12;color:var(--orange);flex-shrink:0}
+.rules-summary{flex:1;min-width:0}
+.rules-summary small{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.rules-summary strong{display:block;font-size:16px;margin-top:2px}
+.rules-summary>span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.rules-chevron{color:var(--muted);transition:transform .2s}
+.rules-tile[open] .rules-chevron{transform:rotate(180deg)}
+.rules-body{display:grid;gap:18px;padding:4px 18px 20px 72px}
+.rules-body h3{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--orange);margin-bottom:8px}
+.rules-body ul{margin:0;padding-left:18px;display:grid;gap:6px;color:#d3d9e4;font-size:13px}
+.rules-updated{margin-top:20px}
+@media(max-width:680px){.rules-title{flex-direction:column;align-items:stretch}.rules-title h1{font-size:44px}.rules-body{padding:4px 16px 18px}.rules-tile summary{padding:14px}.rules-banner{padding:12px 14px}}
