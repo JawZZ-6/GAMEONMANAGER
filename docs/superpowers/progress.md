@@ -18,3 +18,14 @@ Task 3: complete — browser sign-in, participant registration, results, live br
 Task 4: complete — README and verification notes saved, production build and 22 tests pass, final reviewer findings fixed. App restarted from requested GameON root; real data preserved. Source is saved locally and uncommitted because Git author identity is not configured. No external publication requested.
 Ruling: Use component tests plus direct browser acceptance checks instead of an additional browser automation test dependency — covers core workflows without another tooling setup; full evidence recorded in docs/verification.md.
 Deferred minor: unarchive a game before changing its existing tournament settings (documented in README). Live polling has no per-request timeout; stale status appears after fetch failure, so a stalled network request may delay it.
+
+21 October: Recovered the unfinished individual-registration extension from the
+uncommitted worktree and its plan. The implementation already passed its 40
+registration tests. Added four UI regressions and one durable API regression,
+completed production-build desktop/phone browser acceptance with isolated data,
+and updated README and the individual-registration plan. A read-only migration
+check preserved the real event's participant, team and ledger collections.
+Individual entries, group rosters, price editing and original-price receipts were
+verified. No fresh independent reviewer was invoked. Runtime and final checks are
+recorded in docs/registration-verification.md. Existing source changes remain
+uncommitted and have not been reverted or replaced.

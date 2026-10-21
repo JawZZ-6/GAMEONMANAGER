@@ -7,6 +7,7 @@ import { JsonStore } from '../server/store';
 import { Auth } from '../server/auth';
 import { createApp } from '../server/app';
 import { createEvent } from '../shared/domain';
+import { createHash } from 'node:crypto';
 
 const dirs:string[]=[];const stores:JsonStore[]=[];
 const origin='http://localhost';
@@ -15,6 +16,43 @@ async function fixture(){const dir=await mkdtemp(join(tmpdir(),'gameon-registrat
 afterEach(async()=>{for(const s of stores.splice(0))await s.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
 
 describe('public registration API',()=>{
+  it('accepts individual selections, snapshots the option price, and protects player IDs',async()=>{
+    const {app,store}=await fixture();const body=input({registrationType:'individual',bundleId:'',gameIds:['game-1'],selections:[{gameId:'game-1',optionId:'game-1-single'}],expectedPrice:500});
+    const result=await request(app).post('/api/register').set('Origin',origin).send(body).expect(201);
+    expect(result.body).toMatchObject({registrationType:'individual',amount:500});expect(result.body.lineItems[0]).toMatchObject({gameName:'UNO',price:500});expect(result.body.lineItems[0]).not.toHaveProperty('participantIds');
+    const retry=await request(app).post('/api/register').set('Origin',origin).send(body).expect(201);expect(retry.body).toEqual(result.body);expect(store.read().ledger).toHaveLength(1);
+  });
+  it('shares the last place atomically between individual and bundle registrations',async()=>{
+    const {store}=await fixture();await store.transact(0,{type:'game.save',payload:{...store.read().games[0],capacity:2}});
+    await store.transact(1,{type:'participant.save',payload:{name:'Existing',gameIds:['game-1']}});
+    const results=await Promise.allSettled([store.register(input()),store.register(input({email:'individual@example.test',registrationType:'individual',bundleId:'',gameIds:['game-1'],selections:[{gameId:'game-1',optionId:'game-1-single'}],expectedPrice:500}))]);
+    expect(results.filter(r=>r.status==='fulfilled')).toHaveLength(1);expect(store.read().ledger).toHaveLength(1);
+  });
+  it('recovers an individual roster and purchased prices after catalogue edits, closure and restart',async()=>{
+    const {dir,store}=await fixture();
+    const body={...input(),registrationType:'individual',bundleId:'',gameIds:['game-1','game-7'],selections:[{gameId:'game-1',optionId:'game-1-single'},{gameId:'game-7',optionId:'game-7-team',companions:['Sam Player'],teamName:'API Duo'}],expectedPrice:1700};
+    const receipt=await store.register(body);
+    const option=store.read().entryOptions.find(option=>option.id==='game-7-team')!;
+    await store.transact(store.read().revision,{type:'entryOption.save',payload:{...option,price:1500,duration:30}});
+    await store.transact(store.read().revision,{type:'settings.save',payload:{registrationOpen:false}});
+    await store.close();
+    const reopened=await JsonStore.open(dir);stores.push(reopened);
+    expect(await reopened.register({...body,gameIds:[...body.gameIds].reverse(),selections:[...body.selections].reverse()})).toEqual(receipt);
+    const saved=reopened.read();
+    expect(saved.participants).toHaveLength(2);expect(saved.teams).toHaveLength(1);expect(saved.ledger).toHaveLength(1);
+    expect(saved.registrations[0].lineItems[1]).toMatchObject({price:1200,duration:0,teamName:'API Duo'});
+    expect(saved.entryOptions.find(current=>current.id==='game-7-team')).toMatchObject({price:1500,duration:30,version:2});
+    await expect(reopened.register({...body,selections:[body.selections[0],{...body.selections[1],companions:['Different Player']}]})).rejects.toThrow(/different|submitted|request/i);
+    expect(reopened.read().ledger).toHaveLength(1);
+  });
+  it('keeps legacy bundle request hashes stable after upgrading and when type is explicit',async()=>{
+    const {dir,store}=await fixture();const body=input();const first=await store.register(body);await store.close();
+    const raw=JSON.parse(await readFile(join(dir,'event.json'),'utf8'));
+    raw.registrations[0].requestHash=createHash('sha256').update(JSON.stringify({...body,gameIds:[...body.gameIds].sort()})).digest('hex');
+    delete raw.registrations[0].registrationType;delete raw.registrations[0].lineItems;delete raw.entryOptions;delete raw.individualRegistrationVersion;
+    await writeFile(join(dir,'event.json'),JSON.stringify(raw));const reopened=await JsonStore.open(dir);stores.push(reopened);
+    expect(await reopened.register({...body,registrationType:'bundle',selections:[]})).toEqual(first);expect(reopened.read().ledger).toHaveLength(1);
+  });
   it('accepts a public registration while protecting private records and exports',async()=>{
     const {app,store}=await fixture();const response=await request(app).post('/api/register').set('Origin',origin).send(input()).expect(201);
     expect(response.body).toMatchObject({amount:1200,bundleName:'Social Bundle'});

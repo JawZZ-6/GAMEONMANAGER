@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { participantSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
+import { participantSchema,entryOptionSchema,teamSchema,gameSchema,tournamentSchema,stationSchema,settingsSchema,announcementSchema,ledgerSchema,eventSchema, type EventState,type Match,type Command,type PublicEvent,type Standing,type Tournament } from './model';
 import { addRegistrationDefaults } from './registration';
 import { AppError } from './errors';
 export { AppError } from './errors';
@@ -58,6 +58,7 @@ function generate(s:EventState,t:Tournament) {
 export function applyCommand(s:EventState,command:Command):void {
   const {type,payload:p}=command;
   switch(type){
+    case 'entryOption.save':{const option=entryOptionSchema.parse(withId(p));const game=find(s.games,option.gameId);requireValue(option.priceBasis!=='person'||option.players===1,'Per-person entry options must include one player');requireValue(option.priceBasis!=='team'||option.players>=2,'A team option must include at least two players');requireValue(game.mode!=='free-play'||option.duration>0,'Free-play options require a duration');option.version=(s.entryOptions.find(o=>o.id===option.id)?.version||0)+1;save(s.entryOptions,option);break;}
     case 'bundle.save':{const v=z.object({id:z.string(),name:z.string().trim().min(1).max(120),price:z.number().finite().positive().max(100000000).refine(n=>Math.abs(n*100-Math.round(n*100))<0.00001,'Use at most two decimal places'),active:z.boolean()}).strict().parse(p);Object.assign(find(s.bundles,v.id),v);break;}
     case 'participant.save':{const person=participantSchema.parse(withId(p));for(const g of person.gameIds)find(s.games,g);save(s.participants,person);break;}
     case 'team.save':{const team=teamSchema.parse(withId(p));for(const id of team.memberIds)find(s.participants,id);for(const id of team.gameIds)find(s.games,id);const old=s.teams.find(t=>t.id===team.id);if(old&&JSON.stringify(old.memberIds)!==JSON.stringify(team.memberIds))requireValue(!s.tournaments.some(t=>t.generated&&t.entryType==='team'&&t.entrantIds.includes(team.id)),'Reset generated tournaments before changing team members');save(s.teams,team);break;}

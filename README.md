@@ -65,13 +65,51 @@ The default binds only to this computer. For internal network access, use one pe
 
 Online payments, SSO and email/SMS are outside this version. Deploying the service to Hetzner remains a separate step.
 
-## Registration and bundles
+## Registration, individual games and bundles
 
 After updating the code, stop the old server with Ctrl+C, run `npm.cmd run build`,
 and start it again with `npm.cmd start`. Reload open browser tabs.
 
 Share `/register` on your event subdomain. Participants enter their name, email,
-department/organisation and optional phone, then select one bundle:
+department/organisation and optional phone, then choose individual games or one
+bundle. Switching modes clears game choices but retains contact details.
+
+### Individual games
+
+Participants can select one or more distinct games across board games, console
+tournaments, PC tournaments, console free play and PC free play. Choose one
+priced play option for each game. The initial confirmed prices are:
+
+| Category | Play option | Price |
+|---|---|---:|
+| Board, card and party games | Single entry | LKR 500 per person |
+| Console tournament | Single play, 1 vs 1 | LKR 700 per person |
+| Console tournament | Multiplayer, one 2-player team | LKR 1,200 per team |
+| PC tournament | Free-for-all | LKR 300 per person |
+| PC tournament | Multiplayer, one 2-player team | LKR 1,000 per team |
+| Console free play | Single play, 1 hour | LKR 400 per booking |
+| Console free play | Head-to-head, 2 players, 1 hour | LKR 700 per booking |
+| Console free play | Team play, 4 players, 1 hour | LKR 1,000 per booking |
+| PC free play | Single play, 1 hour | LKR 350 per booking |
+
+Group entries include the registrant. Enter companion names and, for team-priced
+entries, a team name. A companion named consistently across selected games gets
+one participant record within that registration. Team-priced entries create a
+team; the registrant owns the single total charge, not each companion.
+
+In **Registrations & bundles**, open **Individual play options** to filter by
+game, add or edit formats, set prices, player counts and durations, or disable an
+option. Zero means the price is unconfirmed and cannot be purchased. The fee in
+**The games** is only a reference, not the registration price. New custom games
+need play options before individual registration is available.
+
+Receipts and organiser records retain the purchased format, duration, roster and
+price even after an option is edited. If an offer changes before submission,
+refresh and review the updated option before confirming. Capacity counts every
+included player. Registration does not schedule a station or timed session:
+organisers still add tournament entrants and arrange free-play queues/bookings.
+
+### Bundles
 
 | Bundle | Included games | Price |
 |---|---|---:|
@@ -82,17 +120,21 @@ department/organisation and optional phone, then select one bundle:
 | Ultimate Gamer | 1 board game + 2 console games | LKR 1,600 |
 
 Retro and board categories count as board/card/party games; cyber counts as
-console. Only active tournament games are offered. Games are distinct within a
-bundle. Available places include existing participant, team and tournament
+video game tournaments under the existing bundle rules. Bundles exclude
+free-play games. Games are distinct within a bundle. Available places include
+existing participant, team and tournament
 enrolments, counting each person once. Organisers still choose teams and add
 entrants to tournaments before generating fixtures.
+
+### Payments and administration
 
 A successful submission creates the participant, game enrolments, a registration
 snapshot and an **unpaid charge** together. No payment is collected online. In
 **Registrations & bundles**, find a participant and select **Record payment** only
 when money has been received. The balance is the participant's total across the
-Money ledger; receipts and exported registrations retain the original bundle
-price and game names. Edit participant information in **People & teams**.
+Money ledger; receipts and exported registrations retain the original purchase
+prices and game names. Individual registration exports include play options and
+companion/team details. Edit participant information in **People & teams**.
 
 The **Bundle offers** tab lets organisers edit offer names/prices and enable or
 disable an offer. These changes apply to future registrations. Settings controls
@@ -101,9 +143,11 @@ after the deadline in Asia/Colombo; to extend it, update the date and open switc
 Refresh event data in the admin header to load registrations received since the
 page opened.
 
-Existing JSON files receive the default offers and Chess on load, preserving
-existing records and game IDs. The next normal save persists this upgrade through
-the existing backup mechanism. If a fixed bundle's games were renamed or removed
+Existing JSON files receive the default offers, Chess and the confirmed
+individual-play catalogue on load, preserving existing records and game IDs.
+The individual catalogue upgrade runs once and retains later organiser edits.
+The next normal save persists this upgrade through the existing backup
+mechanism. If a fixed bundle's games were renamed or removed
 before upgrading, that offer is unavailable until its game references are
 reconciled in the data; custom bundle composition is not editable in this version.
 

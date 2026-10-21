@@ -8,10 +8,21 @@ const ids = z.array(id).max(256).refine(a=>new Set(a).size===a.length,'Duplicate
 const email = z.string().trim().toLowerCase().email('Enter a valid email address').max(254);
 export const participantSchema = z.object({id,name,department:text,contact:text,email:z.union([email,z.literal('')]).default(''),phone:z.string().trim().max(40).default(''),checkedIn:z.boolean().default(false),gameIds:ids.default([])});
 export const bundleSchema = z.object({id,name,price:money.refine(n=>n>0),active:z.boolean().default(true),fixedGameIds:ids.default([]),boardCount:z.number().int().min(0).max(3),consoleCount:z.number().int().min(0).max(3)});
-export const registrationInputSchema = z.object({requestId:z.string().uuid(),name,email,department:z.string().trim().min(1,'Enter your department or organisation').max(120),phone:z.string().trim().max(40).default(''),bundleId:id,gameIds:ids.refine(a=>a.length===3,'Choose exactly three different games'),expectedPrice:money,consent:z.literal(true),website:z.literal('').default('')}).strict();
-export const registrationSchema = z.object({id,requestId:z.string().uuid(),requestHash:z.string(),participantId:id,bundleId:id,bundleName:name,amount:money,gameIds:ids,gameNames:z.array(name),chargeId:id,createdAt:z.string()});
+export const entryOptionSchema = z.object({id,gameId:id,name,version:z.number().int().positive().default(1),format:z.string().trim().min(1).max(120),price:money,priceBasis:z.enum(['person','team','booking']),players:z.number().int().min(1).max(4),duration:z.number().int().min(0).max(480).default(0),active:z.boolean().default(true)});
+export const individualSelectionSchema = z.object({gameId:id,optionId:id,optionVersion:z.number().int().positive().default(1),companions:z.array(name).max(3).default([]),teamName:z.string().trim().max(120).default('')}).strict();
+export const registrationInputSchema = z.object({requestId:z.string().uuid(),name,email,department:z.string().trim().min(1,'Enter your department or organisation').max(120),phone:z.string().trim().max(40).default(''),bundleId:z.string().max(100).default(''),gameIds:ids.refine(a=>a.length>0,'Choose at least one game'),expectedPrice:money,consent:z.literal(true),website:z.literal('').default(''),registrationType:z.enum(['bundle','individual']).optional(),selections:z.array(individualSelectionSchema).max(256).optional()}).strict().superRefine((v,ctx)=>{
+  if(v.registrationType==='individual'){
+    if(v.bundleId)ctx.addIssue({code:'custom',path:['bundleId'],message:'Individual entries cannot include a bundle'});
+    if(!v.selections||v.selections.length!==v.gameIds.length||new Set(v.selections.map(s=>s.gameId)).size!==v.gameIds.length||v.selections.some(s=>!v.gameIds.includes(s.gameId)))ctx.addIssue({code:'custom',path:['selections'],message:'Choose one play option for each selected game'});
+  }else{
+    if(!v.bundleId||v.gameIds.length!==3)ctx.addIssue({code:'custom',path:['gameIds'],message:'Choose a bundle and exactly three different games'});
+    if(v.selections?.length)ctx.addIssue({code:'custom',path:['selections'],message:'Choose individual entry or a bundle, not both'});
+  }
+});
+export const registrationLineSchema = z.object({gameId:id,gameName:name,optionId:id,optionName:name,format:z.string(),price:money,priceBasis:z.enum(['person','team','booking']),players:z.number().int().min(1).max(4),duration:z.number().int().min(0).max(480),participantIds:ids,teamName:z.string().default('')});
+export const registrationSchema = z.object({id,requestId:z.string().uuid(),requestHash:z.string(),participantId:id,bundleId:z.string().max(100),bundleName:name,amount:money,gameIds:ids,gameNames:z.array(name),chargeId:id,createdAt:z.string(),registrationType:z.enum(['bundle','individual']).default('bundle'),lineItems:z.array(registrationLineSchema).default([])});
 export const teamSchema = z.object({id,name,memberIds:ids.refine(a=>a.length>0,'Choose at least one member'),gameIds:ids.default([])});
-export const gameSchema = z.object({id,name,category:z.enum(['retro','cyber','board']),mode:z.enum(['tournament','free-play']),capacity:z.number().int().min(2).max(256).default(32),fee:money.default(0),rules:text,location:text,archived:z.boolean().default(false)});
+export const gameSchema = z.object({id,name,category:z.enum(['retro','cyber','board']),mode:z.enum(['tournament','free-play']),platform:z.enum(['board','console','pc']).optional(),capacity:z.number().int().min(2).max(256).default(32),fee:money.default(0),rules:text,location:text,archived:z.boolean().default(false)});
 export const tournamentSchema = z.object({id,name,gameId:id,format:z.enum(['elimination','round-robin']),entryType:z.enum(['individual','team']),entrantIds:ids.default([]),published:z.boolean().default(false),generated:z.boolean().default(false),winPoints:z.number().int().min(0).max(100).default(3),drawPoints:z.number().int().min(0).max(100).default(1),lossPoints:z.number().int().min(0).max(100).default(0)});
 export const matchSchema = z.object({id,tournamentId:id,round:z.number().int().min(1),position:z.number().int().min(0),a:id.nullable(),b:id.nullable(),sourceA:id.optional(),sourceB:id.optional(),status:z.enum(['scheduled','live','completed','cancelled']).default('scheduled'),winnerId:id.nullable().default(null),scoreA:z.number().int().min(0).nullable().default(null),scoreB:z.number().int().min(0).nullable().default(null),bye:z.boolean().default(false),forfeit:z.boolean().default(false),stationId:z.string().default(''),scheduledAt:z.string().default(''),duration:z.number().int().min(1).max(480).default(30)});
 export const stationSchema = z.object({id,name,notes:text,available:z.boolean().default(true)});
@@ -21,15 +32,18 @@ export const ledgerSchema = z.object({id,kind:z.enum(['charge','payment','donati
 export const announcementSchema = z.object({id,title:name,body:text,published:z.boolean().default(true)});
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid date');
 export const settingsSchema = z.object({name,venue:text,startDate:date,endDate:date,registrationDeadline:date,registrationOpen:z.boolean().default(true),finalNight:text,charityName:text,charityTarget:money,currency:z.literal('LKR'),timezone:z.literal('Asia/Colombo'),retroFee:money,cyberFee:money});
-export const eventSchema = z.object({schemaVersion:z.literal(1),revision:z.number().int().min(0),updatedAt:z.string(),settings:settingsSchema,participants:z.array(participantSchema),teams:z.array(teamSchema),games:z.array(gameSchema),bundles:z.array(bundleSchema).default([]),registrations:z.array(registrationSchema).default([]),tournaments:z.array(tournamentSchema),matches:z.array(matchSchema),stations:z.array(stationSchema),queue:z.array(queueSchema),sessions:z.array(sessionSchema),ledger:z.array(ledgerSchema),announcements:z.array(announcementSchema),audit:z.array(z.object({id,at:z.string(),action:z.string(),detail:z.string()}))});
+export const eventSchema = z.object({schemaVersion:z.literal(1),revision:z.number().int().min(0),updatedAt:z.string(),settings:settingsSchema,participants:z.array(participantSchema),teams:z.array(teamSchema),games:z.array(gameSchema),bundles:z.array(bundleSchema).default([]),registrations:z.array(registrationSchema).default([]),entryOptions:z.array(entryOptionSchema).default([]),individualRegistrationVersion:z.number().int().min(0).max(1).default(0),tournaments:z.array(tournamentSchema),matches:z.array(matchSchema),stations:z.array(stationSchema),queue:z.array(queueSchema),sessions:z.array(sessionSchema),ledger:z.array(ledgerSchema),announcements:z.array(announcementSchema),audit:z.array(z.object({id,at:z.string(),action:z.string(),detail:z.string()}))});
 export type Bundle = z.infer<typeof bundleSchema>;
 export type RegistrationInput = z.infer<typeof registrationInputSchema>;
 export type Registration = z.infer<typeof registrationSchema>;
-export type RegistrationReceipt = Pick<Registration,'id'|'bundleName'|'amount'|'gameNames'|'createdAt'>;
+export type EntryOption = z.infer<typeof entryOptionSchema>;
+export type IndividualSelection = z.infer<typeof individualSelectionSchema>;
+export type RegistrationReceipt = Pick<Registration,'id'|'bundleName'|'amount'|'gameNames'|'createdAt'> & {registrationType?:'bundle'|'individual';lineItems?:Omit<z.infer<typeof registrationLineSchema>,'participantIds'>[]};
 export type RegistrationCatalogue = {
   settings:Pick<EventState['settings'],'name'|'venue'|'startDate'|'endDate'|'registrationDeadline'|'timezone'>;
   open:boolean;closeReason:string;
-  games:(Pick<Game,'id'|'name'|'category'|'rules'> & {remaining:number})[];
+  games:(Pick<Game,'id'|'name'|'category'|'rules'|'mode'|'platform'> & {remaining:number})[];
+  entryOptions:EntryOption[];
   bundles:(Bundle & {available:boolean;unavailableReason:string})[];
 };
 export type EventState = z.infer<typeof eventSchema>;

@@ -25,7 +25,10 @@ export class JsonStore {
     const task=this.queue.then(async()=>{
       if(this.closed)throw new AppError('The server is closing',503);
       const input=registrationInputSchema.parse(value);
-      const requestHash=createHash('sha256').update(JSON.stringify({...input,gameIds:[...input.gameIds].sort()})).digest('hex');
+      const {registrationType,selections,...legacyInput}=input;
+      // Keep the pre-individual bundle serialization identical for saved retry IDs.
+      const canonical=registrationType==='individual'?{...legacyInput,registrationType,selections:[...selections!].sort((a,b)=>a.gameId.localeCompare(b.gameId))}:legacyInput;
+      const requestHash=createHash('sha256').update(JSON.stringify({...canonical,gameIds:[...input.gameIds].sort()})).digest('hex');
       const previous=this.state.registrations.find(r=>r.requestId===input.requestId);
       if(previous){
         if(previous.requestHash!==requestHash)throw new AppError('This request was already submitted with different details. Start a new registration attempt.',409);
