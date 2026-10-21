@@ -5,17 +5,19 @@ import express from 'express';
 import { JsonStore } from './store';
 import { Auth } from './auth';
 import { createApp } from './app';
+import { normaliseOrigin, parseTrustProxy } from './config';
 import { createEvent } from '../shared/domain';
 import { demoEvent } from './demo';
 
 const demo=process.argv.includes('--demo'),dev=process.argv.includes('--dev');
 const port=Number(process.env.PORT||(demo?4311:4310)),host=process.env.HOST||'127.0.0.1';
-const origin=process.env.GAMEON_ORIGIN||`http://${host}:${port}`;
+const origin=normaliseOrigin(process.env.GAMEON_ORIGIN||`http://${host}:${port}`),trustProxy=parseTrustProxy(process.env.GAMEON_TRUST_PROXY);
 if(!['127.0.0.1','localhost','::1'].includes(host)&&!origin.startsWith('https://'))throw new Error('Configure GAMEON_ORIGIN with HTTPS before binding beyond localhost.');
+if(origin.startsWith('https://')&&!trustProxy)console.warn('GAMEON_ORIGIN is HTTPS but GAMEON_TRUST_PROXY is not set. Behind a reverse proxy, every visitor will share one rate limit. Set GAMEON_TRUST_PROXY=1 for a single proxy such as Caddy.');
 const dir=resolve(process.env.GAMEON_DATA_DIR||join(process.env.LOCALAPPDATA||join(homedir(),'.local','share'),'CISI-GameON',demo?'demo':'event'));
 const store=await JsonStore.open(dir,demo?demoEvent():createEvent());const auth=new Auth(dir);
 if(process.env.GAMEON_ADMIN_PASSWORD&&!await auth.configured())await auth.setup(process.env.GAMEON_ADMIN_PASSWORD);
-const app=createApp({store,auth,origin});
+const app=createApp({store,auth,origin,trustProxy});
 let vite:Awaited<ReturnType<typeof import('vite')['createServer']>>|undefined;
 if(dev){const {createServer}=await import('vite');vite=await createServer({server:{middlewareMode:true},appType:'spa'});app.use(vite.middlewares);}
 else {app.use(express.static(resolve('dist')));app.get('/{*path}',async(_req,res)=>{try{res.type('html').send(await readFile(resolve('dist/index.html'),'utf8'));}catch{res.status(503).send('Run npm run build before starting GameON.');}});}

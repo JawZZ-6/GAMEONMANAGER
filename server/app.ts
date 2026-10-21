@@ -7,21 +7,24 @@ import { registrationCatalogue } from '../shared/registration';
 
 function token(req:Request){return req.headers.cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('gameon_session='))?.slice(15);}
 function csv(rows:unknown[][]){return '\uFEFF'+rows.map(row=>row.map(cell=>{let s=String(cell??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}).join(',')).join('\r\n');}
-export function createApp({store,auth,origin}:{store:JsonStore;auth:Auth;origin:string}){
+export function createApp({store,auth,origin,trustProxy=0,registrationLimit=300}:{store:JsonStore;auth:Auth;origin:string;trustProxy?:number;registrationLimit?:number}){
   const app=express();app.disable('x-powered-by');
+  // Behind a reverse proxy the socket address is the proxy, so req.ip must come from its forwarded header.
+  if(trustProxy>0)app.set('trust proxy',trustProxy);
   app.use((_req,res,next)=>{res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'same-origin'});next();});
   app.use('/api',(_req,res,next)=>{res.set('Cache-Control','no-store');next();});app.use(express.json({limit:'1mb'}));
   const privateOnly=(req:Request,_res:Response,next:NextFunction)=>auth.authorised(token(req))?next():next(new AppError('Please sign in to the organiser area',401));
   app.use('/api',(req,_res,next)=>{if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.headers.origin!==origin)return next(new AppError('Request origin was not accepted',403));next();});
   const session=(res:Response)=>{res.cookie('gameon_session',auth.createSession(),{httpOnly:true,sameSite:'strict',secure:origin.startsWith('https:'),maxAge:8*60*60000,path:'/'});res.json({authenticated:true});};
   app.get('/api/session',async(req,res)=>res.json({authenticated:auth.authorised(token(req)),configured:await auth.configured(),setupAllowed:['localhost','127.0.0.1','[::1]'].includes(new URL(origin).hostname)}));
-  app.post('/api/setup',async(req,res)=>{if(!['localhost','127.0.0.1','[::1]'].includes(new URL(origin).hostname))throw new AppError('Initial password setup must be performed on localhost',403);auth.throttle(req.ip||'local');await auth.setup(req.body.password);session(res);});
-  app.post('/api/login',async(req,res)=>{auth.throttle(req.ip||'local');await auth.login(req.body.password);session(res);});
+  app.post('/api/setup',async(req,res)=>{if(!['localhost','127.0.0.1','[::1]'].includes(new URL(origin).hostname))throw new AppError('Initial password setup must be performed on localhost',403);auth.guard(req.ip||'local');await auth.setup(req.body?.password);session(res);});
+  // Only wrong passwords count toward the lockout, so busy shared networks and successful sign-ins are not penalised.
+  app.post('/api/login',async(req,res)=>{const ip=req.ip||'local';auth.guard(ip);try{await auth.login(req.body?.password);}catch(e){if(e instanceof AppError&&e.status===401)auth.fail(ip);throw e;}auth.clear(ip);session(res);});
   app.post('/api/logout',(req,res)=>{auth.logout(token(req));res.clearCookie('gameon_session',{path:'/'});res.json({ok:true});});
   app.get('/api/live',(_req,res)=>res.json(publicEvent(store.read())));
   app.get('/api/registration',(_req,res)=>res.json(registrationCatalogue(store.read())));
-  // Use the socket address, not an untrusted forwarded header. Behind a proxy
-  // this is a shared burst limit; the deployment guide documents that boundary.
+  // With GAMEON_TRUST_PROXY unset this is the socket address, so behind a proxy it is one shared limit.
+  // Office networks also share one public address, so the limit must allow many colleagues per minute.
   const registrationAttempts=new Map<string,{count:number;until:number}>();
   app.post('/api/register',async(req,res)=>{
     const now=Date.now();const key=req.ip||'local';
@@ -31,7 +34,7 @@ export function createApp({store,auth,origin}:{store:JsonStore;auth:Auth;origin:
       registrationAttempts.set(key,{count:0,until:now+60000});
     }
     const entry=registrationAttempts.get(key)!;
-    if(++entry.count>60){res.set('Retry-After','60');throw new AppError('Too many registration attempts. Please wait a minute and try again.',429);}
+    if(++entry.count>registrationLimit){res.set('Retry-After','60');throw new AppError('Too many registration attempts. Please wait a minute and try again.',429);}
     res.status(201).json(await store.register(req.body));
   });
   app.get('/api/state',privateOnly,(_req,res)=>res.json(store.read()));
@@ -44,6 +47,6 @@ export function createApp({store,auth,origin}:{store:JsonStore;auth:Auth;origin:
   });
   app.get('/api/export/:kind',privateOnly,(req,res)=>{const s=store.read();let rows:unknown[][];switch(req.params.kind){case 'participants':rows=[['Name','Department','Email','Phone','Contact','Checked in'],...s.participants.map(p=>[p.name,p.department,p.email,p.phone,p.contact,p.checkedIn?'Yes':'No'])];break;case 'matches':rows=[['Tournament','Round','Entrant A','Entrant B','Status','Score A','Score B','Winner','Scheduled time','Station'],...s.matches.map(m=>[s.tournaments.find(t=>t.id===m.tournamentId)?.name,m.round,entrantName(s,m.a),entrantName(s,m.b),m.bye?'bye':m.status,m.scoreA,m.scoreB,m.winnerId?entrantName(s,m.winnerId):'',m.scheduledAt,s.stations.find(x=>x.id===m.stationId)?.name])];break;case 'ledger':rows=[['Date','Type','Amount (LKR)','Participant','Description','Voided'],...s.ledger.map(e=>[e.createdAt,e.kind,e.amount,e.participantId?entrantName(s,e.participantId):'',e.note,e.voided?'Yes':'No'])];break;default:throw new AppError('Unknown export',404);}res.attachment(`gameon-${req.params.kind}.csv`).type('text/csv').send(csv(rows));});
   app.use('/api',(_req,_res,next)=>next(new AppError('API route not found',404)));
-  app.use((error:unknown,_req:Request,res:Response,_next:NextFunction)=>{if(error instanceof z.ZodError){res.status(400).json({error:error.issues.map(e=>`${e.path.join('.')}: ${e.message}`).join('; ')});return;}const status=error instanceof AppError?error.status:500;if(status===500)console.error(error);res.status(status).json({error:status===500?'The operation could not be saved. Your previous data is preserved. Check the server log.':(error as Error).message});});
+  app.use((error:unknown,_req:Request,res:Response,_next:NextFunction)=>{if(error instanceof z.ZodError){res.status(400).json({error:error.issues.map(e=>`${e.path.join('.')}: ${e.message}`).join('; ')});return;}const kind=(error as {type?:string})?.type;if(kind==='entity.parse.failed'){res.status(400).json({error:'The request body is not valid JSON'});return;}if(kind==='entity.too.large'){res.status(413).json({error:'The request is too large'});return;}const status=error instanceof AppError?error.status:500;if(status===500)console.error(error);res.status(status).json({error:status===500?'The operation could not be saved. Your previous data is preserved. Check the server log.':(error as Error).message});});
   return app;
 }

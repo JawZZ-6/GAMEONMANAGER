@@ -1,9 +1,40 @@
-import { open, mkdir, readFile, rename, copyFile, readdir, unlink } from 'node:fs/promises';
+import { open, mkdir, readFile, rename, copyFile, readdir, unlink, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { eventSchema, registrationInputSchema, type EventState, type Command, type RegistrationReceipt } from '../shared/model';
 import { createEvent, applyCommand, AppError } from '../shared/domain';
 import { addRegistrationDefaults, applyRegistration, registrationReceipt } from '../shared/registration';
+
+// Distinguishes this run from an earlier run that reused the same process ID.
+const instanceId=randomUUID();
+async function lockIsStale(path:string):Promise<boolean>{
+  let held:unknown;
+  try{held=JSON.parse(await readFile(path,'utf8'));}
+  catch(e){
+    if((e as NodeJS.ErrnoException).code==='ENOENT')return true;
+    // A half-written lock may belong to a server that is still starting.
+    return Date.now()-(await stat(path).then(s=>s.mtimeMs,()=>0))>10000;
+  }
+  const {pid,instance}=(held&&typeof held==='object'?held:{}) as {pid?:unknown;instance?:unknown};
+  if(typeof pid!=='number')return false;
+  if(pid===process.pid)return instance!==undefined&&instance!==instanceId;
+  try{process.kill(pid,0);return false;}
+  catch(e){return (e as NodeJS.ErrnoException).code==='ESRCH';}
+}
+async function acquireLock(path:string){
+  for(let attempt=0;attempt<3;attempt++){
+    try{const lock=await open(path,'wx',0o600);await lock.writeFile(JSON.stringify({pid:process.pid,instance:instanceId,startedAt:new Date().toISOString()}));await lock.close();return;}
+    catch(e){
+      if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;
+      if(attempt<2&&await lockIsStale(path)){
+        console.warn('Removing a stale server.lock left by a server that is no longer running.');
+        await rename(path,`${path}.stale-${instanceId}`).then(()=>unlink(`${path}.stale-${instanceId}`)).catch(()=>{});
+        continue;
+      }
+      throw new AppError('Another server owns this data directory. If no GameON server is running, delete server.lock from the data directory and start again.',409);
+    }
+  }
+}
 
 export class JsonStore {
   private state!:EventState;
@@ -12,8 +43,7 @@ export class JsonStore {
   private constructor(public readonly dir:string){}
   static async open(dir:string,initial=createEvent()):Promise<JsonStore>{
     await mkdir(dir,{recursive:true});const store=new JsonStore(dir);
-    try {const lock=await open(join(dir,'server.lock'),'wx',0o600);await lock.writeFile(JSON.stringify({pid:process.pid,startedAt:new Date().toISOString()}));await lock.close();}
-    catch(e){if((e as NodeJS.ErrnoException).code==='EEXIST')throw new AppError('Another server owns this data directory, or a stale server.lock needs manual removal.',409);throw e;}
+    await acquireLock(join(dir,'server.lock'));
     try {
       try{store.state=addRegistrationDefaults(eventSchema.parse(JSON.parse(await readFile(join(dir,'event.json'),'utf8'))));}
       catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw new Error('Event data is corrupt or invalid. Restore a verified backup; the original file was preserved.',{cause:e});store.state=eventSchema.parse(initial);await store.write(store.state,false);}

@@ -100,7 +100,7 @@ describe('public registration API',()=>{
     expect(reopened.read().bundles).toHaveLength(5);expect(reopened.read().games.find(g=>g.name==='Chess')).toBeTruthy();expect(reopened.read().participants[0].contact).toBe('original');expect(reopened.read().settings.venue).toBe('My venue');
   });
   it('limits repeated public submission attempts',async()=>{
-    const {app}=await fixture();let status=0;
+    const {dir,store}=await fixture();const app=createApp({store,auth:new Auth(dir),origin,registrationLimit:60});let status=0;
     for(let i=0;i<61;i++)status=(await request(app).post('/api/register').set('Origin',origin).send({})).status;
     expect(status).toBe(429);
   });
