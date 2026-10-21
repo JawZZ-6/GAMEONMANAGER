@@ -1,0 +1,15 @@
+# Replace gameon.example.com with your event subdomain. Its DNS A record must point at this server.
+# Caddy obtains and renews the HTTPS certificate automatically and sends the visitor's address to
+# GameON in X-Forwarded-For (GameON reads it because GAMEON_TRUST_PROXY=1).
+gameon.example.com {
+	encode zstd gzip
+	request_body {
+		max_size 1MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Robots-Tag "noindex"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:4310
+}

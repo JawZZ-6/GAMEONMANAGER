@@ -1,0 +1,26 @@
+[Unit]
+Description=CISI GameON event platform
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gameon
+Group=gameon
+WorkingDirectory=/opt/gameon
+EnvironmentFile=/etc/gameon.env
+ExecStart=/usr/bin/node --import tsx server/index.ts
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+
+# Creates /var/lib/gameon owned by the service user; it is the only writable path.
+StateDirectory=gameon
+StateDirectoryMode=0700
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

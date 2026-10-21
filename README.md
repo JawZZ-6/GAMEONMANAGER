@@ -44,7 +44,7 @@ Changes use a serial transaction queue, revision checks, and a flushed temporary
 3. Copy that backup to the data directory as `event.json`. Keep `auth.json` to preserve the organiser password.
 4. Restart the server. It validates the stored schema; invalid/corrupt files cause startup to fail rather than creating an empty event. Check participants, fixtures and money before resuming administration.
 
-If a crash leaves `server.lock`, read its `pid` and verify that no GameON server is still using this directory before removing only that lock file. A normal Ctrl+C shutdown removes the lock automatically.
+If a crash or power loss leaves `server.lock`, the next start removes it automatically when the recorded process is no longer running. If that process is still running, startup is refused so two servers never share a directory; stop it first. A normal Ctrl+C shutdown removes the lock automatically.
 
 ## Event workflow
 
@@ -61,9 +61,9 @@ Archiving a game can prevent editing its existing tournaments; unpublish those t
 
 ## Internal hosting
 
-The default binds only to this computer. For internal network access, use one persistent server behind a trusted HTTPS reverse proxy. Set `GAMEON_ORIGIN` to the exact browser-facing HTTPS origin and `HOST` to the required bind address; `PORT` defaults to 4310. Complete password setup on localhost first, or supply `GAMEON_ADMIN_PASSWORD` securely on first startup. Do not commit credentials. The live viewer is read-only but accessible to anyone who can reach the server; contacts, the financial ledger and audit history are excluded from its API.
+The default binds only to this computer. For access from other computers, use one persistent server behind a trusted HTTPS reverse proxy. Set `GAMEON_ORIGIN` to the exact browser-facing HTTPS origin (scheme, host and optional port, no path) and `HOST` to the required bind address; `PORT` defaults to 4310. Set `GAMEON_TRUST_PROXY` to the number of reverse proxies in front of GameON (`1` for Caddy) so rate limits apply per visitor rather than to the proxy. Complete password setup on localhost first, or supply `GAMEON_ADMIN_PASSWORD` securely on first startup. Do not commit credentials. The live viewer is read-only but accessible to anyone who can reach the server; contacts, the financial ledger and audit history are excluded from its API.
 
-Online payments, SSO and email/SMS are outside this version. Deploying the service to Hetzner remains a separate step.
+Online payments, SSO and email/SMS are outside this version. [Deploying to a Hetzner server](docs/deployment-hetzner.md) with Caddy and systemd is documented step by step, with ready-made files in `deploy/`.
 
 ## Registration, individual games and bundles
 
@@ -161,7 +161,9 @@ verified and automatic email/SMS confirmation is not sent.
 
 The public APIs expose only offers, games, remaining places and the submitter's
 receipt. They never list contact details or private registration records. The
-POST endpoint validates the configured Origin and applies a 60-attempts/minute
-limit per socket IP. Behind a reverse proxy that is a shared limit; configure
-additional proxy-side abuse protection to suit your event traffic. Do not expose
+POST endpoint validates the configured Origin and applies a 300-attempts/minute
+limit per client address (office networks share one address, so the limit is
+generous). Set `GAMEON_TRUST_PROXY=1` behind a reverse proxy; otherwise all
+visitors share one limit. Organiser sign-in locks an address for 15 minutes after
+10 wrong passwords. Do not expose
 the Node port directly. Keep `GAMEON_ORIGIN` equal to the public HTTPS subdomain.
