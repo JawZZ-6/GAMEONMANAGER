@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowUpRight, Brain, Check, CheckCircle2, Dice5, Flame, Gamepad2, Heart, LoaderCircle, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Brain, CalendarDays, Check, CheckCircle2, Dice5, Flame, Gamepad2, Heart, Layers3, LoaderCircle, MapPin, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
 import { api, ApiError } from '../api';
 import { amount } from '../components';
 import type { Bundle, RegistrationCatalogue, RegistrationInput, RegistrationReceipt, IndividualSelection } from '../../shared/model';
 import { registrationInputSchema } from '../../shared/model';
 import IndividualEntries, { priceBasisLabel } from './IndividualEntries';
+import ArenaArt from '../ArenaArt';
+import { PublicHeader, PublicFooter, eventDate } from '../SiteChrome';
 
 const icons={social:Dice5,brainpower:Brain,arcade:Gamepad2,'both-worlds':Flame,ultimate:Zap};
 export function bundleDescription(bundle:Bundle,games:{id:string;name:string}[]) {
@@ -18,12 +20,17 @@ export default function Register() {
   useEffect(()=>{void refresh().catch(()=>setError('Could not load the registration offers. Please try again.'));},[]);
   return <div className="registration-page">
     <a className="skip-link" href="#registration-content">Skip to registration</a>
-    <header className="live-header"><a className="brand" href="/register"><span className="brand-icon"><Gamepad2 size={27}/></span><span>GAME<span className="orange-text">ON</span><small>RETRO & CYBER · CISI</small></span></a><a className="button" href="/live">Live games <ArrowUpRight size={16}/></a></header>
+    <PublicHeader active="register" />
     <main id="registration-content" className="registration-main">
-      <header className="registration-hero"><div><p className="eyebrow">PICK YOUR GAMES. PLAY FOR GOOD.</p><h1>Make your move.<br/><span>Make a difference.</span></h1><p>Bring your competitive side to {catalogue?.settings.name||'GameON'}. Choose individual games or a bundle. Every game supports a good cause.</p></div><div className="registration-cause"><Heart size={25}/><strong>A little competition.<br/>A lasting contribution.</strong>{catalogue&&<span>Register by {new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Colombo'}).format(new Date(`${catalogue.settings.registrationDeadline}T12:00:00+05:30`))}<small>End of day · Sri Lanka time</small></span>}</div></header>
+      <header className="registration-hero arena-hero">
+        <div className="arena-hero-copy"><p className="eyebrow hero-kicker"><span className="tiny-dot" /> CISI PRESENTS · RETRO & CYBER GAMEON</p><h1>PLAY YOUR WAY.<br/><span>DO GOOD.</span></h1><p>Retro favourites, board games, social games and cyber play.<br/>Bring your people. Find your kind of fun. All for a good cause.</p><div className="hero-actions"><a className="button primary hero-cta" href="#choose-games">Find your game <ArrowDown size={18} aria-hidden="true" /></a><a className="text-link" href="/live">See what’s on <ArrowUpRight size={17} aria-hidden="true" /></a></div><div className="hero-footnote"><Heart size={15} aria-hidden="true" /><span>Come for the games. Connect for a cause.</span></div></div>
+        <ArenaArt />
+      </header>
+      {catalogue&&<div className="event-info-strip"><div><CalendarDays size={20} aria-hidden="true"/><span><small>THE MAIN EVENT</small><strong>{eventDate(catalogue.settings.startDate)} — {eventDate(catalogue.settings.endDate, true)}</strong></span></div><div><MapPin size={20} aria-hidden="true"/><span><small>MEET US AT</small><strong>{catalogue.settings.venue||'Venue to be announced'}</strong></span></div><div><Gamepad2 size={20} aria-hidden="true"/><span><small>FIND YOUR KIND OF FUN</small><strong>Retro · Board · Social · Cyber</strong></span></div><div className="deadline-info"><span className="tiny-dot"/><span><small>REGISTRATION DEADLINE</small><strong>{eventDate(catalogue.settings.registrationDeadline, true)}</strong></span></div></div>}
+      <div className="registration-section-heading" id="choose-games" tabIndex={-1}><div><p className="eyebrow">THERE’S A GAME FOR YOU</p><h2>CHOOSE YOUR <span className="orange-text">PLAY.</span></h2></div><p>Pick your games. Add your details.<br/>We’ll save your spot.</p></div>
       {error&&<div className="form-error" role="alert">{error} <button className="button" onClick={()=>void refresh().catch(()=>setError('Still unable to connect. Please try again.'))}>Try again</button></div>}
       {catalogue?<RegistrationForm catalogue={catalogue} onRefresh={refresh} onSubmit={input=>api<RegistrationReceipt>('register',input,AbortSignal.timeout(15000))}/>:!error&&<p role="status">Loading registration offers…</p>}
-      <footer className="live-footer"><span>RETRO & CYBER GAMEON · FOR CHARITY BY CISI</span><a href="/admin">Organiser area <ArrowUpRight size={14}/></a></footer>
+      <PublicFooter organiser />
     </main>
   </div>;
 }
@@ -77,12 +84,12 @@ export function RegistrationForm({catalogue,onSubmit,onRefresh}:{catalogue:Regis
     {error&&<div className="form-error registration-wide" role="alert" tabIndex={-1} ref={feedback}>{error}</div>}
     {pending&&<div className="notice registration-wide">Your last request may have been saved. Check it before starting another registration. <button className="button" type="button" disabled={busy} onClick={()=>void send(pending)}>{busy?'Checking…':'Check previous registration'}</button></div>}
     <div className="registration-choices">
-      <fieldset className="registration-type" disabled={!catalogue.open||busy||refreshing||!!pending}><legend><span>01</span> How would you like to play?</legend><div className="registration-mode-controls"><button type="button" aria-pressed={!individual} onClick={()=>changeType('bundle')}>Bundles</button><button type="button" aria-pressed={individual} onClick={()=>changeType('individual')}>Individual games</button></div></fieldset>
+      <fieldset className="registration-type" disabled={!catalogue.open||busy||refreshing||!!pending}><legend><span>01</span> How would you like to play?</legend><div className="registration-mode-controls"><button type="button" aria-pressed={!individual} onClick={()=>changeType('bundle')}><Layers3 size={20} aria-hidden="true"/><span>Bundles<small aria-hidden="true">Three games. One pass.</small></span><span className="mode-indicator" aria-hidden="true">{!individual&&<Check size={14}/>}</span></button><button type="button" aria-pressed={individual} onClick={()=>changeType('individual')}><Gamepad2 size={20} aria-hidden="true"/><span>Individual games<small aria-hidden="true">Build your own lineup.</small></span><span className="mode-indicator" aria-hidden="true">{individual&&<Check size={14}/>}</span></button></div></fieldset>
       {individual?<IndividualEntries catalogue={catalogue} selections={selections} onChange={setSelections} disabled={!catalogue.open||busy||refreshing||!!pending}/>:<>
       <fieldset className="bundle-options" disabled={!catalogue.open||busy||refreshing||!!pending}><legend>Choose your bundle</legend><p className="registration-help">One bundle per participant. All prices are in Sri Lankan rupees.</p><div className="bundle-grid">
-        {catalogue.bundles.map(b=>{const Icon=icons[b.id as keyof typeof icons]||Gamepad2;return <label key={b.id} className={`bundle-card ${bundleId===b.id?'selected':''} ${!b.available?'unavailable':''}`}>
+        {catalogue.bundles.map((b,index)=>{const Icon=icons[b.id as keyof typeof icons]||Gamepad2;return <label key={b.id} className={`bundle-card bundle-${b.id} ${bundleId===b.id?'selected':''} ${!b.available?'unavailable':''}`}>
           <input type="radio" name="bundle" aria-label={b.name} checked={bundleId===b.id} disabled={!b.available} onChange={()=>chooseBundle(b)}/>
-          <span className="bundle-card-top"><Icon size={23} aria-hidden="true"/><span className="bundle-check">{bundleId===b.id&&<Check size={15}/>}</span></span>
+          <span className="bundle-card-top"><span className="bundle-glyph"><Icon size={25} aria-hidden="true"/></span><span className="bundle-number" aria-hidden="true">PASS / {String(index+1).padStart(2,'0')}</span><span className="bundle-check" aria-hidden="true">{bundleId===b.id&&<Check size={15}/>}</span></span>
           <strong>{b.name}</strong><span className="bundle-description">{bundleDescription(b,catalogue.games)}</span><span className="bundle-price">{amount(b.price)}<small>per person</small></span>{!b.available&&<span className="bundle-unavailable">{b.unavailableReason}</span>}
         </label>;})}
       </div></fieldset>
@@ -99,12 +106,13 @@ export function RegistrationForm({catalogue,onSubmit,onRefresh}:{catalogue:Regis
       <button className="text-button refresh-offers" type="button" disabled={refreshing||busy} onClick={()=>void refresh()}><RefreshCw size={14}/>{refreshing?'Refreshing…':'Refresh available places'}</button></section></>}
       {individual&&<button className="text-button refresh-offers" type="button" disabled={refreshing||busy} onClick={()=>void refresh()}><RefreshCw size={14}/>Refresh available places</button>}
     </div>
-    <aside className="registration-details"><fieldset disabled={!catalogue.open||busy||refreshing||!!pending}><legend><span>03</span> A little about you</legend><p className="registration-help">Your contact details are visible to event organisers only.{catalogue.inviteOnly&&' Registration is by invitation: use the email address your organiser invited.'}</p>
+    <aside className="registration-details"><div className="player-pass-label"><span>YOUR PLAYER PASS</span><Gamepad2 size={18} aria-hidden="true"/></div><fieldset disabled={!catalogue.open||busy||refreshing||!!pending}><legend><span>03</span> A little about you</legend><p className="registration-help">Your contact details are visible to event organisers only.{catalogue.inviteOnly&&' Registration is by invitation: use the email address your organiser invited.'}</p>
       {([{key:'name',label:'Full name',type:'text',auto:'name',max:120},{key:'email',label:'Email address',type:'email',auto:'email',max:254},{key:'department',label:'Department / organisation',type:'text',auto:'organization',max:120},{key:'phone',label:'Phone number (optional)',type:'tel',auto:'tel',max:40}] as const).map(f=><div className="field" key={f.key}><label htmlFor={`register-${f.key}`}>{f.label}</label><input id={`register-${f.key}`} type={f.type} autoComplete={f.auto} maxLength={f.max} required={f.key!=='phone'} value={details[f.key]} onChange={e=>setDetails(d=>({...d,[f.key]:e.target.value}))}/></div>)}
       <div className="registration-trap" aria-hidden="true"><label htmlFor="register-website">Leave this field empty</label><input id="register-website" name="website" autoComplete="off" tabIndex={-1} value={details.website} onChange={e=>setDetails(d=>({...d,website:e.target.value}))}/></div>
       <div className="registration-total" aria-live="polite"><span>{individual?'Individual games':bundle?.name||'Choose your bundle'}</span>{individual&&selectedOptions.map(({selection,game,option})=><div className="entry-total-line" key={selection.gameId}><span>{game?.name||'Unavailable game'}<small>{option?.name}</small></span><span>{amount(option?.price||0)}</span></div>)}<strong>{total!==undefined?amount(total):'—'}</strong><small>{individual?`${selections.length} game(s) selected`:`${gameIds.length} of 3 games selected`} · Pay through an organiser</small></div>
       <label className="registration-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>I agree to organisers using these details to run the event. My name may appear on published fixtures and results.</span></label>
       <button className="button primary full" type="submit" disabled={!catalogue.open||!valid||!consent||busy||refreshing}>{busy?<><LoaderCircle className="spin" size={18}/>Saving registration…</>:'Confirm registration'}</button>
+      {catalogue.open&&(!valid||!consent)&&<p className="registration-next-step">{!valid?(individual?'Choose a game and complete its play options to continue.':!bundle?'Choose a bundle to start building your player pass.':'Complete your game lineup to continue.'):'Tick the consent box above to confirm your registration.'}</p>}
       <p className="registration-help payment-help"><ShieldCheck size={15}/> No payment is collected on this page.</p>
     </fieldset></aside>
   </form>;
