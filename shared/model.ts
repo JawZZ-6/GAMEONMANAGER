@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { codSchema, type CodState } from './cod';
 
 const id = z.string().min(1).max(100);
 const text = z.string().trim().max(2000).default('');
@@ -34,7 +35,7 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a valid date');
 // Private to organisers: never copy these addresses into the registration catalogue or public event.
 export const emailAllowlistSchema = z.object({enabled:z.boolean().default(false),emails:z.array(email).max(5000).refine(a=>new Set(a).size===a.length,'Duplicate emails are not allowed').default([])});
 export const settingsSchema = z.object({name,venue:text,startDate:date,endDate:date,registrationDeadline:date,registrationOpen:z.boolean().default(true),finalNight:text,charityName:text,charityTarget:money,currency:z.literal('LKR'),timezone:z.literal('Asia/Colombo'),retroFee:money,cyberFee:money});
-export const eventSchema = z.object({schemaVersion:z.literal(1),revision:z.number().int().min(0),updatedAt:z.string(),settings:settingsSchema,participants:z.array(participantSchema),teams:z.array(teamSchema),games:z.array(gameSchema),bundles:z.array(bundleSchema).default([]),registrations:z.array(registrationSchema).default([]),entryOptions:z.array(entryOptionSchema).default([]),individualRegistrationVersion:z.number().int().min(0).max(1).default(0),emailAllowlist:emailAllowlistSchema.default({}),tournaments:z.array(tournamentSchema),matches:z.array(matchSchema),stations:z.array(stationSchema),queue:z.array(queueSchema),sessions:z.array(sessionSchema),ledger:z.array(ledgerSchema),announcements:z.array(announcementSchema),audit:z.array(z.object({id,at:z.string(),action:z.string(),detail:z.string()}))});
+export const eventSchema = z.object({schemaVersion:z.literal(1),revision:z.number().int().min(0),updatedAt:z.string(),settings:settingsSchema,participants:z.array(participantSchema),teams:z.array(teamSchema),games:z.array(gameSchema),bundles:z.array(bundleSchema).default([]),registrations:z.array(registrationSchema).default([]),entryOptions:z.array(entryOptionSchema).default([]),individualRegistrationVersion:z.number().int().min(0).max(1).default(0),emailAllowlist:emailAllowlistSchema.default({}),tournaments:z.array(tournamentSchema),matches:z.array(matchSchema),stations:z.array(stationSchema),queue:z.array(queueSchema),sessions:z.array(sessionSchema),ledger:z.array(ledgerSchema),announcements:z.array(announcementSchema),cod:codSchema.default({}),audit:z.array(z.object({id,at:z.string(),action:z.string(),detail:z.string()}))});
 export type Bundle = z.infer<typeof bundleSchema>;
 export type RegistrationInput = z.infer<typeof registrationInputSchema>;
 export type Registration = z.infer<typeof registrationSchema>;
@@ -67,5 +68,7 @@ export type PublicEvent = {
   players:{id:string;name:string;gameIds:string[];teams:string[];checkedIn:boolean}[];
   nowPlaying:{id:string;kind:'match'|'free-play';gameId:string;tournamentId:string;stationId:string;startedAt:string;duration:number;playerIds:string[];sides:string[]}[];
   waiting:{gameId:string;groups:number}[];
+  // COD Showdown results shown on the /live scorecard.
+  cod:CodState;
 };
 export type Standing = {id:string;name:string;rank:number;played:number;won:number;drawn:number;lost:number;for:number;against:number;points:number};
