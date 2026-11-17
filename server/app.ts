@@ -1,4 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
+import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { Auth } from './auth';
 import { JsonStore } from './store';
@@ -36,6 +37,17 @@ export function createApp({store,auth,origin,trustProxy=0,registrationLimit=300,
   });
   // Open streams never finish on their own, so shutdown ends them before waiting for requests to drain.
   app.locals.closeLiveViewers=()=>{for(const viewer of liveViewers)viewer.end();liveViewers.clear();};
+  // The COD scorecard is the public live page. Results are inlined so the first paint is already current;
+  // signed-in organisers get the editable version, everyone else a read-only board fed by /api/live/stream.
+  let codPage:Promise<string>|undefined;
+  app.get(['/live','/live/'],async(req,res)=>{
+    codPage??=readFile(new URL('./live/cod.html',import.meta.url),'utf8');
+    let html:string;try{html=await codPage;}catch(e){codPage=undefined;throw e;}
+    const boot=JSON.stringify({cod:store.read().cod,edit:auth.authorised(token(req))}).replace(/</g,'\\u003c');
+    res.set('Cache-Control','no-store').type('html').send(html.replace('<!--COD-BOOT-->',()=>`<script>window.COD_BOOT=${boot};</script>`));
+  });
+  app.get('/api/cod',(_req,res)=>res.json(store.read().cod));
+  app.post('/api/cod',privateOnly,async(req,res)=>res.json(await store.updateCod(req.body)));
   app.get('/api/registration',(_req,res)=>res.json(registrationCatalogue(store.read())));
   // With GAMEON_TRUST_PROXY unset this is the socket address, so behind a proxy it is one shared limit.
   // Office networks also share one public address, so the limit must allow many colleagues per minute.

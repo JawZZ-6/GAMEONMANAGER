@@ -4,6 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { eventSchema, registrationInputSchema, type EventState, type Command, type RegistrationReceipt } from '../shared/model';
 import { createEvent, applyCommand, AppError } from '../shared/domain';
 import { addRegistrationDefaults, applyRegistration, registrationReceipt } from '../shared/registration';
+import { applyCodChanges, codChangesSchema, type CodState } from '../shared/cod';
 
 // Distinguishes this run from an earlier run that reused the same process ID.
 const instanceId=randomUUID();
@@ -80,6 +81,16 @@ export class JsonStore {
       if(this.closed)throw new AppError('The server is closing',503);
       if(revision!==this.state.revision)throw new AppError('This event changed in another window. Refresh and try again; your changes were not saved.',409);
       const next=structuredClone(this.state);applyCommand(next,command);next.revision++;next.updatedAt=new Date().toISOString();const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;this.changed();return this.read();
+    });this.queue=task.catch(()=>{});return task;
+  }
+  // COD scorecard edits skip the revision check: registrations and other organisers bump the revision
+  // constantly, and each change already targets a single match, so last write wins per match.
+  updateCod(value:unknown):Promise<CodState>{
+    const task=this.queue.then(async()=>{
+      if(this.closed)throw new AppError('The server is closing',503);
+      const {changes}=codChangesSchema.parse(value);
+      const next=structuredClone(this.state);applyCodChanges(next.cod,changes);next.revision++;next.updatedAt=new Date().toISOString();
+      const valid=eventSchema.parse(next);await this.write(valid,true);this.state=valid;this.changed();return structuredClone(valid.cod);
     });this.queue=task.catch(()=>{});return task;
   }
   private async write(next:EventState,backup:boolean){
