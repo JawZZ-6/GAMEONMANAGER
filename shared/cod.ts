@@ -15,14 +15,15 @@ const points = z.number().int().min(0).max(99);
 export const codRulesSchema = z.object({place:z.array(points).length(4), kill:points, ffaAdv:z.number().int().min(2).max(16), win:points, draw:points, loss:points}).partial().strict();
 export const codSchema = z.object({
   r:z.record(matchId, codResultSchema).refine(r => Object.keys(r).length <= 100, 'Too many matches').default({}),
-  fin:z.object({ffa:finalists, t2:finalists}).partial().strict().default({}),
+  // ch is the locked wildcard play-in line-up: FFA leaderboard #4 against the Challenger #1.
+  fin:z.object({ffa:finalists, t2:finalists, ch:finalists}).partial().strict().default({}),
   rules:codRulesSchema.default({}),
 });
 export type CodState = z.infer<typeof codSchema>;
 
 const change = z.discriminatedUnion('op', [
   z.object({op:z.literal('result'), id:matchId, value:codResultSchema.nullable()}),
-  z.object({op:z.literal('finalists'), ev:z.enum(['ffa', 't2']), names:finalists.nullable()}),
+  z.object({op:z.literal('finalists'), ev:z.enum(['ffa', 't2', 'ch']), names:finalists.nullable()}),
   z.object({op:z.literal('rules'), rules:codRulesSchema}),
 ]);
 export const codChangesSchema = z.object({changes:z.array(change).min(1).max(200)}).strict();
