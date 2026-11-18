@@ -14,9 +14,11 @@ const DRAW = [{"id":"CHF-01","ev":"ch","date":"2026-11-23","s":"12:45","e":"13:0
 
 function load(cod:object, {challenger = true, lobbies = true} = {}){
   let html = page.replace('<!--COD-BOOT-->', `<script>window.COD_BOOT=${JSON.stringify({cod, edit:false})};</script>`);
-  if (lobbies) html = html.replace('],"ffa":[', `,${DRAW.map(m => JSON.stringify(m)).join(',')}],"ffa":[`);
+  // The sample draw uses the first four newcomers, so the roster shrinks to them.
+  if (lobbies) html = html.replace('],"ffa":[', `,${DRAW.map(m => JSON.stringify(m)).join(',')}],"ffa":[`)
+    .replace(/"ch":\[[^\]]*\]/, '"ch":["Tharindu Nuwan","Pravini K","Anoshan N","Pasindu Herath"]');
   // Without newcomers the Challenger group must disappear completely.
-  if (!challenger) html = html.replace(/"ch":\[[^\]]*\],/, '"ch":[],');
+  if (!challenger) html = html.replace(/"ch":\[[^\]]*\],"chTeams":\[[^\]]*\],/, '"ch":[],"chTeams":[],');
   const dom = new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/live', beforeParse(w){
     Object.assign(w, {fetch:() => new Promise(() => {}), matchMedia:() => ({matches:false, addEventListener(){}, addListener(){}}), scrollTo(){}});
   }});
@@ -40,9 +42,11 @@ describe('COD Challenger group', () => {
     expect(p.run('[CHON, CHREG]')).toEqual([false, true]);
     expect(p.run('TABS.map(t => t[0])')).toEqual(['home', 'ffa', 't2', 'ch', 'schedule', 'players']);
     expect(p.run('EVS')).toEqual(['ffa', 't2']);
-    const ch = p.run<string[]>('D.ch');
-    const names = p.run<string[]>(`(() => { const d = document.createElement('div'); d.innerHTML = viewChallengers(); return [...d.querySelectorAll('.chcard h3')].map(h => h.textContent); })()`);
-    expect(names).toEqual(ch);
+    const reg = p.run<string[]>(`[...D.ch, ...D.chTeams.flatMap(t => t.split(' & '))]`);
+    const cards = p.run<{n:string; tags:string}[]>(`(() => { const d = document.createElement('div'); d.innerHTML = viewChallengers(); return [...d.querySelectorAll('.chcard')].map(c => ({n:c.querySelector('h3').textContent, tags:c.querySelector('.chc-tags').textContent})); })()`);
+    expect(cards.map(c => c.n)).toEqual(reg);
+    expect(cards.find(c => c.n === 'Aqeela Raban')?.tags).toContain('2v2 · with Malith');
+    expect(cards.find(c => c.n === 'Pravini K')?.tags).toContain('FFA');
     expect(p.run('PLAYERS.some(x => x.ch)')).toBe(false);
     expect(p.run('finalists("ffa").wait')).toBeUndefined();
     p.close();
