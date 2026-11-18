@@ -88,6 +88,11 @@ describe('COD results data',()=>{
     const reopened=await JsonStore.open(dir);stores.push(reopened);
     expect(reopened.read().cod).toEqual({r:{},fin:{},rules:{}});
   });
+  it('stores Challenger lobbies, the play-in score and a locked play-in line-up',async()=>{
+    const {app,store}=await fixture();const agent=await organiser(app);
+    await agent.post('/api/cod').set('Origin',origin).send({changes:[{op:'result',id:'CHF-01',value:{pl:{'New One':2,'Jawahar Jegathananthan':1},k:{}}},{op:'result',id:'F-PLAYIN',value:{s:[10,12]}},{op:'finalists',ev:'ch',names:['Viraj Madhusanka','New One']}]}).expect(200);
+    expect(store.read().cod).toMatchObject({r:{'CHF-01':{pl:{'New One':2}},'F-PLAYIN':{s:[10,12]}},fin:{ch:['Viraj Madhusanka','New One']}});
+  });
   it('applies forfeits and clears final line-ups',()=>{
     const cod=codSchema.parse({fin:{ffa:['A','B']}});
     applyCodChanges(cod,[{op:'result',id:'COD2-02',value:{ff:1}},{op:'finalists',ev:'ffa',names:null}]);
