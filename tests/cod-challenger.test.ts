@@ -8,9 +8,13 @@ const { JSDOM } = createRequire(import.meta.url)('jsdom') as {JSDOM:new (html:st
 
 // Runs the real /live scorecard script, then reads its tables.
 const page = readFileSync(new URL('../server/live/cod.html', import.meta.url), 'utf8');
+// The page ships with no Challenger lobbies until registration closes. These six (2 newcomers + 2 FFA hosts each)
+// stand in for a draw, so the league scoring and the play-in stay covered.
+const DRAW = [{"id":"CHF-01","ev":"ch","date":"2026-11-23","s":"12:45","e":"13:05","loc":"Paradise Room","p":["Tharindu Nuwan","Anoshan N","Aqeela Raban","Andrew Saliheen"]},{"id":"CHF-02","ev":"ch","date":"2026-11-24","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Tharindu Nuwan","Pravini K","Harin Goonathilake","Prathibha Gayawansha"]},{"id":"CHF-03","ev":"ch","date":"2026-11-24","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Anoshan N","Pasindu Herath","Viraj Madhusanka","Prabath Gunasekara"]},{"id":"CHF-04","ev":"ch","date":"2026-11-24","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Tharindu Nuwan","Pasindu Herath","Jawahar Jegathananthan","Uresh Hettiarachchi"]},{"id":"CHF-05","ev":"ch","date":"2026-11-25","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Pravini K","Pasindu Herath","Malith Silva","Miran Tennakoon"]},{"id":"CHF-06","ev":"ch","date":"2026-11-25","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Pravini K","Anoshan N","Uresh Hettiarachchi","Andrew Saliheen"]}];
 
-function load(cod:object, {challenger = true} = {}){
+function load(cod:object, {challenger = true, lobbies = true} = {}){
   let html = page.replace('<!--COD-BOOT-->', `<script>window.COD_BOOT=${JSON.stringify({cod, edit:false})};</script>`);
+  if (lobbies) html = html.replace('],"ffa":[', `,${DRAW.map(m => JSON.stringify(m)).join(',')}],"ffa":[`);
   // Without newcomers the Challenger group must disappear completely.
   if (!challenger) html = html.replace(/"ch":\[[^\]]*\],/, '"ch":[],');
   const dom = new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/live', beforeParse(w){
@@ -28,6 +32,19 @@ describe('COD Challenger group', () => {
     const p = load({r:{}, fin:{}, rules:{}}, {challenger:false});
     expect(p.run('CHON')).toBe(false);
     expect(p.run('TABS.map(t => t[0])')).toEqual(['home', 'ffa', 't2', 'schedule', 'players']);
+    p.close();
+  });
+
+  it('shows only the registered line-up before any lobbies are drawn, and leaves the FFA final alone', () => {
+    const p = load({r:{}, fin:{}, rules:{}}, {lobbies:false});
+    expect(p.run('[CHON, CHREG]')).toEqual([false, true]);
+    expect(p.run('TABS.map(t => t[0])')).toEqual(['home', 'ffa', 't2', 'ch', 'schedule', 'players']);
+    expect(p.run('EVS')).toEqual(['ffa', 't2']);
+    const ch = p.run<string[]>('D.ch');
+    const names = p.run<string[]>(`(() => { const d = document.createElement('div'); d.innerHTML = viewChallengers(); return [...d.querySelectorAll('.chcard h3')].map(h => h.textContent); })()`);
+    expect(names).toEqual(ch);
+    expect(p.run('PLAYERS.some(x => x.ch)')).toBe(false);
+    expect(p.run('finalists("ffa").wait')).toBeUndefined();
     p.close();
   });
 
