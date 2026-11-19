@@ -240,6 +240,19 @@ main.enter > *:nth-child(n+4){animation-delay:.14s}
 .wtile.won{border-color:color-mix(in srgb,var(--gold) 50%,transparent);background:linear-gradient(160deg,var(--gold-bg),var(--glass))}
 .wtile.won svg{position:absolute;right:10px;top:10px;color:var(--gold)}
 .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+/* highlights: one award per card, tinted with its own colour */
+.hlgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.hl{--cc:var(--primary);display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:16px 18px;text-align:left;text-decoration:none;position:relative;overflow:hidden;background:radial-gradient(130% 90% at 100% 0%,color-mix(in srgb,var(--cc) 17%,transparent),transparent 62%),var(--glass);transition:transform .2s,border-color .2s}
+.hl:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--cc) 45%,var(--stroke))}
+.hl-k{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cc)}
+.hl-k svg{width:16px;height:16px}
+.hl-who{display:flex;align-items:center;gap:10px;min-width:0}
+.hl-who b{font-size:15.5px;line-height:1.25;min-width:0;overflow-wrap:break-word}
+.hl-v{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+.hl-v b{font:700 30px/1 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hl-v span{color:var(--muted);font-size:13px}
+.hl small{color:var(--muted);font-size:12.5px;line-height:1.35}
+@media (max-width:520px){ .hlgrid{grid-template-columns:1fr 1fr;gap:10px} .hl{padding:14px;gap:8px} .hl-who > .av,.hl-who > .avs{display:none} .hl-who b{font-size:14px} .hl-v b{font-size:24px} .hl-v span,.hl small{font-size:12px} }
 .gcard{display:flex;flex-direction:column;gap:12px;text-decoration:none;padding:20px;position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.3,1),border-color .25s,box-shadow .25s}
 .gcard::before{content:"";position:absolute;left:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:var(--cc);opacity:.16;filter:blur(34px);transition:opacity .3s,transform .4s}
 .gcard:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--cc) 55%,transparent);box-shadow:0 22px 44px -22px var(--cc),var(--hi)}
@@ -759,7 +772,14 @@ Object.assign(IC, {
   sort:'<path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10M11 8h7M11 12h4"/>',
   alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
   hand:'<path d="M18 11V6a2 2 0 0 0-4 0"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
-  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  skull:'<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>',
+  star:'<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  frown:'<circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><path d="M9 9h.01M15 9h.01"/>',
+  chart:'<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  pulse:'<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>'
 });
 const ic = (n, cls='i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ''}</svg>`;
 Object.assign(IC, {
@@ -1244,6 +1264,76 @@ function standCard(ev){
   </article>`;
 }
 
+/* ---------------- Highlights ---------------- */
+// Awards worked out from what organisers already enter: FFA places and kills, and 2v2 scores. Only league
+// matches count, so finals and Challenger lobbies (where FFA players host) never feed them. An award only
+// shows once someone has earned it, and players who tie share it.
+const HL_MIN = 3; // lobbies a player needs before the per-lobby averages count
+function best(rows, score, ok = v => v > 0, lower = false){
+  let top = null, who = [];
+  rows.forEach(r => {
+    const v = score(r); if (v === null || v === undefined || !ok(v)) return;
+    if (top === null || (lower ? v < top : v > top)){ top = v; who = [r]; } else if (v === top) who.push(r);
+  });
+  return top === null ? null : {v:top, who};
+}
+function highlights(){
+  const out = [], uniq = a => [...new Set(a)];
+  const dayTxt = m => `${m.w.dow} ${m.w.day}`;
+  const add = (key, icon, cc, title, names, stat, unit, note, team = false) => out.push({key, icon, cc, title, names:uniq(names), stat:String(stat), unit, note, team});
+  // One entry per player per finished FFA league lobby, in schedule order. A no-show (place 0) counts as last.
+  const log = [];
+  IDS.ffa.forEach(id => {
+    const m = MI[id]; if (!ffaDone(id, m.p)) return;
+    const r = S.r[id];
+    m.p.forEach(n => { const v = r.pl[n]; log.push({id, m, n, v, k:v > 0 ? +(r.k || {})[n] || 0 : 0, at:v > 0 ? v : m.p.length}); });
+  });
+  const per = {};
+  log.forEach(e => {
+    const o = per[e.n] = per[e.n] || {n:e.n, g:0, pl:0, k:0, at:0, w:0, run:0, streak:0};
+    o.g++; o.at += e.at;
+    if (e.v > 0){ o.pl++; o.k += e.k; }
+    if (e.v === 1){ o.w++; o.run++; o.streak = Math.max(o.streak, o.run); } else o.run = 0;
+  });
+  const P = Object.values(per), names = h => h.who.map(x => x.n), tied = h => h.who.length > 1 ? 'Shared · ' : '';
+  let h;
+  if ((h = best(P, x => x.k))) add('fragger', 'skull', 'var(--c-party)', 'Top Fragger', names(h), h.v, 'kills', h.who.length > 1 ? `Tied on ${h.v} kills` : `Across ${plural(h.who[0].pl, 'lobby', 'lobbies')}`);
+  if ((h = best(P, x => x.w))) add('king', 'crown', 'var(--gold)', 'Lobby King', names(h), h.v, h.v === 1 ? '1st place' : '1st places', `${tied(h)}most lobby wins`);
+  if ((h = best(P, x => x.streak, v => v >= 2))) add('fire', 'flame', 'var(--track)', 'On Fire', names(h), h.v, 'wins in a row', `${tied(h)}longest run of 1st places`);
+  const last = log.length ? log[log.length - 1].m : null;
+  if (last){
+    const day = {}; log.filter(e => e.m.date === last.date).forEach(e => day[e.n] = (day[e.n] || 0) + e.k);
+    if ((h = best(Object.entries(day).map(([n, k]) => ({n, k})), x => x.k))) add('day', 'sun', 'var(--c-board)', 'Player of the Day', names(h), h.v, 'kills', `${tied(h)}top fragger on ${last.w.dowl} ${last.w.day}`);
+  }
+  if ((h = best(log, e => e.k))) add('lobby', 'target', 'var(--accent)', 'Deadliest Lobby', names(h), h.v, 'kills in one lobby', `${h.who[0].id} · ${dayTxt(h.who[0].m)}${h.who.length > 1 ? ` · +${h.who.length - 1} more` : ''}`);
+  const reg = P.filter(x => x.pl >= HL_MIN);
+  if ((h = best(reg, x => Math.round(x.k / x.pl * 10) / 10))) add('sharp', 'crosshair', 'var(--primary)', 'Sharpshooter', names(h), h.v.toFixed(1), 'kills per lobby', `${tied(h)}${HL_MIN}+ lobbies played`);
+  if ((h = best(P.filter(x => x.g >= HL_MIN), x => Math.round(x.at / x.g * 10) / 10, () => true, true))) add('steady', 'chart', 'var(--c-pc)', 'Most Consistent', names(h), h.v.toFixed(1), 'average finish', `${tied(h)}no-shows count as last`);
+  if ((h = best(log.filter(e => e.v === e.m.p.length), e => e.k))) add('unlucky', 'frown', 'var(--muted)', 'Unlucky Legend', names(h), h.v, 'kills, still last', `${h.who[0].id} · ${dayTxt(h.who[0].m)}`);
+  // 2v2 has scores only, so these are team awards.
+  if ((h = best(table('t2').rows.filter(x => x.p >= 2 && !x.l), x => x.w, () => true))) add('unbeaten', 'shield', 'var(--c-pc)', 'Unbeaten', names(h), `${h.v}–${h.who[0].d}–0`, 'won · drawn · lost', `${tied(h)}no 2v2 losses yet`, true);
+  const games = IDS.t2.map(id => ({id, m:MI[id], x:t2Res(id)})).filter(g => g.x && !g.x.ff && g.x.w !== -1)
+    .map(g => Object.assign(g, {n:g.m.p[g.x.w], foe:g.m.p[1 - g.x.w], hi:Math.max(g.x.a, g.x.b), lo:Math.min(g.x.a, g.x.b)}));
+  const rout = best(games, g => g.hi - g.lo);
+  if (rout){ const g = rout.who[0]; add('blowout', 'zap', 'var(--warn)', 'Biggest Blowout', [g.n], `${g.hi}–${g.lo}`, '', `Beat ${tShort(g.foe)} · ${g.id}`, true); }
+  const near = best(games, g => g.hi - g.lo, () => true, true);
+  if (near && rout && near.who[0].id !== rout.who[0].id){ const g = near.who[0]; add('close', 'pulse', 'var(--primary)', 'Nail-biter', [g.n], `${g.hi}–${g.lo}`, '', `Edged ${tShort(g.foe)} · ${g.id}`, true); }
+  if (CHON && table('ch').done && (h = best(table('ch').rows, x => x.pts))) add('rising', 'star', 'var(--c-board)', 'Rising Challenger', names(h), h.v, 'pts', `${tied(h)}top of the Challenger table`);
+  return out;
+}
+function hlCard(x){
+  const many = x.names.length > 1, label = x.team ? x.names.map(tShort) : many ? x.names.map(first) : x.names;
+  const who = x.names.length > 3 ? `${x.names.length} ${x.team ? 'teams' : 'players'} tied` : label.join(' & ');
+  const pics = x.team ? (many ? x.names.slice(0, 3).map(t => av(t)).join('') : avs(x.names[0])) : `<span class="avs">${x.names.slice(0, 3).map(n => av(n)).join('')}</span>`;
+  const body = `<span class="hl-k">${ic(x.icon)}${esc(x.title)}</span>
+    <span class="hl-who">${pics}<b>${esc(who)}</b></span>
+    <span class="hl-v"><b>${esc(x.stat)}</b>${x.unit ? `<span>${esc(x.unit)}</span>` : ''}</span>
+    <small>${esc(x.note)}</small>`;
+  // A single player opens their matches; teams and shared awards go to the event page.
+  return !x.team && !many ? `<button class="hl card" style="--cc:${x.cc}" data-act="pmodal" data-n="${esc(x.names[0])}">${body}</button>`
+    : `<a class="hl card" style="--cc:${x.cc}" href="#/${x.team ? '2v2' : 'ffa'}">${body}</a>`;
+}
+
 /* ---------------- Views ---------------- */
 const unitTxt = ev => ev === 'ffa' ? D.ffa.length + ' players' : ev === 'ch' ? D.ch.length + ' newcomers' : D.teams.length + ' teams';
 const chFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} lobbies, each with 2 newcomers and 2 top-10 hosts. Places count across the whole lobby; hosts score nothing here. Challenger #1 plays FFA #${RR.ffaAdv} for the last Grand Final seat.`;
@@ -1267,6 +1357,7 @@ function viewOverview(){
   const due = MATCHES.filter(m => status(m.id).k === 'warn');
   const today = MATCHES.filter(m => sameDay(now, m.w.start));
   const upOff = MATCHES.filter(m => m.w.end >= now && !done(m.id) && warns(m).some(w => w.w)).slice(0, 6);
+  const HL = highlights();
   const ecard = ev => {
     const E = EV[ev], T = table(ev), ch = champion(ev);
     const top = T.done ? T.rows.slice(0, 3).map((r,i) => `<li><span class="rk">${i+1}</span>${lobby(ev) ? av(r.n) : avs(r.n)}<span class="tn">${esc(lobby(ev) ? r.n : tShort(r.n))}</span><b>${r.pts}<small>pts</small></b></li>`).join('') : '';
@@ -1301,6 +1392,7 @@ function viewOverview(){
     <div class="card stat"><span class="si">${ic('cal')}</span><div><b>${today.length}</b><span>Matches today</span></div></div>
     <div class="card stat"><span class="si">${ic('users')}</span><div><b>${PLAYERS.length}</b><span>Players</span></div></div>
   </section>
+  ${HL.length ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-board)">${ic('star')}</span>Highlights <small>From ${plural(dn, 'finished match', 'finished matches')}</small></h2><div class="hlgrid">${HL.map(hlCard).join('')}</div></section>` : ''}
   <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-pc)">${ic('pc')}</span>Events <small>${EVS.length} events · ${MATCHES.length} league matches</small></h2><div class="ggrid">${EVS.map(ecard).join('')}</div></section>
   <section><h2 class="sec-h display"><span class="ico">${ic('crown')}</span>Champions <small>${['ffa','t2'].filter(champion).length} of 2 crowned</small></h2><div class="wall" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">${['ffa','t2'].map(ev => { const ch = champion(ev); return `<a class="wtile card ${ch ? 'won' : 'tbd'}" href="#/${EV[ev].path}" style="--cc:${EV[ev].cc}"><span>${EV[ev].name}</span><b>${ch ? esc(ch) : 'To be decided on Game Night'}</b>${ch ? ic('crown') : ''}</a>`; }).join('')}</div></section>
   ${EDIT ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--warn)">${ic('zap')}</span>Needs attention</h2><div class="ggrid">
