@@ -228,6 +228,10 @@ main.enter > *:nth-child(n+4){animation-delay:.14s}
 .stat b{display:block;font:700 26px/1.05 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums}
 .stat b small{font-size:14px;color:var(--muted);font-weight:600}
 .stat span{color:var(--muted);font-size:13px}
+a.stat{text-decoration:none;transition:transform .2s,border-color .2s,background .2s}
+a.stat:hover{transform:translateY(-2px);border-color:var(--stroke-2);background:var(--glass-2)}
+.stat .sgo{margin-left:auto;color:var(--muted);opacity:.55;transition:opacity .2s,transform .2s}
+a.stat:hover .sgo,a.stat:focus-visible .sgo{opacity:1;transform:translateX(3px)}
 .sec-h{display:flex;align-items:center;gap:12px;margin:34px 0 14px;font-size:21px}
 .sec-h .ico{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--cc,var(--gold));background:color-mix(in srgb,var(--cc,var(--gold)) 14%,transparent);border:1px solid color-mix(in srgb,var(--cc,var(--gold)) 30%,transparent)}
 .sec-h small{font-family:"DM Sans",sans-serif;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:0}
@@ -870,7 +874,7 @@ let S = Object.assign(clone(BASE), {track:''});
 try { S.track = localStorage.getItem('cod26-track') || ''; } catch(e) {}
 // Player tracking stays in this browser; results go to GameON for everyone.
 const save = () => { try { localStorage.setItem('cod26-track', S.track || ''); } catch(e) {} queueSync(); };
-const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:''};
+const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:''}; // only: 'done' or 'due', set from the overview tiles
 const RU = () => Object.assign({}, R0, S.rules || {}, {t2Adv:2}); // the 2v2 final is always head-to-head
 let RR = RU(), CACHE = {};
 function bust(){ CACHE = {}; RR = RU(); }
@@ -1387,10 +1391,10 @@ function viewOverview(){
     </div>
   </section>
   <section class="stats" aria-label="COD numbers">
-    <div class="card stat"><span class="si">${ic('check')}</span><div><b>${dn}<small> / ${MATCHES.length}</small></b><span>Results in</span></div></div>
-    <div class="card stat"><span class="si" style="${due.length ? 'color:var(--warn);background:var(--warn-bg)' : ''}">${ic('alert')}</span><div><b>${due.length}</b><span>Waiting for a result</span></div></div>
-    <div class="card stat"><span class="si">${ic('cal')}</span><div><b>${today.length}</b><span>Matches today</span></div></div>
-    <div class="card stat"><span class="si">${ic('users')}</span><div><b>${PLAYERS.length}</b><span>Players</span></div></div>
+    <a class="card stat" href="#/schedule" data-act="stat" data-only="done" title="See finished matches"><span class="si">${ic('check')}</span><div><b>${dn}<small> / ${MATCHES.length}</small></b><span>Results in</span></div>${ic('arrow','i sgo')}</a>
+    <a class="card stat" href="#/schedule" data-act="stat" data-only="due" title="See matches waiting for a result"><span class="si" style="${due.length ? 'color:var(--warn);background:var(--warn-bg)' : ''}">${ic('alert')}</span><div><b>${due.length}</b><span>Waiting for a result</span></div>${ic('arrow','i sgo')}</a>
+    <a class="card stat" href="#/schedule" data-act="stat" data-day="${today.length ? today[0].date : 'all'}" title="See ${today.length ? 'today’s' : 'all'} matches"><span class="si">${ic('cal')}</span><div><b>${today.length}</b><span>Matches today</span></div>${ic('arrow','i sgo')}</a>
+    <a class="card stat" href="#/players" title="See all players"><span class="si">${ic('users')}</span><div><b>${PLAYERS.length}</b><span>Players</span></div>${ic('arrow','i sgo')}</a>
   </section>
   ${HL.length ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-board)">${ic('star')}</span>Highlights <small>From ${plural(dn, 'finished match', 'finished matches')}</small></h2><div class="hlgrid">${HL.map(hlCard).join('')}</div></section>` : ''}
   <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-pc)">${ic('pc')}</span>Events <small>${EVS.length} events · ${MATCHES.length} league matches</small></h2><div class="ggrid">${EVS.map(ecard).join('')}</div></section>
@@ -1457,13 +1461,15 @@ function viewSchedule(){
   const chips = chip('all', 'All', 'Days') + days.map(dk => { const w = MATCHES.find(m => m.date === dk).w; return chip(dk, w.dow, w.day, sameDay(now, w.start)); }).join('');
   return `<div class="toolbar glass">
     <div class="seg" role="group" aria-label="Event">${[['all','All','list'], ...EVS.map(ev => [ev, EV[ev].short, EV[ev].icon])].map(([k,l,i]) => `<button class="${UI.sev === k ? 'on' : ''}" data-act="sev" data-v="${k}" aria-pressed="${UI.sev === k}" aria-label="${l}">${ic(i)}<span>${l}</span></button>`).join('')}</div>
-    <span class="grow"></span>${chkHTML('hide', UI.hideDone, 'Hide finished')}
+    ${UI.only ? `<button class="chip on" data-act="only-x" aria-label="Show all matches again">${ic(UI.only === 'done' ? 'check' : 'alert')}${UI.only === 'done' ? 'Finished only' : 'Waiting for a result'}${ic('x')}</button>` : ''}
+    <span class="grow"></span>${UI.only === 'done' ? '' : chkHTML('hide', UI.hideDone, 'Hide finished')}
   </div>
   <div class="days" role="group" aria-label="Day">${chips}</div>
   <div id="schedList">${schedList()}</div>`;
 }
 function schedList(){
-  const ms = MATCHES.filter(m => (UI.sev === 'all' || m.ev === UI.sev) && (UI.day === 'all' || m.date === UI.day) && !(UI.hideDone && done(m.id)));
+  const only = m => !UI.only || (UI.only === 'done' ? done(m.id) : status(m.id).k === 'warn');
+  const ms = MATCHES.filter(m => (UI.sev === 'all' || m.ev === UI.sev) && (UI.day === 'all' || m.date === UI.day) && !(UI.hideDone && done(m.id)) && only(m));
   if (!ms.length) return emptyHTML('No matches', 'Nothing fits these filters.');
   return [...new Set(ms.map(m => m.date))].map(dk => {
     const xs = ms.filter(m => m.date === dk), w = xs[0].w;
@@ -1568,6 +1574,7 @@ function render(keepScroll){
   else if (parts[0] === 'schedule'){ tab = 'schedule'; html = viewSchedule(); }
   else if (parts[0] === 'players'){ tab = 'players'; html = viewPlayers(); }
   else html = viewOverview();
+  if (tab !== 'schedule') UI.only = '';
   app.innerHTML = html;
   const nav = TABS.map(([k,href,label,icon]) => `<a href="${href}" title="${label}" ${k === tab ? 'aria-current="page"' : ''}>${ic(icon)}<span>${label}</span></a>`).join('');
   $('tabs').innerHTML = nav; $('dock').innerHTML = nav;
@@ -1738,6 +1745,8 @@ document.addEventListener('click', e => {
   else if (act === 'ff'){ ffModal(id); }
   else if (act === 'lock'){ const F = finalists(t.dataset.ev); S.fin = S.fin || {}; S.fin[t.dataset.ev] = F.names.slice(); commit(`${t.dataset.ev === 'ch' ? 'Play-in line-up' : 'Finalists'} locked: ${F.names.map(x => t.dataset.ev === 'ffa' ? first(x) : tShort(x)).join(', ')}`); }
   else if (act === 'unlock'){ delete S.fin[t.dataset.ev]; commit('Finalists unlocked. They follow the table again.'); }
+  else if (act === 'stat'){ Object.assign(UI, {sev:'all', hideDone:false, only:t.dataset.only || '', day:t.dataset.day || 'all'}); }
+  else if (act === 'only-x'){ UI.only = ''; render(true); }
   else if (act === 'f'){ UI.f = t.dataset.f; render(true); }
   else if (act === 'day'){ UI.day = t.dataset.d; render(true); }
   else if (act === 'sev'){ UI.sev = t.dataset.v; render(true); }
