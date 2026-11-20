@@ -12,7 +12,7 @@ const page = readFileSync(new URL('../server/live/cod.html', import.meta.url), '
 // stand in for a draw, so the league scoring and the play-in stay covered.
 const DRAW = [{"id":"CHF-01","ev":"ch","date":"2026-11-23","s":"12:45","e":"13:05","loc":"Paradise Room","p":["Tharindu Nuwan","Anoshan N","Aqeela Raban","Andrew Saliheen"]},{"id":"CHF-02","ev":"ch","date":"2026-11-24","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Tharindu Nuwan","Pravini K","Harin Goonathilake","Prathibha Gayawansha"]},{"id":"CHF-03","ev":"ch","date":"2026-11-24","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Anoshan N","Pasindu Herath","Viraj Madhusanka","Prabath Gunasekara"]},{"id":"CHF-04","ev":"ch","date":"2026-11-24","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Tharindu Nuwan","Pasindu Herath","Jawahar Jegathananthan","Uresh Hettiarachchi"]},{"id":"CHF-05","ev":"ch","date":"2026-11-25","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Pravini K","Pasindu Herath","Malith Silva","Miran Tennakoon"]},{"id":"CHF-06","ev":"ch","date":"2026-11-25","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Pravini K","Anoshan N","Uresh Hettiarachchi","Andrew Saliheen"]}];
 
-function load(cod:object, {challenger = true, lobbies = true} = {}){
+function load(cod:object, {challenger = true, lobbies = true, now = 0} = {}){
   let html = page.replace('<!--COD-BOOT-->', `<script>window.COD_BOOT=${JSON.stringify({cod, edit:false})};</script>`);
   // The sample draw uses the first four newcomers, so the roster shrinks to them.
   if (lobbies) html = html.replace('],"ffa":[', `,${DRAW.map(m => JSON.stringify(m)).join(',')}],"ffa":[`)
@@ -21,6 +21,12 @@ function load(cod:object, {challenger = true, lobbies = true} = {}){
   if (!challenger) html = html.replace(/"ch":\[[^\]]*\],"chTeams":\[[^\]]*\],/, '"ch":[],"chTeams":[],');
   const dom = new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/live', beforeParse(w){
     Object.assign(w, {fetch:() => new Promise(() => {}), matchMedia:() => ({matches:false, addEventListener(){}, addListener(){}}), scrollTo(){}});
+    // Freeze the page clock when a test asks for a time of day.
+    if (now){
+      const Real = (w as {Date:DateConstructor}).Date;
+      class Fixed extends Real { constructor(...a:[]){ super(...(a.length ? a : [now] as unknown as [])); } static now(){ return now; } }
+      (w as {Date:DateConstructor}).Date = Fixed as DateConstructor;
+    }
   }});
   const run = <T>(code:string) => dom.window.eval(code) as T;
   return {run, close:() => dom.window.close()};
@@ -50,6 +56,29 @@ describe('COD Challenger group', () => {
     expect(p.run('PLAYERS.some(x => x.ch)')).toBe(false);
     expect(p.run('finalists("ffa").wait')).toBeUndefined();
     p.close();
+  });
+
+  it('counts down to the 6 PM draw, and says when registration has closed', () => {
+    const at = (h:number, m = 0) => new Date(2026, 10, 20, h, m).getTime();
+    const view = (now:number) => {
+      const p = load({r:{}, fin:{}, rules:{}}, {lobbies:false, now});
+      const v = p.run<{badge:string; text:string; cd:{t:number; days:boolean} | null}>(`(() => { const d = document.createElement('div'); d.innerHTML = viewChallengers(); const c = d.querySelector('#cd');
+        return {badge:d.querySelector('.badge').textContent, text:d.querySelector('.drawb').textContent, cd:c && {t:+c.dataset.t, days:!!c.querySelector('[data-u="d"]')}}; })()`);
+      p.close();
+      return v;
+    };
+    const before = view(at(14));
+    expect(before.badge).toContain('registration open');
+    expect(before.text).toContain('Registration closes at 3 PM today');
+    expect(before.cd).toEqual({t:at(18), days:false}); // same-day countdown: hours, minutes, seconds
+
+    const closed = view(at(16, 30));
+    expect(closed.badge).toContain('registration closed');
+    expect(closed.cd).not.toBeNull();
+
+    const after = view(at(18, 5));
+    expect(after.cd).toBeNull();
+    expect(after.text).toContain('being finalised');
   });
 
   it('gives every newcomer 3 lobbies, meets each other newcomer once, and uses only FFA players as hosts', () => {

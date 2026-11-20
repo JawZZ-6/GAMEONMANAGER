@@ -218,6 +218,18 @@ main.enter > *:nth-child(n+4){animation-delay:.14s}
 .cd div{background:var(--sunk);border:1px solid var(--stroke);border-radius:16px;padding:12px 4px 9px;text-align:center}
 .cd b{display:block;font:700 30px/1 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .cd span{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+/* Challenger draw countdown */
+.drawb{--cc:var(--c-board);display:flex;align-items:center;gap:18px 22px;flex-wrap:wrap;margin-top:16px;padding:20px 22px;border-color:color-mix(in srgb,var(--cc) 38%,var(--stroke));background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--cc) 16%,transparent),transparent 60%),var(--glass)}
+.drawb-ico{width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:16px;color:var(--cc);background:color-mix(in srgb,var(--cc) 15%,transparent);border:1px solid color-mix(in srgb,var(--cc) 30%,transparent)}
+.drawb-ico svg{width:24px;height:24px}
+.drawb-t{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.drawb-t .eyebrow{color:var(--cc)}
+.drawb-t h2{font-size:24px;line-height:1.15}
+.drawb-t p{color:var(--muted);font-size:14.5px}
+.drawb-cd{flex:0 1 300px;grid-template-columns:repeat(3,1fr)}
+.drawb-cd div{background:color-mix(in srgb,var(--cc) 8%,var(--sunk));border-color:color-mix(in srgb,var(--cc) 26%,var(--stroke))}
+.drawb-cd b{font-size:34px;color:var(--fg)}
+@media (max-width:520px){ .drawb{padding:16px} .drawb-ico{display:none} .drawb-t h2{font-size:20px} .drawb-cd{flex-basis:100%} .drawb-cd b{font-size:28px} }
 .upl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .upl a{display:grid;grid-template-columns:76px 12px 1fr;gap:10px;align-items:center;text-decoration:none;font-size:14px;padding:7px 8px;border-radius:10px;min-height:38px;transition:background .15s}
 .upl a:hover{background:var(--glass-2)}
@@ -1407,7 +1419,17 @@ function viewOverview(){
 // Before the Challenger matches are drawn: just the line-up, one card per registered player. FFA players come first in
 // sign-up order, then each 2v2 pair side by side. Entry: FFA LKR 300 per player, 2v2 LKR 500 per person.
 const CH_FEE = {ffa:300, t2:500};
+// Registration closes at 3 PM on Fri 20 Nov and the draw is published at 6 PM, in the viewer's local time.
+const CH_CLOSE = new Date(2026, 10, 20, 15, 0), CH_DRAW = new Date(2026, 10, 20, 18, 0);
+function drawBanner(now){
+  if (now >= CH_DRAW) return `<section class="drawb glass" aria-live="polite"><span class="drawb-ico">${ic('clock')}</span><div class="drawb-t"><span class="eyebrow">Draw day</span><h2 class="display">The draw is being finalised</h2><p>The Challenger FFA and 2v2 matches land here any minute. Hang tight.</p></div></section>`;
+  return `<section class="drawb glass"><span class="drawb-ico">${ic('cal')}</span>
+    <div class="drawb-t"><span class="eyebrow">${now < CH_CLOSE ? 'Registration closes at 3 PM today' : 'Registration closed'}</span><h2 class="display">Draws drop at 6 PM today</h2><p>We’re building the Challenger FFA and 2v2 matches now. Your matches appear right here when the clock hits zero.</p></div>
+    <div class="cd drawb-cd" id="cd" data-t="${+CH_DRAW}" role="timer" aria-label="Time until the draw is released"><div><b data-u="h">00</b><span>Hrs</span></div><div><b data-u="m">00</b><span>Min</span></div><div><b data-u="s">00</b><span>Sec</span></div></div>
+  </section>`;
+}
 function viewChallengers(){
+  const now = NOW(), open = now < CH_CLOSE;
   const reg = [...D.ch.map(n => ({n, ev:'ffa'})), ...D.chTeams.flatMap(t => { const ps = t.split(' & '); return ps.map(n => ({n, ev:'t2', mate:ps.find(x => x !== n)})); })];
   const tag = r => r.ev === 'ffa' ? `<span class="chc-ev" style="--ec:var(--c-console)">${ic('crosshair')}FFA</span>` : `<span class="chc-ev" style="--ec:var(--c-pc)">${ic('users')}2v2 · with ${esc(first(r.mate))}</span>`;
   const cards = reg.map((r, i) => `<article class="chcard card">
@@ -1418,11 +1440,12 @@ function viewChallengers(){
       ${EDIT && D.prio[r.n] ? `<p class="chc-days">${ic('cal')}${D.prio[r.n].join(' · ')}</p>` : ''}
     </article>`).join('');
   return `<section class="ghead glass art art-ch" style="--cc:${EV.ch.cc}">
-    <div><span class="badge">${ic('zap')}Challenger league · registration open</span><h1 class="display">The Challengers</h1>
+    <div><span class="badge">${ic('zap')}Challenger league · ${open ? 'registration open' : 'registration closed'}</span><h1 class="display">The Challengers</h1>
     <p class="fmt">A league of its own for newcomers, with its own Free-for-All and 2v2. Challengers play only each other and climb their own tables. Matches are drawn once registration closes.</p>
     <div class="fees"><span class="fee" style="--ec:#B79CFF">${ic('crosshair')}<b>FFA</b>LKR ${CH_FEE.ffa}<small>per player</small></span><span class="fee" style="--ec:#4FD8F0">${ic('users')}<b>2v2</b>LKR ${CH_FEE.t2}<small>per person</small></span></div>
-    <div class="meta"><span>${ic('crosshair')}${plural(D.ch.length, 'FFA player')}</span><span>${ic('users')}${plural(D.chTeams.length, '2v2 team')}</span><span>${ic('cal')}Draw coming soon</span><span>${ic('pin')}Paradise Room</span></div></div>
+    <div class="meta"><span>${ic('crosshair')}${plural(D.ch.length, 'FFA player')}</span><span>${ic('users')}${plural(D.chTeams.length, '2v2 team')}</span><span>${ic('cal')}${now < CH_DRAW ? 'Draw at 6 PM today' : 'Draw coming soon'}</span><span>${ic('pin')}Paradise Room</span></div></div>
   </section>
+  ${drawBanner(now)}
   <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-board)">${ic('zap')}</span>Registered Challengers <small>${plural(reg.length, 'player')}</small></h2><div class="chgrid">${cards}</div></section>`;
 }
 function viewEvent(ev){
@@ -1596,8 +1619,8 @@ function tick(){
   const el = $('cd'); if (!el) return;
   let s = Math.floor((+el.dataset.t - Date.now())/1000);
   if (s <= 0){ render(true); return; }
-  const set = (u,v) => { const b = el.querySelector(`[data-u="${u}"]`); if (b.textContent !== v) b.textContent = v; };
-  set('d', String(Math.floor(s/86400))); s %= 86400;
+  const set = (u,v) => { const b = el.querySelector(`[data-u="${u}"]`); if (b && b.textContent !== v) b.textContent = v; };
+  if (el.querySelector('[data-u="d"]')){ set('d', String(Math.floor(s/86400))); s %= 86400; }
   set('h', String(Math.floor(s/3600)).padStart(2,'0')); s %= 3600;
   set('m', String(Math.floor(s/60)).padStart(2,'0')); set('s', String(s%60).padStart(2,'0'));
 }
