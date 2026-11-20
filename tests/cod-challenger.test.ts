@@ -8,15 +8,10 @@ const { JSDOM } = createRequire(import.meta.url)('jsdom') as {JSDOM:new (html:st
 
 // Runs the real /live scorecard script, then reads its tables.
 const page = readFileSync(new URL('../server/live/cod.html', import.meta.url), 'utf8');
-// The page ships with no Challenger lobbies until registration closes. These six (2 newcomers + 2 FFA hosts each)
-// stand in for a draw, so the league scoring and the play-in stay covered.
-const DRAW = [{"id":"CHF-01","ev":"ch","date":"2026-11-23","s":"12:45","e":"13:05","loc":"Paradise Room","p":["Tharindu Nuwan","Anoshan N","Aqeela Raban","Andrew Saliheen"]},{"id":"CHF-02","ev":"ch","date":"2026-11-24","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Tharindu Nuwan","Pravini K","Harin Goonathilake","Prathibha Gayawansha"]},{"id":"CHF-03","ev":"ch","date":"2026-11-24","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Anoshan N","Pasindu Herath","Viraj Madhusanka","Prabath Gunasekara"]},{"id":"CHF-04","ev":"ch","date":"2026-11-24","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Tharindu Nuwan","Pasindu Herath","Jawahar Jegathananthan","Uresh Hettiarachchi"]},{"id":"CHF-05","ev":"ch","date":"2026-11-25","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Pravini K","Pasindu Herath","Malith Silva","Miran Tennakoon"]},{"id":"CHF-06","ev":"ch","date":"2026-11-25","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Pravini K","Anoshan N","Uresh Hettiarachchi","Andrew Saliheen"]}];
-
 function load(cod:object, {challenger = true, lobbies = true, now = 0} = {}){
   let html = page.replace('<!--COD-BOOT-->', `<script>window.COD_BOOT=${JSON.stringify({cod, edit:false})};</script>`);
-  // The sample draw uses the first four newcomers, so the roster shrinks to them.
-  if (lobbies) html = html.replace('],"ffa":[', `,${DRAW.map(m => JSON.stringify(m)).join(',')}],"ffa":[`)
-    .replace(/"ch":\[[^\]]*\]/, '"ch":["Tharindu Nuwan","Pravini K","Anoshan N","Pasindu Herath"]');
+  // Before the draw the page had no Challenger matches: strip them to see the line-up-only page.
+  if (!lobbies || !challenger) html = html.replace(/,\{"id":"CH2?-\d+"[^}]*\}/g, '');
   // Without newcomers the Challenger group must disappear completely.
   if (!challenger) html = html.replace(/"ch":\[[^\]]*\],"chTeams":\[[^\]]*\],/, '"ch":[],"chTeams":[],');
   const dom = new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/live', beforeParse(w){
@@ -52,7 +47,7 @@ describe('COD Challenger group', () => {
     const cards = p.run<{n:string; tags:string}[]>(`(() => { const d = document.createElement('div'); d.innerHTML = viewChallengers(); return [...d.querySelectorAll('.chcard')].map(c => ({n:c.querySelector('h3').textContent, tags:c.querySelector('.chc-tags').textContent})); })()`);
     expect(cards.map(c => c.n)).toEqual(reg);
     expect(cards.find(c => c.n === 'Aqeela Raban')?.tags).toContain('2v2 · with Malith');
-    expect(cards.find(c => c.n === 'Pravini K')?.tags).toContain('FFA');
+    expect(cards.find(c => c.n === 'Sasanka Edirisinghe')?.tags).toContain('FFA');
     expect(p.run('PLAYERS.some(x => x.ch)')).toBe(false);
     expect(p.run('finalists("ffa").wait')).toBeUndefined();
     p.close();
@@ -81,30 +76,74 @@ describe('COD Challenger group', () => {
     expect(after.text).toContain('being finalised');
   });
 
-  it('gives every newcomer 3 lobbies, meets each other newcomer once, and uses only FFA players as hosts', () => {
+  it('draws 7 newcomer-only lobbies: 4 each, and every pair of newcomers meets exactly twice', () => {
     const p = load({r:{}, fin:{}, rules:{}});
-    const ch = p.run<string[]>('D.ch'), ffa = p.run<string[]>('D.ffa'), L = Object.values(lineups(p, 'ch'));
-    expect(L).toHaveLength(6);
-    for (const n of ch) expect(L.filter(x => x.includes(n))).toHaveLength(3);
-    const pairs = L.map(x => x.filter(n => ch.includes(n)).sort().join('+'));
-    expect(new Set(pairs).size).toBe(6);
-    for (const x of L) expect(x.filter(n => !ch.includes(n)).every(n => ffa.includes(n))).toBe(true);
+    const ch = p.run<string[]>('D.ch'), L = Object.values(lineups(p, 'ch'));
+    expect(ch).toHaveLength(7);
+    expect(ch).not.toContain('Pravini K');
+    expect(L).toHaveLength(7);
+    for (const x of L){ expect(x).toHaveLength(4); expect(x.every(n => ch.includes(n))).toBe(true); }
+    for (const n of ch) expect(L.filter(x => x.includes(n))).toHaveLength(4);
+    for (const a of ch) for (const b of ch) if (a < b) expect(L.filter(x => x.includes(a) && x.includes(b))).toHaveLength(2);
     p.close();
   });
 
-  it('ranks newcomers by place across the whole lobby and gives hosts nothing on either table', () => {
-    const r = {'CHF-01':{pl:{'Aqeela Raban':1, 'Tharindu Nuwan':2, 'Andrew Saliheen':3, 'Anoshan N':4}, k:{'Aqeela Raban':30, 'Tharindu Nuwan':20}}};
+  it('shows no dates or times for Challenger matches anywhere', () => {
+    const p = load({r:{}, fin:{}, rules:{}});
+    expect(p.run('[...IDS.ch, ...IDS.c2].every(id => MI[id].w === null && !MI[id].date)')).toBe(true);
+    expect(p.run('status("CH-01").t')).toBe('To play');
+    const v = p.run<{when:string[]; heads:string[]; sched:string; bo3:boolean; tog:string[]}>(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch');
+      const s = document.createElement('div'); UI.sev = 'ch'; s.innerHTML = schedList(); UI.sev = 'all';
+      return {when:[...d.querySelectorAll('.match:not(.final):not(.league) .when')].map(x => x.textContent), heads:[...d.querySelectorAll('.day-h')].map(x => x.firstChild.textContent), sched:s.textContent,
+        bo3:!!d.querySelector('.bo3'), tog:[...d.querySelectorAll('.chtog a')].map(a => a.getAttribute('href') + (a.hasAttribute('aria-current') ? ' *' : ''))}; })()`);
+    expect(v.when.length).toBe(7);
+    expect(v.when.every(t => t === '')).toBe(true);
+    // The FFA view holds only the lobbies; the toggle leads to the 2v2 view.
+    expect(v.heads).toEqual(['Challenger FFA lobbies']);
+    expect(v.bo3).toBe(false);
+    expect(v.tog).toEqual(['#/challenger *', '#/challenger/2v2']);
+    expect(v.sched).toContain('Challenger league');
+    expect(v.sched).not.toMatch(/Nov|PM/);
+    p.close();
+  });
+
+  it('ranks newcomers by place on their own table and leaves the FFA leaderboard alone', () => {
+    const p0 = load({r:{}, fin:{}, rules:{}}), L = lineups(p0, 'ch')['CH-01']; p0.close();
+    const r = {'CH-01':{pl:{[L[0]]:1, [L[1]]:2, [L[2]]:3, [L[3]]:4}, k:{[L[0]]:12}}};
     const p = load({r, fin:{}, rules:{}});
     expect(p.run('CHON')).toBe(true);
-    const ffa = p.run<{n:string; pts:number; p:number}[]>('table("ffa").rows');
-    expect(ffa.find(x => x.n === 'Aqeela Raban')).toMatchObject({pts:0, p:0});
-    expect(ffa.find(x => x.n === 'Andrew Saliheen')).toMatchObject({pts:0, p:0});
+    expect(p.run<{p:number}[]>('table("ffa").rows').every(x => x.p === 0)).toBe(true);
     const ch = p.run<{n:string; pts:number; k:number}[]>('table("ch").rows');
-    expect(ch.map(x => x.n)).not.toContain('Aqeela Raban');
-    expect(ch[0]).toMatchObject({n:'Tharindu Nuwan', pts:3, k:20});
-    expect(ch.find(x => x.n === 'Anoshan N')).toMatchObject({pts:1});
-    expect(p.run('myRes(MI["CHF-01"], "Aqeela Raban")')).toBe('Hosted · 1st · not counted');
+    expect(ch[0]).toMatchObject({n:L[0], pts:4, k:12});
+    expect(ch.find(x => x.n === L[3])).toMatchObject({pts:1});
+    expect(p.run(`myRes(MI["CH-01"], ${JSON.stringify(L[1])})`)).toBe('2nd · 0 kills · 3 pts');
     p.close();
+  });
+
+  it('plays the Challenger 2v2 as a best of 3 on one banner, on its own view', () => {
+    const A = 'Aqeela Raban & Malith Silva', B = 'Lochana Fernando & Prathibha Gayawansha';
+    const banner = (p:ReturnType<typeof load>) => p.run<{games:number; score:string; crown:string | null; pills:string[]}>(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch', '2v2'); if (d.querySelector('.mgrid')) throw new Error('FFA lobbies on the 2v2 view');
+      const b = d.querySelector('.bo3'); return {games:b.querySelectorAll('.bo3-g').length, score:b.querySelector('.bo3-score span').textContent, crown:b.querySelector('.crown') && b.querySelector('.crown b').textContent, pills:[...b.querySelectorAll('.bo3-g .pill')].map(x => x.textContent)}; })()`);
+    const p0 = load({r:{}, fin:{}, rules:{}});
+    expect(p0.run('D.chTeams')).toEqual([A, B]);
+    expect(p0.run('IDS.c2.map(id => MI[id].p)')).toEqual([[A, B], [A, B], [A, B]]);
+    expect(banner(p0)).toEqual({games:3, score:'0–0', crown:null, pills:['To play', 'To play', 'To play']});
+    p0.close();
+
+    // 1–1 after two games: the decider is still needed.
+    const p1 = load({r:{'CH2-01':{s:[10, 6]}, 'CH2-02':{s:[8, 10]}}, fin:{}, rules:{}});
+    expect(banner(p1)).toMatchObject({score:'1–1', crown:null, pills:['Done', 'Done', 'To play']});
+    expect(p1.run('myRes(MI["CH2-02"], "Prathibha Gayawansha")')).toBe('Won 10–8 vs Aqeela & Malith');
+    p1.close();
+
+    // 2–0: the series is over, game 3 isn't needed and drops out of the match count.
+    const p2 = load({r:{'CH2-01':{s:[10, 6]}, 'CH2-02':{s:[10, 9]}}, fin:{}, rules:{}});
+    expect(banner(p2)).toEqual({games:3, score:'2–0', crown:'Aqeela & Malith', pills:['Done', 'Done', 'Not needed']});
+    expect(p2.run('champion("c2")')).toBe(A);
+    expect(p2.run(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch', '2v2'); return d.querySelector('.ring b').textContent; })()`)).toBe('2/2');
+    expect(p2.run('EV.c2.path')).toBe('challenger/2v2');
+    expect(p2.run('PLAYERS.find(x => x.n === "Lochana Fernando")')).toMatchObject({ch:true, c2:B});
+    p2.close();
   });
 
   it('keeps the last Grand Final seat for the play-in winner', () => {

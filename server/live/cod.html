@@ -421,6 +421,49 @@ button.pick:active{transform:scale(.98)}
 .final{border-color:color-mix(in srgb,var(--gold) 50%,transparent);background:linear-gradient(170deg,var(--gold-bg),var(--glass) 55%);box-shadow:0 20px 50px -24px var(--gold),var(--hi)}
 .final .mh{background:transparent;color:var(--gold);border-bottom-color:color-mix(in srgb,var(--gold) 25%,transparent)}
 .final .mh .mid{color:var(--gold);letter-spacing:.08em}
+/* Challenger 2v2 best-of-3 banner */
+.bo3{grid-column:1/-1}
+/* Challenger FFA / 2v2 switch */
+.chtog{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px;margin-bottom:16px;border-radius:20px;background:var(--sunk);border:1px solid var(--stroke)}
+.chtog a{display:flex;align-items:center;justify-content:center;gap:12px;min-height:58px;padding:8px 14px;border-radius:15px;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:background .2s,color .2s,border-color .2s}
+.chtog a:hover{color:var(--fg);background:var(--glass)}
+.chtog a svg{width:22px;height:22px}
+.chtog a b{display:block;font:700 18px/1.1 "Space Grotesk",sans-serif;letter-spacing:.02em}
+.chtog a small{display:block;font-size:12px;color:var(--muted)}
+.chtog a[aria-current]{color:var(--fg);background:radial-gradient(120% 160% at 50% 0%,color-mix(in srgb,var(--cc) 22%,transparent),transparent 70%),var(--glass-2);border-color:color-mix(in srgb,var(--cc) 45%,transparent);box-shadow:var(--shadow),var(--hi)}
+.chtog a[aria-current] svg{color:var(--cc)}
+.ch2{max-width:980px;margin:0 auto}
+@media (max-width:520px){ .chtog a{min-height:50px;gap:9px;padding:6px 10px} .chtog a b{font-size:16px} .chtog a svg{width:19px;height:19px} }
+.bo3 .mh .mid{letter-spacing:.08em;color:var(--cc)}
+.bo3-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:26px 20px 18px;background:radial-gradient(80% 130% at 50% 0%,color-mix(in srgb,var(--cc) 20%,transparent),transparent 70%)}
+.bo3-t{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0;transition:opacity .3s}
+.bo3-t .avs .av + .av{margin-left:-14px}
+.bo3-t b{font-size:22px;line-height:1.15;overflow-wrap:anywhere}
+.bo3-t small{color:var(--muted);font-size:12.5px}
+.bo3-t.win b{color:var(--gold)}
+.bo3-t.lose{opacity:.5}
+.bo3-t.tracked b{color:var(--track)}
+.bo3-score{display:flex;flex-direction:column;align-items:center;gap:6px}
+.bo3-score span{display:flex;align-items:center;gap:14px;font-size:60px;line-height:1;font-variant-numeric:tabular-nums}
+.bo3-score i{font-style:normal;color:var(--muted);font-size:34px}
+.bo3-score small{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.bo3-games{display:grid;gap:8px;padding:2px 14px 4px}
+.bo3-g{display:grid;grid-template-columns:minmax(76px,1fr) auto minmax(76px,1fr);align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--sunk);border:1px solid var(--stroke);transition:opacity .3s,border-color .3s}
+.bo3-g.done{border-color:color-mix(in srgb,var(--cc) 38%,var(--stroke))}
+.bo3-g.dead{opacity:.45}
+.bo3-g.flash{animation:flash 1.8s ease-out}
+.bo3-n b{display:block;font:700 14px "Space Grotesk",sans-serif}
+.bo3-n small{color:var(--muted);font-size:11.5px}
+.bo3-sc{display:flex;align-items:center;gap:10px}
+.bo3-v{min-width:44px;text-align:center;font:700 26px "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums}
+.bo3-sc.wa>:first-child,.bo3-sc.wb>:last-child{color:var(--cc)}
+.bo3-sc.wa>:first-child input,.bo3-sc.wb>:last-child input{border-color:var(--cc)}
+.bo3-v.e{color:var(--muted);opacity:.5}
+.bo3-dash{color:var(--muted);font-weight:700}
+.bo3-st .acts{display:flex;gap:6px}
+.bo3-st{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.bo3 .crown{margin:0 14px 12px}
+@media (max-width:520px){ .bo3-head{padding:20px 10px 14px;gap:8px} .bo3-t .av.lg{width:40px;height:40px;font-size:13px;border-radius:12px} .bo3-t b{font-size:16px} .bo3-t small{display:none} .bo3-score span{font-size:42px;gap:8px} .bo3-score i{font-size:24px} .bo3-games{padding:2px 10px 4px} .bo3-g{grid-template-columns:auto 1fr auto;gap:8px;padding:10px} .bo3-n b,.bo3-n small{white-space:nowrap} :root:not(.ro) .bo3-g{grid-template-columns:auto 1fr} :root:not(.ro) .bo3-st{grid-column:1/-1;justify-content:space-between} :root:not(.ro) .bo3-g .bo3-st .pill{display:inline-flex} .bo3-sc{justify-content:center} .bo3-g:not(.dead) .bo3-st .pill{display:none} .bo3-v{font-size:22px} .bo3-g .kin.big input{width:58px;height:42px;font-size:18px} }
 .crown{display:flex;align-items:center;gap:12px;margin:2px 8px 10px;padding:11px 13px;border-radius:14px;background:var(--gold-bg);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);color:var(--gold);animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 .crown svg{width:22px;height:22px}
 .crown small{display:block;font-weight:700;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
@@ -752,7 +795,7 @@ a.mi{color:inherit;text-decoration:none}
 <input type="file" accept="application/json,.json" id="importIn" class="sr" tabindex="-1" aria-hidden="true">
 <!--COD-BOOT-->
 <script>
-const D = {"matches":[{"id":"CODF-01","ev":"ffa","date":"2026-11-16","s":"12:10","e":"12:30","loc":"Paradise Room","p":["Aqeela Raban","Jawahar Jegathananthan","Nadeesha Edirisuriya","Uresh Hettiarachchi"]},{"id":"CODF-02","ev":"ffa","date":"2026-11-16","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Aqeela Raban","Jehan Dabara","Malith Silva","Upeksha DeSilva"]},{"id":"CODF-03","ev":"ffa","date":"2026-11-17","s":"12:05","e":"12:25","loc":"Paradise Room","p":["Aqeela Raban","Janith Fernando","Prabath Gunasekara","Prathibha Gayawansha"]},{"id":"CODF-04","ev":"ffa","date":"2026-11-17","s":"12:35","e":"12:55","loc":"Paradise Room","p":["Prathibha Gayawansha","Upeksha DeSilva","Uresh Hettiarachchi","Viraj Madhusanka"]},{"id":"CODF-05","ev":"ffa","date":"2026-11-17","s":"12:55","e":"13:15","loc":"Paradise Room","p":["Harin Goonathilake","Janith Fernando","Jawahar Jegathananthan","Jehan Dabara"]},{"id":"COD2-01","ev":"t2","date":"2026-11-17","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Buddhika Senevirathne & Abilash Devaneson","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"CODF-06","ev":"ffa","date":"2026-11-17","s":"13:35","e":"13:55","loc":"Paradise Room","p":["Andrew Saliheen","Jawahar Jegathananthan","Malith Silva","Viraj Madhusanka"]},{"id":"COD2-02","ev":"t2","date":"2026-11-18","s":"12:05","e":"12:25","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Buddhika Senevirathne & Abilash Devaneson"]},{"id":"CODF-07","ev":"ffa","date":"2026-11-18","s":"12:30","e":"12:50","loc":"Paradise Room","p":["Andrew Saliheen","Harin Goonathilake","Prabath Gunasekara","Uresh Hettiarachchi"]},{"id":"CODF-08","ev":"ffa","date":"2026-11-18","s":"12:50","e":"13:10","loc":"Paradise Room","p":["Aqeela Raban","Miran Tennakoon","Prathibha Gayawansha","Viraj Madhusanka"]},{"id":"CODF-09","ev":"ffa","date":"2026-11-18","s":"13:10","e":"13:30","loc":"Paradise Room","p":["Chris Demotte","Jehan Dabara","Prabath Gunasekara","Viraj Madhusanka"]},{"id":"COD2-03","ev":"t2","date":"2026-11-19","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Janith Fernando & Uresh Hettiarachchi","Buddhika Senevirathne & Abilash Devaneson"]},{"id":"CODF-10","ev":"ffa","date":"2026-11-19","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Abilash Devaneson","Janith Fernando","Nadeesha Edirisuriya","Viraj Madhusanka"]},{"id":"CODF-11","ev":"ffa","date":"2026-11-19","s":"13:00","e":"13:20","loc":"Paradise Room","p":["Andrew Saliheen","Janith Fernando","Miran Tennakoon","Upeksha DeSilva"]},{"id":"COD2-04","ev":"t2","date":"2026-11-19","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Tharindu Nuwan & Viraj Madhusanka","Pasindu Herath & Sandani Malsha"]},{"id":"CODF-12","ev":"ffa","date":"2026-11-20","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Chris Demotte","Harin Goonathilake","Jawahar Jegathananthan","Miran Tennakoon"]},{"id":"CODF-13","ev":"ffa","date":"2026-11-20","s":"13:20","e":"13:40","loc":"Paradise Room","p":["Abilash Devaneson","Harin Goonathilake","Malith Silva","Prathibha Gayawansha"]},{"id":"CODF-14","ev":"ffa","date":"2026-11-23","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Malith Silva","Miran Tennakoon","Nadeesha Edirisuriya","Prabath Gunasekara"]},{"id":"CODF-15","ev":"ffa","date":"2026-11-23","s":"12:20","e":"12:40","loc":"Paradise Room","p":["Abilash Devaneson","Jehan Dabara","Miran Tennakoon","Uresh Hettiarachchi"]},{"id":"COD2-05","ev":"t2","date":"2026-11-25","s":"12:35","e":"12:55","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"COD2-06","ev":"t2","date":"2026-11-25","s":"12:55","e":"13:15","loc":"Paradise Room","p":["Buddhika Senevirathne & Abilash Devaneson","Pasindu Herath & Sandani Malsha"]},{"id":"CODF-16","ev":"ffa","date":"2026-11-25","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Abilash Devaneson","Jawahar Jegathananthan","Prabath Gunasekara","Upeksha DeSilva"]},{"id":"COD2-07","ev":"t2","date":"2026-11-26","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Janith Fernando & Uresh Hettiarachchi","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"COD2-08","ev":"t2","date":"2026-11-26","s":"12:45","e":"13:05","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Pasindu Herath & Sandani Malsha"]},{"id":"COD2-09","ev":"t2","date":"2026-11-26","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Janith Fernando & Uresh Hettiarachchi"]},{"id":"COD2-10","ev":"t2","date":"2026-11-26","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Pasindu Herath & Sandani Malsha","Janith Fernando & Uresh Hettiarachchi"]},{"id":"CODF-17","ev":"ffa","date":"2026-11-27","s":"12:15","e":"12:35","loc":"Paradise Room","p":["Chris Demotte","Harin Goonathilake","Nadeesha Edirisuriya","Upeksha DeSilva"]},{"id":"CODF-18","ev":"ffa","date":"2026-11-27","s":"13:00","e":"13:20","loc":"Paradise Room","p":["Chris Demotte","Janith Fernando","Malith Silva","Uresh Hettiarachchi"]},{"id":"CODF-19","ev":"ffa","date":"2026-11-27","s":"13:20","e":"13:40","loc":"Paradise Room","p":["Abilash Devaneson","Andrew Saliheen","Aqeela Raban","Chris Demotte"]},{"id":"CODF-20","ev":"ffa","date":"2026-11-27","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Andrew Saliheen","Jehan Dabara","Nadeesha Edirisuriya","Prathibha Gayawansha"]}],"ffa":["Abilash Devaneson","Andrew Saliheen","Aqeela Raban","Chris Demotte","Harin Goonathilake","Janith Fernando","Jawahar Jegathananthan","Jehan Dabara","Malith Silva","Miran Tennakoon","Nadeesha Edirisuriya","Prabath Gunasekara","Prathibha Gayawansha","Upeksha DeSilva","Uresh Hettiarachchi","Viraj Madhusanka"],"ch":["Tharindu Nuwan","Pravini K","Anoshan N","Pasindu Herath","Sasanka Edirisinghe","Manthi Fernando","Joseph Silvester","Lochana Fernando"],"chTeams":["Aqeela Raban & Malith Silva"],"teams":["Harin Goonathilake & Jawahar Jegathananthan","Buddhika Senevirathne & Abilash Devaneson","Pasindu Herath & Sandani Malsha","Janith Fernando & Uresh Hettiarachchi","Tharindu Nuwan & Viraj Madhusanka"],"prio":{"Abilash Devaneson":["Mon","Tue","Wed","Thu","Fri"],"Andrew Saliheen":["Mon","Tue","Wed","Thu","Fri"],"Aqeela Raban":["Mon","Thu"],"Buddhika Senevirathne":["Tue","Wed","Thu"],"Chris Demotte":["Tue","Fri"],"Harin Goonathilake":["Tue","Wed"],"Janith Fernando":["Tue","Thu"],"Jawahar Jegathananthan":["Mon","Tue","Wed","Thu","Fri"],"Jehan Dabara":["Mon","Tue","Wed","Thu","Fri"],"Malith Silva":["Mon","Tue","Wed","Thu","Fri"],"Miran Tennakoon":["Mon","Tue","Wed","Thu","Fri"],"Nadeesha Edirisuriya":["Mon","Thu","Fri"],"Pasindu Herath":["Tue","Wed","Thu"],"Pravini K":["Tue","Wed"],"Anoshan N":["Mon","Tue","Wed","Thu","Fri"],"Prabath Gunasekara":["Tue","Wed"],"Prathibha Gayawansha":["Tue","Fri"],"Sandani Malsha":["Tue","Wed","Thu"],"Tharindu Nuwan":["Mon","Tue","Wed","Thu","Fri"],"Upeksha DeSilva":["Mon","Tue","Wed","Thu","Fri"],"Uresh Hettiarachchi":["Mon","Tue","Wed","Thu","Fri"],"Viraj Madhusanka":["Tue","Wed","Thu"]}};
+const D = {"matches":[{"id":"CODF-01","ev":"ffa","date":"2026-11-16","s":"12:10","e":"12:30","loc":"Paradise Room","p":["Aqeela Raban","Jawahar Jegathananthan","Nadeesha Edirisuriya","Uresh Hettiarachchi"]},{"id":"CODF-02","ev":"ffa","date":"2026-11-16","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Aqeela Raban","Jehan Dabara","Malith Silva","Upeksha DeSilva"]},{"id":"CODF-03","ev":"ffa","date":"2026-11-17","s":"12:05","e":"12:25","loc":"Paradise Room","p":["Aqeela Raban","Janith Fernando","Prabath Gunasekara","Prathibha Gayawansha"]},{"id":"CODF-04","ev":"ffa","date":"2026-11-17","s":"12:35","e":"12:55","loc":"Paradise Room","p":["Prathibha Gayawansha","Upeksha DeSilva","Uresh Hettiarachchi","Viraj Madhusanka"]},{"id":"CODF-05","ev":"ffa","date":"2026-11-17","s":"12:55","e":"13:15","loc":"Paradise Room","p":["Harin Goonathilake","Janith Fernando","Jawahar Jegathananthan","Jehan Dabara"]},{"id":"COD2-01","ev":"t2","date":"2026-11-17","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Buddhika Senevirathne & Abilash Devaneson","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"CODF-06","ev":"ffa","date":"2026-11-17","s":"13:35","e":"13:55","loc":"Paradise Room","p":["Andrew Saliheen","Jawahar Jegathananthan","Malith Silva","Viraj Madhusanka"]},{"id":"COD2-02","ev":"t2","date":"2026-11-18","s":"12:05","e":"12:25","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Buddhika Senevirathne & Abilash Devaneson"]},{"id":"CODF-07","ev":"ffa","date":"2026-11-18","s":"12:30","e":"12:50","loc":"Paradise Room","p":["Andrew Saliheen","Harin Goonathilake","Prabath Gunasekara","Uresh Hettiarachchi"]},{"id":"CODF-08","ev":"ffa","date":"2026-11-18","s":"12:50","e":"13:10","loc":"Paradise Room","p":["Aqeela Raban","Miran Tennakoon","Prathibha Gayawansha","Viraj Madhusanka"]},{"id":"CODF-09","ev":"ffa","date":"2026-11-18","s":"13:10","e":"13:30","loc":"Paradise Room","p":["Chris Demotte","Jehan Dabara","Prabath Gunasekara","Viraj Madhusanka"]},{"id":"COD2-03","ev":"t2","date":"2026-11-19","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Janith Fernando & Uresh Hettiarachchi","Buddhika Senevirathne & Abilash Devaneson"]},{"id":"CODF-10","ev":"ffa","date":"2026-11-19","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Abilash Devaneson","Janith Fernando","Nadeesha Edirisuriya","Viraj Madhusanka"]},{"id":"CODF-11","ev":"ffa","date":"2026-11-19","s":"13:00","e":"13:20","loc":"Paradise Room","p":["Andrew Saliheen","Janith Fernando","Miran Tennakoon","Upeksha DeSilva"]},{"id":"COD2-04","ev":"t2","date":"2026-11-19","s":"13:25","e":"13:45","loc":"Paradise Room","p":["Tharindu Nuwan & Viraj Madhusanka","Pasindu Herath & Sandani Malsha"]},{"id":"CODF-12","ev":"ffa","date":"2026-11-20","s":"12:25","e":"12:45","loc":"Paradise Room","p":["Chris Demotte","Harin Goonathilake","Jawahar Jegathananthan","Miran Tennakoon"]},{"id":"CODF-13","ev":"ffa","date":"2026-11-20","s":"13:20","e":"13:40","loc":"Paradise Room","p":["Abilash Devaneson","Harin Goonathilake","Malith Silva","Prathibha Gayawansha"]},{"id":"CODF-14","ev":"ffa","date":"2026-11-23","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Malith Silva","Miran Tennakoon","Nadeesha Edirisuriya","Prabath Gunasekara"]},{"id":"CODF-15","ev":"ffa","date":"2026-11-23","s":"12:20","e":"12:40","loc":"Paradise Room","p":["Abilash Devaneson","Jehan Dabara","Miran Tennakoon","Uresh Hettiarachchi"]},{"id":"COD2-05","ev":"t2","date":"2026-11-25","s":"12:35","e":"12:55","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"COD2-06","ev":"t2","date":"2026-11-25","s":"12:55","e":"13:15","loc":"Paradise Room","p":["Buddhika Senevirathne & Abilash Devaneson","Pasindu Herath & Sandani Malsha"]},{"id":"CODF-16","ev":"ffa","date":"2026-11-25","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Abilash Devaneson","Jawahar Jegathananthan","Prabath Gunasekara","Upeksha DeSilva"]},{"id":"COD2-07","ev":"t2","date":"2026-11-26","s":"12:00","e":"12:20","loc":"Paradise Room","p":["Janith Fernando & Uresh Hettiarachchi","Tharindu Nuwan & Viraj Madhusanka"]},{"id":"COD2-08","ev":"t2","date":"2026-11-26","s":"12:45","e":"13:05","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Pasindu Herath & Sandani Malsha"]},{"id":"COD2-09","ev":"t2","date":"2026-11-26","s":"13:15","e":"13:35","loc":"Paradise Room","p":["Harin Goonathilake & Jawahar Jegathananthan","Janith Fernando & Uresh Hettiarachchi"]},{"id":"COD2-10","ev":"t2","date":"2026-11-26","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Pasindu Herath & Sandani Malsha","Janith Fernando & Uresh Hettiarachchi"]},{"id":"CODF-17","ev":"ffa","date":"2026-11-27","s":"12:15","e":"12:35","loc":"Paradise Room","p":["Chris Demotte","Harin Goonathilake","Nadeesha Edirisuriya","Upeksha DeSilva"]},{"id":"CODF-18","ev":"ffa","date":"2026-11-27","s":"13:00","e":"13:20","loc":"Paradise Room","p":["Chris Demotte","Janith Fernando","Malith Silva","Uresh Hettiarachchi"]},{"id":"CODF-19","ev":"ffa","date":"2026-11-27","s":"13:20","e":"13:40","loc":"Paradise Room","p":["Abilash Devaneson","Andrew Saliheen","Aqeela Raban","Chris Demotte"]},{"id":"CODF-20","ev":"ffa","date":"2026-11-27","s":"13:40","e":"14:00","loc":"Paradise Room","p":["Andrew Saliheen","Jehan Dabara","Nadeesha Edirisuriya","Prathibha Gayawansha"]},{"id":"CH-01","ev":"ch","loc":"Paradise Room","p":["Sasanka Edirisinghe","Manthi Fernando","Joseph Silvester","Lochana Fernando"]},{"id":"CH-02","ev":"ch","loc":"Paradise Room","p":["Anoshan N","Pasindu Herath","Joseph Silvester","Lochana Fernando"]},{"id":"CH-03","ev":"ch","loc":"Paradise Room","p":["Anoshan N","Pasindu Herath","Sasanka Edirisinghe","Manthi Fernando"]},{"id":"CH-04","ev":"ch","loc":"Paradise Room","p":["Tharindu Nuwan","Pasindu Herath","Manthi Fernando","Lochana Fernando"]},{"id":"CH-05","ev":"ch","loc":"Paradise Room","p":["Tharindu Nuwan","Pasindu Herath","Sasanka Edirisinghe","Joseph Silvester"]},{"id":"CH-06","ev":"ch","loc":"Paradise Room","p":["Tharindu Nuwan","Anoshan N","Manthi Fernando","Joseph Silvester"]},{"id":"CH-07","ev":"ch","loc":"Paradise Room","p":["Tharindu Nuwan","Anoshan N","Sasanka Edirisinghe","Lochana Fernando"]},{"id":"CH2-01","ev":"c2","loc":"Paradise Room","p":["Aqeela Raban & Malith Silva","Lochana Fernando & Prathibha Gayawansha"]},{"id":"CH2-02","ev":"c2","loc":"Paradise Room","p":["Aqeela Raban & Malith Silva","Lochana Fernando & Prathibha Gayawansha"]},{"id":"CH2-03","ev":"c2","loc":"Paradise Room","p":["Aqeela Raban & Malith Silva","Lochana Fernando & Prathibha Gayawansha"]}],"ffa":["Abilash Devaneson","Andrew Saliheen","Aqeela Raban","Chris Demotte","Harin Goonathilake","Janith Fernando","Jawahar Jegathananthan","Jehan Dabara","Malith Silva","Miran Tennakoon","Nadeesha Edirisuriya","Prabath Gunasekara","Prathibha Gayawansha","Upeksha DeSilva","Uresh Hettiarachchi","Viraj Madhusanka"],"ch":["Tharindu Nuwan","Anoshan N","Pasindu Herath","Sasanka Edirisinghe","Manthi Fernando","Joseph Silvester","Lochana Fernando"],"chTeams":["Aqeela Raban & Malith Silva","Lochana Fernando & Prathibha Gayawansha"],"teams":["Harin Goonathilake & Jawahar Jegathananthan","Buddhika Senevirathne & Abilash Devaneson","Pasindu Herath & Sandani Malsha","Janith Fernando & Uresh Hettiarachchi","Tharindu Nuwan & Viraj Madhusanka"],"prio":{"Abilash Devaneson":["Mon","Tue","Wed","Thu","Fri"],"Andrew Saliheen":["Mon","Tue","Wed","Thu","Fri"],"Aqeela Raban":["Mon","Thu"],"Buddhika Senevirathne":["Tue","Wed","Thu"],"Chris Demotte":["Tue","Fri"],"Harin Goonathilake":["Tue","Wed"],"Janith Fernando":["Tue","Thu"],"Jawahar Jegathananthan":["Mon","Tue","Wed","Thu","Fri"],"Jehan Dabara":["Mon","Tue","Wed","Thu","Fri"],"Malith Silva":["Mon","Tue","Wed","Thu","Fri"],"Miran Tennakoon":["Mon","Tue","Wed","Thu","Fri"],"Nadeesha Edirisuriya":["Mon","Thu","Fri"],"Pasindu Herath":["Tue","Wed","Thu"],"Pravini K":["Tue","Wed"],"Anoshan N":["Mon","Tue","Wed","Thu","Fri"],"Prabath Gunasekara":["Tue","Wed"],"Prathibha Gayawansha":["Tue","Fri"],"Sandani Malsha":["Tue","Wed","Thu"],"Tharindu Nuwan":["Mon","Tue","Wed","Thu","Fri"],"Upeksha DeSilva":["Mon","Tue","Wed","Thu","Fri"],"Uresh Hettiarachchi":["Mon","Tue","Wed","Thu","Fri"],"Viraj Madhusanka":["Tue","Wed","Thu"]}};
 
 /* ---------------- Icons ---------------- */
 const IC = {
@@ -813,9 +856,11 @@ Object.assign(IC, {
 const EV = {
   ffa:{key:'ffa', path:'ffa', name:'COD · Free-for-All', short:'FFA', cc:'var(--c-console)', icon:'crosshair', fid:'F-FFA'},
   t2:{key:'t2', path:'2v2', name:'COD · 2v2', short:'2v2', cc:'var(--c-pc)', icon:'users', fid:'F-2V2'},
-  // Late joiners play lobbies of 2 newcomers + 2 top-10 hosts. Hosts' results there never count anywhere;
-  // the Challenger #1 then plays the FFA leaderboard's last qualifier in a play-in for the final Grand Final seat.
-  ch:{key:'ch', path:'challenger', name:'COD · Challenger', short:'CH', cc:'var(--c-board)', icon:'zap', fid:'F-PLAYIN'}
+  // Newcomers play their own four-player lobbies. The Challenger #1 then plays the FFA leaderboard's last
+  // qualifier in a play-in for the final Grand Final seat.
+  ch:{key:'ch', path:'challenger', name:'COD · Challenger', short:'CH', cc:'var(--c-board)', icon:'zap', fid:'F-PLAYIN'},
+  // The Challenger 2v2: a best of 3 between the two newcomer teams, on its own view of the Challenger page.
+  c2:{key:'c2', path:'challenger/2v2', name:'COD · Challenger 2v2', short:'CH 2v2', cc:'var(--c-pc)', icon:'users', fid:null}
 };
 const lobby = ev => ev === 'ffa' || ev === 'ch'; // four-player lobbies scored by finishing place
 const ORD = ['DNS','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th','16th'];
@@ -832,17 +877,19 @@ const XB = {
 };
 const h12 = hm => { const [h,m] = hm.split(':').map(Number); return `${h > 12 ? h-12 : h}:${String(m).padStart(2,'0')}`; };
 const MATCHES = D.matches.map(m => {
+  if (!m.date) return Object.assign({}, m, {w:null}); // undated: played whenever suits the players
   const [y,mo,d] = m.date.split('-').map(Number);
   const at = hm => { const [h,mi] = hm.split(':').map(Number); return new Date(y, mo-1, d, h, mi); };
   const start = at(m.s), end = at(m.e);
   return Object.assign({}, m, {w:{start, end, day:d, dow:DOWS[start.getDay()], dowl:DOWL[start.getDay()], a:h12(m.s), b:h12(m.e)}});
-}).sort((a,b) => a.w.start - b.w.start);
+}).sort((a,b) => (!a.w - !b.w) || (a.w && b.w ? a.w.start - b.w.start : 0)); // dated first, then undated in draw order
+const TIMED = MATCHES.filter(m => m.w);
 const MI = {};
 MATCHES.forEach(m => MI[m.id] = m);
 MI['F-FFA'] = {id:'F-FFA', ev:'ffa', final:true, loc:'Game Night', w:null};
 MI['F-2V2'] = {id:'F-2V2', ev:'t2', final:true, loc:'Game Night', w:null};
 MI['F-PLAYIN'] = {id:'F-PLAYIN', ev:'ch', final:true, loc:'Paradise Room', w:null};
-const IDS = {ffa:MATCHES.filter(m => m.ev === 'ffa').map(m => m.id), t2:MATCHES.filter(m => m.ev === 't2').map(m => m.id), ch:MATCHES.filter(m => m.ev === 'ch').map(m => m.id)};
+const IDS = {ffa:MATCHES.filter(m => m.ev === 'ffa').map(m => m.id), t2:MATCHES.filter(m => m.ev === 't2').map(m => m.id), ch:MATCHES.filter(m => m.ev === 'ch').map(m => m.id), c2:MATCHES.filter(m => m.ev === 'c2').map(m => m.id)};
 const CHON = D.ch.length > 0 && IDS.ch.length > 0; // the Challenger group only shows once it has players and lobbies
 const CHREG = (D.ch.length > 0 || D.chTeams.length > 0) && !CHON; // newcomers have signed up but no lobbies are drawn yet, so only the line-up shows
 const EVS = CHON ? ['ffa', 't2', 'ch'] : ['ffa', 't2'];
@@ -853,8 +900,9 @@ const people = m => lobby(m.ev) ? m.p : m.p.flatMap(t => t.split(' & '));
 const teamOf = n => D.teams.find(t => t.split(' & ').includes(n)) || null;
 const tShort = t => t.split(' & ').map(n => n.split(' ')[0]).join(' & ');
 const first = n => n.split(' ')[0];
-const PLAYERS = [...new Set([...D.ffa, ...D.teams.flatMap(t => t.split(' & ')), ...(CHON ? D.ch : [])])].sort((a,b) => a.localeCompare(b))
-  .map(n => ({n, ms:MATCHES.filter(m => people(m).includes(n)), team:teamOf(n), ffa:D.ffa.includes(n), ch:CHON && D.ch.includes(n)}));
+const chTeamOf = n => (CHON && IDS.c2.length && D.chTeams.find(t => t.split(' & ').includes(n))) || null;
+const PLAYERS = [...new Set([...D.ffa, ...D.teams.flatMap(t => t.split(' & ')), ...(CHON ? [...D.ch, ...D.chTeams.flatMap(t => t.split(' & '))] : [])])].sort((a,b) => a.localeCompare(b))
+  .map(n => ({n, ms:MATCHES.filter(m => people(m).includes(n)), team:teamOf(n), c2:chTeamOf(n), ffa:D.ffa.includes(n), ch:CHON && D.ch.includes(n)}));
 
 const fmtShort = w => w ? `${w.dow} ${w.day} · ${w.a}–${w.b} PM` : 'Game Night · TBC';
 const sameDay = (d1,d2) => d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
@@ -940,11 +988,11 @@ function ffaTable(ev = 'ffa'){
   const same = (a,b) => a && b && a.pts === b.pts && a.w === b.w && a.k === b.k;
   return {rows, adv, done:dn, total:IDS[ev].length, complete:dn === IDS[ev].length, tie:dn > 0 && same(rows[adv-1], rows[adv])};
 }
-function t2Table(){
+function t2Table(ev = 't2'){
   const by = {};
-  const rows = D.teams.map(n => by[n] = {n, p:0, w:0, d:0, l:0, sf:0, sa:0, pts:0, form:[]});
+  const rows = (ev === 'c2' ? D.chTeams : D.teams).map(n => by[n] = {n, p:0, w:0, d:0, l:0, sf:0, sa:0, pts:0, form:[]});
   let dn = 0;
-  IDS.t2.forEach(id => {
+  IDS[ev].forEach(id => {
     const m = MI[id], x = t2Res(id);
     if (!x) return;
     dn++;
@@ -958,20 +1006,35 @@ function t2Table(){
     });
   });
   rows.sort((a,b) => b.pts - a.pts || (b.sf - b.sa) - (a.sf - a.sa) || b.sf - a.sf || a.n.localeCompare(b.n));
-  const adv = Math.min(RR.t2Adv, rows.length);
+  const adv = Math.min(ev === 'c2' ? 1 : RR.t2Adv, rows.length);
   const same = (a,b) => a && b && a.pts === b.pts && (a.sf - a.sa) === (b.sf - b.sa) && a.sf === b.sf;
-  return {rows, adv, done:dn, total:IDS.t2.length, complete:dn === IDS.t2.length, tie:dn > 0 && same(rows[adv-1], rows[adv])};
+  return {rows, adv, done:dn, total:IDS[ev].length, complete:dn === IDS[ev].length, tie:dn > 0 && same(rows[adv-1], rows[adv])};
 }
-const table = ev => CACHE[ev] || (CACHE[ev] = lobby(ev) ? ffaTable(ev) : t2Table());
+const table = ev => CACHE[ev] || (CACHE[ev] = lobby(ev) ? ffaTable(ev) : t2Table(ev));
 const rankOf = (ev, n) => table(ev).rows.findIndex(r => r.n === n) + 1;
-const rankTxt = (ev, n) => table(ev).done ? `${{ffa:'Leaderboard', ch:'Challenger'}[ev] || 'Table'} #${rankOf(ev, n)}` : 'Not ranked yet';
+const rankTxt = (ev, n) => table(ev).done ? `${{ffa:'Leaderboard', ch:'Challenger', c2:'Challenger 2v2'}[ev] || 'Table'} #${rankOf(ev, n)}` : 'Not ranked yet';
 // The play-in is a head-to-head between the FFA leaderboard's last qualifier and the Challenger #1.
 function playIn(){
   const F = table('ffa'), C = table('ch'), a = F.done ? F.rows[F.adv-1] : null, b = C.done ? C.rows[0] : null;
   const T = {adv:2, done:F.done + C.done, total:F.total + C.total, complete:F.complete && C.complete, tie:F.tie || C.tie};
   return {names:a && b ? [a.n, b.n] : [], T};
 }
+// Challenger 2v2: best of 3. The first team to 2 game wins takes the title; a game left unplayed after that isn't needed.
+function series(){
+  if (CACHE.series) return CACHE.series;
+  const teams = D.chTeams.slice(0, 2), w = [0, 0], games = [];
+  let winner = null;
+  IDS.c2.forEach((id, i) => {
+    const x = t2Res(id), dead = !!winner && !x;
+    games.push({id, n:i + 1, x, dead});
+    if (!x || winner || x.w < 0) return;
+    const t = teams.indexOf(MI[id].p[x.w]); if (t < 0) return;
+    if (++w[t] >= 2) winner = teams[t];
+  });
+  return CACHE.series = {teams, w, winner, games, dead:new Set(games.filter(g => g.dead).map(g => g.id))};
+}
 function finalists(ev){
+  if (ev === 'c2'){ const w = series().winner, T = table('c2'); return {names:w ? [w] : [], locked:false, prov:!w, T}; }
   if (ev === 'ch'){
     const P = playIn();
     if (S.fin && S.fin.ch) return {names:S.fin.ch, locked:true, prov:false, T:P.T};
@@ -986,6 +1049,7 @@ function finalists(ev){
   return {names:w ? [...top.slice(0, -1), w] : top.slice(0, -1), locked:false, prov:!T.complete || T.tie || !w, T, wait:!w};
 }
 function champion(ev){
+  if (ev === 'c2') return series().winner;
   const F = finalists(ev), id = EV[ev].fid;
   if (F.prov || !F.names.length) return null;
   if (ev === 'ffa'){ if (!ffaDone(id, F.names)) return null; return F.names.find(n => S.r[id].pl[n] === 1) || null; }
@@ -997,7 +1061,9 @@ function status(id){
   if (m.final && m.ev === 'ch') return champion('ch') ? {k:'done', t:'Done', i:'check'} : {k:'', t:'Game Night'};
   if (m.final) return champion(m.ev) ? {k:'gold', t:'Crowned', i:'crown'} : {k:'', t:'Game Night'};
   if (done(id)) return {k:'done', t:'Done', i:'check'};
+  if (m.ev === 'c2' && series().dead.has(id)) return {k:'', t:'Not needed'};
   const now = NOW(), w = m.w;
+  if (!w) return {k:'', t:'To play'};
   if (now >= w.start && now <= w.end) return {k:'live', t:'Live'};
   if (now > w.end) return {k:'warn', t:'Needs result', i:'alert'};
   if (sameDay(now, w.start)) return {k:'today', t:'Today'};
@@ -1005,7 +1071,7 @@ function status(id){
 }
 const pill = s => `<span class="pill ${s.k}">${s.i ? ic(s.i) : ''}${esc(s.t)}</span>`;
 function warns(m){
-  if (m.final) return [];
+  if (m.final || !m.w) return [];
   const o = [];
   const off = people(m).filter(n => D.prio[n] && !D.prio[n].includes(m.w.dow));
   if (off.length) o.push({w:true, t:`Off priority day: ${off.map(n => `${first(n)} (${D.prio[n].join('/')})`).join(', ')}`});
@@ -1038,7 +1104,7 @@ function myRes(m, n){
     if (host) return `Hosted · ${v === 0 ? 'no-show' : ORD[v]} · not counted`;
     return v === 0 ? 'No-show · 0 pts' : `${ORD[v]} · ${k} kill${k === 1 ? '' : 's'} · ${ffaPts(v, k)} pts`;
   }
-  const t = teamOf(n), i = m.p.indexOf(t), opp = m.p[1-i], x = t2Res(m.id);
+  const t = m.p.find(x => x.split(' & ').includes(n)) || teamOf(n), i = m.p.indexOf(t), opp = m.p[1-i], x = t2Res(m.id);
   if (!x) return `With ${first(t.split(' & ').find(y => y !== n))} vs ${tShort(opp)}`;
   if (x.ff) return `${x.w === i ? 'Won by forfeit' : 'Forfeited'} vs ${tShort(opp)}`;
   const me = i ? x.b : x.a, them = i ? x.a : x.b;
@@ -1070,7 +1136,7 @@ function spotItems(q){
   q = q.trim().toLowerCase();
   const it = [];
   PLAYERS.filter(p => !q || p.n.toLowerCase().includes(q)).slice(0, q ? 8 : 5).forEach(p => it.push({k:'p', v:p.n, l:p.n, s:[p.ffa ? 'FFA' : '', p.team ? '2v2 · ' + tShort(p.team) : '', p.ch ? 'Challenger' : ''].filter(Boolean).join(' · '), lead:av(p.n)}));
-  if (q) MATCHES.filter(m => m.id.toLowerCase().includes(q)).slice(0, 6).forEach(m => it.push({k:'m', v:m.id, l:`${m.id} · ${EV[m.ev].short}`, s:fmtShort(m.w), lead:oi(EV[m.ev].icon, EV[m.ev].cc)}));
+  if (q) MATCHES.filter(m => m.id.toLowerCase().includes(q)).slice(0, 6).forEach(m => it.push({k:'m', v:m.id, l:`${m.id} · ${EV[m.ev].short}`, s:m.w ? fmtShort(m.w) : EV[m.ev].name, lead:oi(EV[m.ev].icon, EV[m.ev].cc)}));
   return it;
 }
 function openSpot(){
@@ -1210,7 +1276,7 @@ function rowsT2(id, E, lock){
   const r = S.r[id] || {}, x = t2Res(id), s = r.s || [];
   const row = i => {
     const t = E[i], st = x ? (x.w === -1 ? 'draw' : x.w === i ? 'win' : 'lose') : '';
-    const sub = x && x.ff ? (x.w === i ? 'Wins by forfeit' : 'Forfeited') : x ? (x.w === -1 ? 'Draw' : x.w === i ? 'Winner' : 'Lost') : fin ? seed(i) : rankTxt('t2', t);
+    const sub = x && x.ff ? (x.w === i ? 'Wins by forfeit' : 'Forfeited') : x ? (x.w === -1 ? 'Draw' : x.w === i ? 'Winner' : 'Lost') : fin ? seed(i) : rankTxt(MI[id].ev, t);
     return `<div class="sc-r ${st} ${trackHit(t) ? 'tracked' : ''}" title="${esc(t)}">${avs(t)}<span class="nm"><b>${esc(pin ? t : tShort(t))}</b><small>${esc(sub)}</small></span><label class="kin big"><span class="sr">Score for ${esc(t)}</span><input id="s-${id}-${i}" type="number" inputmode="numeric" min="0" max="999" placeholder="–" value="${num(s[i]) ? +s[i] : ''}" data-s="${id}" data-i="${i}" ${lock || (x && x.ff) ? 'disabled' : ''}></label></div>`;
   };
   return `<div class="sc">${row(0)}<div class="vs">VS</div>${row(1)}</div>`;
@@ -1223,10 +1289,37 @@ function acts(id, lock){
 function card(id){
   const m = MI[id], E = m.p, ws = EDIT ? warns(m) : [];
   return `<article class="match card ${done(id) ? 'done' : ''}" id="card-${id}" style="--cc:${EV[m.ev].cc}">
-    <div class="mh"><span class="mid">${id}</span><span class="stn">${esc(m.loc)}</span><span class="when">${esc(fmtShort(m.w))}</span></div>
+    <div class="mh"><span class="mid">${id}</span><span class="stn">${esc(m.loc)}</span><span class="when">${m.w || m.final ? esc(fmtShort(m.w)) : ''}</span></div>
     <div class="mt">${pill(status(id))}<span class="acts">${acts(id, !EDIT)}</span></div>
     ${lobby(m.ev) ? rowsFFA(id, E, !EDIT) : rowsT2(id, E, !EDIT)}
     ${ws.length ? `<div class="mf warns">${ws.map(w => `<span class="${w.w ? 'w' : 'i2'}">${ic(w.w ? 'alert' : 'info')}<span>${esc(w.t)}</span></span>`).join('')}</div>` : ''}
+  </article>`;
+}
+// The Challenger 2v2 as one banner: the two teams, the series score, and a row per game.
+function bo3Card(){
+  const S3 = series(), [A, B] = S3.teams;
+  const team = t => `<div class="bo3-t ${S3.winner === t ? 'win' : S3.winner ? 'lose' : ''} ${trackHit(t) ? 'tracked' : ''}"><span class="avs">${t.split(' & ').map(n => av(n, 'lg')).join('')}</span><b class="display">${esc(tShort(t))}</b><small>${esc(t.split(' & ').join(' · '))}</small></div>`;
+  const game = g => {
+    const m = MI[g.id], s = (S.r[g.id] || {}).s || [], x = g.x, wt = x && x.w >= 0 ? m.p[x.w] : null;
+    const cell = t => {
+      const j = m.p.indexOf(t), v = s[j];
+      if (!EDIT) return `<b class="bo3-v ${x || num(v) ? '' : 'e'}">${x && x.ff ? (wt === t ? 'W' : 'FF') : num(v) ? +v : '–'}</b>`;
+      return `<label class="kin big"><span class="sr">Game ${g.n} score for ${esc(t)}</span><input id="s-${g.id}-${j}" type="number" inputmode="numeric" min="0" max="999" placeholder="–" value="${num(v) ? +v : ''}" data-s="${g.id}" data-i="${j}" ${g.dead || (x && x.ff) ? 'disabled' : ''}></label>`;
+    };
+    return `<div class="bo3-g ${g.dead ? 'dead' : ''} ${x ? 'done' : ''}" id="card-${g.id}"><span class="bo3-n"><b>Game ${g.n}</b><small>${g.id}</small></span>
+      <div class="bo3-sc ${wt === A ? 'wa' : wt === B ? 'wb' : ''}">${cell(A)}<span class="bo3-dash">–</span>${cell(B)}</div>
+      <span class="bo3-st">${pill(status(g.id))}<span class="acts">${acts(g.id, !EDIT || g.dead)}</span></span></div>`;
+  };
+  const level = S3.games.some(g => g.x && g.x.w === -1);
+  const note = level ? {w:1, i:'zap', t:'A game can’t end level. Replay it and update the score.'}
+    : S3.winner ? {i:'check', t:`${tShort(S3.winner)} win the series ${Math.max(...S3.w)}–${Math.min(...S3.w)}.`}
+    : {i:'info', t:'First team to win 2 games takes the Challenger 2v2 title.'};
+  return `<article class="match card bo3 ${S3.winner ? 'done' : ''}" style="--cc:${EV.c2.cc}" aria-label="Challenger 2v2, best of 3">
+    <div class="mh"><span class="mid">CHALLENGER 2V2</span><span class="stn">Best of 3 · Paradise Room</span></div>
+    <div class="bo3-head">${team(A)}<div class="bo3-score" aria-label="Series score ${S3.w[0]} to ${S3.w[1]}"><span class="display"><b>${S3.w[0]}</b><i>–</i><b>${S3.w[1]}</b></span><small>${S3.winner ? 'Final' : 'Series'}</small></div>${team(B)}</div>
+    ${S3.winner ? `<div class="crown">${ic('crown')}<div><small>Challenger 2v2 champions</small><b>${esc(tShort(S3.winner))}</b></div></div>` : ''}
+    <div class="bo3-games">${S3.games.map(game).join('')}</div>
+    <div class="lnote ${note.w ? 'warn' : ''}">${ic(note.i)}<span>${note.t}</span></div>
   </article>`;
 }
 // The Grand Final for FFA and 2v2; for the Challenger group the same card is the wildcard play-in.
@@ -1261,7 +1354,7 @@ function finalCard(ev){
 }
 function standCard(ev){
   const T = table(ev), F = finalists(ev), fin = new Set(F.names), lb = lobby(ev);
-  const title = {ffa:'Leaderboard', ch:'Challenger table'}[ev] || 'League table';
+  const title = {ffa:'Leaderboard', ch:'Challenger table', c2:'Challenger 2v2'}[ev] || 'League table';
   const head = lb ? [['#','Rank'],['Player'],['P','Played'],['1st','First places'],['K','Kills'],['Pts','Points']] : [['#','Rank'],['Team'],['P','Played'],['W','Won'],['D','Drawn'],['L','Lost'],['±','Score difference'],['Pts','Points']];
   const rows = T.rows.map((r,i) => {
     const cells = lb ? [r.p, r.w, r.k, r.pts] : [r.p, r.w, r.d, r.l, sgn(r.sf - r.sa), r.pts];
@@ -1270,7 +1363,7 @@ function standCard(ev){
   }).join('');
   const pts = lb ? `1st ${RR.place[0]} · 2nd ${RR.place[1]} · 3rd ${RR.place[2]} · 4th ${RR.place[3]}${RR.kill ? ` · ${RR.kill} per kill` : ''}` : `Win ${RR.win} · draw ${RR.draw} · loss ${RR.loss}`;
   const ties = lb ? 'Ties split by most 1st places, then most kills.' : 'Ties split by score difference, then score for.';
-  const goes = ev === 'ch' ? 'Places count across the whole lobby, hosts included. Hosts score nothing here. #1 plays the wildcard play-in.'
+  const goes = ev === 'ch' ? '#1 plays the wildcard play-in.'
     : ev === 'ffa' && CHON ? `Top ${T.adv - 1} reach the final; #${T.adv} plays the Challenger #1 for the last seat.` : `Top ${T.adv} reach the final.`;
   return `<article class="match card league" style="--cc:${EV[ev].cc}" aria-label="${title}">
     <div class="mh"><span class="mid">${title}</span><span class="when">${T.done}/${T.total} played</span></div>
@@ -1282,7 +1375,7 @@ function standCard(ev){
 
 /* ---------------- Highlights ---------------- */
 // Awards worked out from what organisers already enter: FFA places and kills, and 2v2 scores. Only league
-// matches count, so finals and Challenger lobbies (where FFA players host) never feed them. An award only
+// matches count, so finals and the Challenger league never feed them. An award only
 // shows once someone has earned it, and players who tie share it.
 const HL_MIN = 3; // lobbies a player needs before the per-lobby averages count
 function best(rows, score, ok = v => v > 0, lower = false){
@@ -1352,17 +1445,18 @@ function hlCard(x){
 
 /* ---------------- Views ---------------- */
 const unitTxt = ev => ev === 'ffa' ? D.ffa.length + ' players' : ev === 'ch' ? D.ch.length + ' newcomers' : D.teams.length + ' teams';
-const chFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} lobbies, each with 2 newcomers and 2 top-10 hosts. Places count across the whole lobby; hosts score nothing here. Challenger #1 plays FFA #${RR.ffaAdv} for the last Grand Final seat.`;
+const chFfaFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} four-player lobbies: 4 matches each, and everyone meets every other newcomer twice. Points for finishing place; Challenger #1 plays FFA #${RR.ffaAdv} for the last Grand Final seat.`;
+const chFmt = () => `${chFfaFmt()}${IDS.c2.length ? ` In the Challenger 2v2, ${D.chTeams.map(tShort).join(' and ')} play a best of 3; the first to 2 wins takes the title.` : ''}`;
 function viewOverview(){
-  const now = NOW(), f0 = MATCHES[0], firstT = f0.w.start, lastEnd = MATCHES[MATCHES.length-1].w.end;
+  const now = NOW(), f0 = TIMED[0], firstT = f0.w.start, lastEnd = TIMED[TIMED.length-1].w.end;
   let eb = 'Right now', big, list = [], lh = 'In the Paradise Room', cd = '';
   if (now < firstT){
     eb = 'Kick-off countdown'; big = `${f0.w.dow}, Nov ${f0.w.day} · ${f0.w.a} PM`; lh = 'Opening matches';
     cd = `<div class="cd" id="cd" data-t="${+firstT}" role="timer" aria-label="Time until kick-off"><div><b data-u="d">0</b><span>Days</span></div><div><b data-u="h">00</b><span>Hrs</span></div><div><b data-u="m">00</b><span>Min</span></div><div><b data-u="s">00</b><span>Sec</span></div></div>`;
-    list = MATCHES.filter(m => sameDay(m.w.start, firstT)).slice(0, 4);
+    list = TIMED.filter(m => sameDay(m.w.start, firstT)).slice(0, 4);
   } else if (now > lastEnd){ big = 'League stage complete'; lh = ''; }
   else {
-    const live = MATCHES.filter(m => now >= m.w.start && now <= m.w.end), next = MATCHES.filter(m => m.w.start > now);
+    const live = TIMED.filter(m => now >= m.w.start && now <= m.w.end), next = TIMED.filter(m => m.w.start > now);
     big = live.length ? `${live[0].id} is live now` : next.length ? `Next up · ${next[0].w.dow} ${next[0].w.day}, ${next[0].w.a} PM` : 'All league matches played';
     list = (live.length ? [...live, ...next.filter(m => sameDay(m.w.start, live[0].w.start))] : next.filter(m => sameDay(m.w.start, next[0].w.start))).slice(0, 4);
     if (!live.length) lh = 'Coming up';
@@ -1371,8 +1465,8 @@ function viewOverview(){
   const nx = list.map(m => `<li><a href="#/${EV[m.ev].path}?m=${m.id}"><time>${esc(m.w.a)} PM</time><span class="dot" style="--cc:${EV[m.ev].cc}"></span><span>${m.id} · ${esc(who(m))}</span></a></li>`).join('');
   const dn = MATCHES.filter(m => done(m.id)).length;
   const due = MATCHES.filter(m => status(m.id).k === 'warn');
-  const today = MATCHES.filter(m => sameDay(now, m.w.start));
-  const upOff = MATCHES.filter(m => m.w.end >= now && !done(m.id) && warns(m).some(w => w.w)).slice(0, 6);
+  const today = TIMED.filter(m => sameDay(now, m.w.start));
+  const upOff = TIMED.filter(m => m.w.end >= now && !done(m.id) && warns(m).some(w => w.w)).slice(0, 6);
   const HL = highlights();
   const ecard = ev => {
     const E = EV[ev], T = table(ev), ch = champion(ev);
@@ -1448,40 +1542,58 @@ function viewChallengers(){
   ${drawBanner(now)}
   <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-board)">${ic('zap')}</span>Registered Challengers <small>${plural(reg.length, 'player')}</small></h2><div class="chgrid">${cards}</div></section>`;
 }
-function viewEvent(ev){
+// The Challenger page switches between its FFA lobbies and its 2v2 series, each at its own address.
+const chToggle = cur => IDS.c2.length ? `<nav class="chtog" aria-label="Challenger event">${[['ffa', '#/challenger', 'crosshair', 'FFA', plural(IDS.ch.length, 'lobby', 'lobbies')], ['2v2', '#/challenger/2v2', 'users', '2v2', 'Best of 3']].map(([k, href, i, l, sub]) =>
+  `<a href="${href}" ${k === cur ? 'aria-current="page"' : ''} style="--cc:${k === 'ffa' ? EV.ch.cc : EV.c2.cc}">${ic(i)}<span><b>${l}</b><small>${sub}</small></span></a>`).join('')}</nav>` : '';
+const ringHTML = (dn, tot) => { const C = 2 * Math.PI * 46, pct = tot ? dn / tot : 0; return `<div class="ring" aria-label="${dn} of ${tot} played"><svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="46" fill="none" stroke="var(--sunk)" stroke-width="8"/>${pct ? `<circle cx="52" cy="52" r="46" fill="none" stroke="var(--cc)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C*pct).toFixed(1)} ${C.toFixed(1)}"/>` : ''}</svg><div><b>${dn}/${tot}</b><small>played</small></div></div>`; };
+function viewCh2(){
+  const S3 = series(), [A, B] = S3.teams, live = IDS.c2.filter(id => !S3.dead.has(id)), dn = live.filter(done).length;
+  return `<section class="ghead glass art art-ch" style="--cc:${EV.c2.cc}">
+    <div><span class="badge">${ic('users')}CH 2v2 · Paradise Room · best of 3</span><h1 class="display">${EV.c2.name}</h1>
+    <p class="fmt">${esc(tShort(A))} take on ${esc(tShort(B))} in a best of 3. Enter each team’s score per game; the higher score wins the game, and the first team to win 2 games takes the Challenger 2v2 title.</p>
+    <div class="meta"><span>${ic('users')}${plural(D.chTeams.length, 'team')}</span><span>${ic('cal')}Best of 3</span><span>${ic('trophy')}Challenger 2v2 title</span>${S3.winner ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(tShort(S3.winner))}</span>` : ''}</div></div>
+    ${ringHTML(dn, live.length)}
+  </section>
+  ${chToggle('2v2')}
+  ${EDIT ? `<div class="subtabs"><span class="hint">${ic('pointer')}Type each team’s score per game. Higher score wins</span></div>` : ''}
+  <div class="ch2">${bo3Card()}</div>`;
+}
+function viewEvent(ev, sub){
+  if (ev === 'ch' && sub === '2v2' && IDS.c2.length) return viewCh2();
   const E = EV[ev], T = table(ev), ids = IDS[ev], now = NOW(), ch = champion(ev);
-  const pct = T.total ? T.done / T.total : 0, C = 2 * Math.PI * 46;
+  const dn = ids.filter(done).length;
   const fmt = ev === 'ffa'
     ? `16 players across 20 four-player lobbies, 5 matches each. Points for finishing place${RR.kill ? ' plus kills' : ''}; no-shows score 0. ${CHON ? `The top ${T.adv - 1} on the leaderboard play the Grand Final; #${T.adv} plays the Challenger #1 for the last seat.` : `The top ${T.adv} on the leaderboard play the Grand Final.`}`
-    : ev === 'ch' ? chFmt()
+    : ev === 'ch' ? chFfaFmt()
     : `5 fixed teams in a full round robin: 10 matches, 4 per team. Enter each team’s score; the higher score wins. The top ${T.adv} teams meet in the Final.`;
   const isDue = id => status(id).k === 'warn';
   const filt = id => UI.f === 'all' || (UI.f === 'todo' && !done(id)) || (UI.f === 'done' && done(id)) || (UI.f === 'due' && isDue(id));
   const shown = ids.filter(filt);
   const days = [...new Set(shown.map(id => MI[id].date))];
-  // The Challenger lobbies are one short series, so they sit together instead of under day headings.
-  const list = ev === 'ch' ? (shown.length ? `<section class="dayblk"><h2 class="day-h glass display">Challenger lobbies<small>${plural(shown.length, 'match', 'matches')}</small></h2><div class="mgrid">${shown.map(card).join('')}</div></section>` : emptyHTML('Nothing here', 'No matches fit this filter.')) : days.map(dk => {
+  // Challenger lobbies have no dates, so they sit together instead of under day headings.
+  const list = ev === 'ch' ? (shown.length ? `<section class="dayblk"><h2 class="day-h glass display">Challenger FFA lobbies<small>${plural(shown.length, 'match', 'matches')}</small></h2><div class="mgrid">${shown.map(card).join('')}</div></section>` : emptyHTML('Nothing here', 'No matches fit this filter.')) : days.map(dk => {
     const ms = shown.filter(id => MI[id].date === dk), w = MI[ms[0]].w;
     return `<section class="dayblk"><h2 class="day-h glass display">${w.dowl}, Nov ${w.day}${sameDay(now, w.start) ? ' <span class="pill today">Today</span>' : ''}<small>${plural(ms.length, 'match', 'matches')}</small></h2><div class="mgrid">${ms.map(card).join('')}</div></section>`;
   }).join('') || emptyHTML('Nothing here', 'No matches fit this filter.');
-  const segs = [['all','All',ids.length], ['todo','To play',ids.filter(id => !done(id)).length], ['due','Needs result',ids.filter(isDue).length], ['done','Done',T.done]];
+  const segs = [['all','All',ids.length], ['todo','To play',ids.filter(id => !done(id)).length], ['due','Needs result',ids.filter(isDue).length], ['done','Done',dn]];
   return `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
     <div><span class="badge">${ic(E.icon)}${E.short} · Paradise Room · 20 min</span><h1 class="display">${E.name}</h1><p class="fmt">${fmt}</p>
-    <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${T.total} matches</span><span>${ic('trophy')}${ev === 'ch' ? '#1 to the play-in' : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + play-in winner to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
-    <div class="ring" aria-label="${T.done} of ${T.total} played"><svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="46" fill="none" stroke="var(--sunk)" stroke-width="8"/>${pct ? `<circle cx="52" cy="52" r="46" fill="none" stroke="var(--cc)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C*pct).toFixed(1)} ${C.toFixed(1)}"/>` : ''}</svg><div><b>${T.done}/${T.total}</b><small>played</small></div></div>
+    <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${ids.length} matches</span><span>${ic('trophy')}${ev === 'ch' ? '#1 to the play-in' : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + play-in winner to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
+    ${ringHTML(dn, ids.length)}
   </section>
+  ${ev === 'ch' ? chToggle('ffa') : ''}
   <div class="evgrid">
     <aside class="evside" aria-label="Standings and final">${standCard(ev)}${finalCard(ev)}</aside>
     <div>
-      <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? `Tap each player’s finishing place${ev === 'ch' ? ', hosts included' : ''}, then add kills` : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
+      <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? 'Tap each player’s finishing place, then add kills' : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
       ${list}
     </div>
   </div>`;
 }
 function viewSchedule(){
-  const now = NOW(), days = [...new Set(MATCHES.map(m => m.date))];
+  const now = NOW(), days = [...new Set(TIMED.map(m => m.date))];
   const chip = (d, top, bot, td) => `<button class="dayb ${td ? 'today' : ''}" data-act="day" data-d="${d}" aria-pressed="${UI.day === d}"><small>${top}</small><b>${bot}</b></button>`;
-  const chips = chip('all', 'All', 'Days') + days.map(dk => { const w = MATCHES.find(m => m.date === dk).w; return chip(dk, w.dow, w.day, sameDay(now, w.start)); }).join('');
+  const chips = chip('all', 'All', 'Days') + days.map(dk => { const w = TIMED.find(m => m.date === dk).w; return chip(dk, w.dow, w.day, sameDay(now, w.start)); }).join('');
   return `<div class="toolbar glass">
     <div class="seg" role="group" aria-label="Event">${[['all','All','list'], ...EVS.map(ev => [ev, EV[ev].short, EV[ev].icon])].map(([k,l,i]) => `<button class="${UI.sev === k ? 'on' : ''}" data-act="sev" data-v="${k}" aria-pressed="${UI.sev === k}" aria-label="${l}">${ic(i)}<span>${l}</span></button>`).join('')}</div>
     ${UI.only ? `<button class="chip on" data-act="only-x" aria-label="Show all matches again">${ic(UI.only === 'done' ? 'check' : 'alert')}${UI.only === 'done' ? 'Finished only' : 'Waiting for a result'}${ic('x')}</button>` : ''}
@@ -1492,18 +1604,19 @@ function viewSchedule(){
 }
 function schedList(){
   const only = m => !UI.only || (UI.only === 'done' ? done(m.id) : status(m.id).k === 'warn');
-  const ms = MATCHES.filter(m => (UI.sev === 'all' || m.ev === UI.sev) && (UI.day === 'all' || m.date === UI.day) && !(UI.hideDone && done(m.id)) && only(m));
+  const ms = MATCHES.filter(m => (UI.sev === 'all' || m.ev === UI.sev || (UI.sev === 'ch' && m.ev === 'c2')) && (UI.day === 'all' || m.date === UI.day) && !(UI.hideDone && done(m.id)) && only(m));
   if (!ms.length) return emptyHTML('No matches', 'Nothing fits these filters.');
-  return [...new Set(ms.map(m => m.date))].map(dk => {
-    const xs = ms.filter(m => m.date === dk), w = xs[0].w;
+  const dated = ms.filter(m => m.w), open = ms.filter(m => !m.w);
+  return [...new Set(dated.map(m => m.date))].map(dk => {
+    const xs = dated.filter(m => m.date === dk), w = xs[0].w;
     return `<section class="day"><h2 class="day-h glass display">${w.dowl}, Nov ${w.day}<small>${plural(xs.length, 'match', 'matches')}</small></h2><div class="rows card">${xs.map(schedRow).join('')}</div></section>`;
-  }).join('');
+  }).join('') + (open.length ? `<section class="day"><h2 class="day-h glass display">Challenger league<small>${plural(open.length, 'match', 'matches')}</small></h2><div class="rows card">${open.map(schedRow).join('')}</div></section>` : '');
 }
 function schedRow(m){
   const E = EV[m.ev], rt = resText(m.id), wn = EDIT ? warns(m).filter(w => w.w).length : 0;
   const nm = x => trackHit(x) ? `<mark>${esc(lobby(m.ev) ? x : tShort(x))}</mark>` : esc(lobby(m.ev) ? x : tShort(x));
   const who = lobby(m.ev) ? m.p.map(nm).join(', ') : m.p.map(nm).join(' vs ');
-  return `<a class="row ${done(m.id) ? 'done' : ''}" href="#/${E.path}?m=${m.id}" style="--cc:${E.cc}"><time>${m.w.a}<small>to ${m.w.b} PM</small></time><span class="g"><span class="gico">${ic(E.icon)}</span><div><b>${E.name}</b><span>${m.id}</span></div></span><span class="p">${who}${rt ? `<small>${esc(rt)}</small>` : ''}${wn && !done(m.id) ? `<small style="color:var(--warn)">${plural(wn, 'heads-up', 'heads-ups')}</small>` : ''}</span><span class="s">${esc(m.loc)}</span><span class="st">${pill(status(m.id))}</span></a>`;
+  return `<a class="row ${done(m.id) ? 'done' : ''}" href="#/${E.path}?m=${m.id}" style="--cc:${E.cc}">${m.w ? `<time>${m.w.a}<small>to ${m.w.b} PM</small></time>` : '<time></time>'}<span class="g"><span class="gico">${ic(E.icon)}</span><div><b>${E.name}</b><span>${m.id}</span></div></span><span class="p">${who}${rt ? `<small>${esc(rt)}</small>` : ''}${wn && !done(m.id) ? `<small style="color:var(--warn)">${plural(wn, 'heads-up', 'heads-ups')}</small>` : ''}</span><span class="s">${esc(m.loc)}</span><span class="st">${pill(status(m.id))}</span></a>`;
 }
 function viewPlayers(){
   return `<div class="toolbar glass"><div class="field">${ic('search')}<label for="pq" class="sr">Filter players</label><input id="pq" type="search" placeholder="Filter players" value="${esc(UI.pq)}" autocomplete="off" spellcheck="false"><button class="ib sm clr" data-act="clr" data-for="pq" aria-label="Clear filter">${ic('x')}</button></div><span class="grow"></span><span class="count">${PLAYERS.length} players</span></div><div class="pgrid" id="plList">${playerList()}</div>`;
@@ -1518,24 +1631,24 @@ function playerList(){
     if (p.ffa){ const T = table('ffa'), i = T.rows.findIndex(r => r.n === p.n), r = T.rows[i]; form = r.form; tags.push(`<span class="tag" style="--cc:${EV.ffa.cc}">FFA · #${i+1} · ${plural(r.pts, 'pt')}</span>`); }
     if (p.team){ const T = table('t2'), i = T.rows.findIndex(r => r.n === p.team); tags.push(`<span class="tag" style="--cc:${EV.t2.cc}">2v2 · ${esc(tShort(p.team))} · #${i+1}</span>`); }
     if (p.ch){ const T = table('ch'), i = T.rows.findIndex(r => r.n === p.n), r = T.rows[i]; form = r.form; tags.push(`<span class="tag" style="--cc:${EV.ch.cc}">Challenger · #${i+1} · ${plural(r.pts, 'pt')}</span>`); }
-    else if (p.ms.some(m => m.ev === 'ch')) tags.push(`<span class="tag" style="--cc:${EV.ch.cc}">Challenger host</span>`);
-    const left = p.ms.filter(m => !done(m.id) && m.w.end >= now), next = left[0];
-    const off = EDIT ? left.filter(m => D.prio[p.n] && !D.prio[p.n].includes(m.w.dow)).length : 0;
+    if (p.c2){ const S3 = series(), i = S3.teams.indexOf(p.c2); tags.push(`<span class="tag" style="--cc:${EV.c2.cc}">CH 2v2 · ${esc(tShort(p.c2))} · ${S3.w[i]}–${S3.w[1-i]}</span>`); }
+    const left = p.ms.filter(m => !done(m.id) && (!m.w || m.w.end >= now)), next = left[0];
+    const off = EDIT ? left.filter(m => m.w && D.prio[p.n] && !D.prio[p.n].includes(m.w.dow)).length : 0;
     // Count each event separately: someone in both plays 5 FFA + 4 2v2, and "x/9" read as an uneven schedule.
     const tk = trackHit(p.n), played = Object.keys(EV).map(ev => { const ms = p.ms.filter(m => m.ev === ev); return ms.length ? `${EV[ev].short} ${ms.filter(m => done(m.id)).length}/${ms.length}` : ''; }).filter(Boolean).join(' · ');
     return `<article class="pcard card ${tk ? 'tracked' : ''}"><div class="ptop">${av(p.n, 'lg')}<div><h3 class="display">${esc(p.n)}</h3>${EDIT ? `<p>Priority days: ${D.prio[p.n] ? D.prio[p.n].join(' · ') : 'not given'}</p>` : ''}</div></div>
       <div class="tags">${tags.join('')}</div>
       ${form.length ? `<div class="meta"><span>${p.ch ? 'Challenger' : 'FFA'} form</span><span class="form" aria-label="${p.ch ? 'Challenger' : 'FFA'} finishing places">${form.map(fchip).join('')}</span></div>` : ''}
-      <div class="meta"><span>${ic('check')}${played} played</span><span>${ic('clock')}${next ? `Next: ${next.w.dow} ${next.w.day} · ${next.w.a} PM · ${next.id}` : 'No matches left'}</span>${off ? `<span style="color:var(--warn)">${ic('alert')}${plural(off, 'match', 'matches')} on an off day</span>` : ''}</div>
+      <div class="meta"><span>${ic('check')}${played} played</span><span>${ic('clock')}${next ? `Next: ${next.w ? `${next.w.dow} ${next.w.day} · ${next.w.a} PM · ` : ''}${next.id}` : 'No matches left'}</span>${off ? `<span style="color:var(--warn)">${ic('alert')}${plural(off, 'match', 'matches')} on an off day</span>` : ''}</div>
       <div class="pact"><button class="btn" data-act="pmodal" data-n="${esc(p.n)}">${ic('list')}Matches</button><button class="btn ${tk ? 'trk' : ''}" data-act="trackp" data-n="${esc(p.n)}" aria-pressed="${tk}">${ic('target')}${tk ? 'Tracking' : 'Track'}</button></div></article>`;
   }).join('');
 }
 function playerModal(n){
   const p = PLAYERS.find(x => x.n === n); if (!p) return;
   let lastD = '';
-  const html = `<div class="tl">${p.ms.map(m => { const hd = m.date !== lastD ? `<div class="tl-d">${m.w.dowl}, Nov ${m.w.day}</div>` : ''; lastD = m.date; return hd + `<a href="#/${EV[m.ev].path}?m=${m.id}" data-act="modal-x"><time>${m.w.a}–${m.w.b} PM</time><span><b>${m.id} · ${EV[m.ev].short}</b><small>${esc(myRes(m, n))}</small></span>${pill(status(m.id))}</a>`; }).join('')}</div>`;
+  const html = `<div class="tl">${p.ms.map(m => { const dk = m.w ? m.date : 'open', hd = dk !== lastD ? `<div class="tl-d">${m.w ? `${m.w.dowl}, Nov ${m.w.day}` : 'Challenger league'}</div>` : ''; lastD = dk; return hd + `<a href="#/${EV[m.ev].path}?m=${m.id}" data-act="modal-x"><time>${m.w ? `${m.w.a}–${m.w.b} PM` : ''}</time><span><b>${m.id} · ${EV[m.ev].short}</b><small>${esc(myRes(m, n))}</small></span>${pill(status(m.id))}</a>`; }).join('')}</div>`;
   const tk = trackHit(n);
-  openModal({title:n, sub:[p.ffa ? 'COD FFA' : '', p.team ? `COD 2v2 with ${esc(first(p.team.split(' & ').find(x => x !== n)))}` : '', p.ch ? 'COD Challenger' : ''].filter(Boolean).join(' · '), lead:av(n, 'lg'), html,
+  openModal({title:n, sub:[p.ffa ? 'COD FFA' : '', p.team ? `COD 2v2 with ${esc(first(p.team.split(' & ').find(x => x !== n)))}` : '', p.ch ? 'COD Challenger' : '', p.c2 ? `Challenger 2v2 with ${esc(first(p.c2.split(' & ').find(x => x !== n)))}` : ''].filter(Boolean).join(' · '), lead:av(n, 'lg'), html,
     actions:[{label:tk ? 'Stop tracking' : 'Track player', icon:'target', fn:() => setTrack(tk ? '' : n)}, {label:'Close', cls:'primary', focus:true}]});
 }
 function rulesModal(){
@@ -1560,6 +1673,11 @@ function standingsText(){
     L.push('', `COD Challenger table (${C.done}/${C.total} played)`);
     C.rows.forEach((r,i) => L.push(`${i+1}. ${r.n}: ${plural(r.pts, 'pt')} (${plural(r.w, 'win')}, ${plural(r.k, 'kill')})`));
     if (w) L.push(`Wildcard play-in won by ${w}`);
+    if (IDS.c2.length){
+      const S3 = series();
+      L.push('', `COD Challenger 2v2 (best of 3): ${tShort(S3.teams[0])} ${S3.w[0]}–${S3.w[1]} ${tShort(S3.teams[1])}`);
+      if (S3.winner) L.push(`Challenger 2v2 champions: ${tShort(S3.winner)}`);
+    }
   }
   const c1 = champion('ffa'), c2 = champion('t2');
   if (c1 || c2) L.push('', `Champions: FFA ${c1 || 'TBD'} · 2v2 ${c2 ? tShort(c2) : 'TBD'}`);
@@ -1593,7 +1711,7 @@ function render(keepScroll){
   let tab = 'home', html;
   if (parts[0] === 'ffa'){ tab = 'ffa'; html = viewEvent('ffa'); }
   else if (parts[0] === '2v2'){ tab = 't2'; html = viewEvent('t2'); }
-  else if (parts[0] === 'challenger' && (CHON || CHREG)){ tab = 'ch'; html = CHON ? viewEvent('ch') : viewChallengers(); }
+  else if (parts[0] === 'challenger' && (CHON || CHREG)){ tab = 'ch'; html = CHON ? viewEvent('ch', parts[1]) : viewChallengers(); }
   else if (parts[0] === 'schedule'){ tab = 'schedule'; html = viewSchedule(); }
   else if (parts[0] === 'players'){ tab = 'players'; html = viewPlayers(); }
   else html = viewOverview();
