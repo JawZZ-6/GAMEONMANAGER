@@ -76,7 +76,7 @@ describe('COD Challenger group', () => {
     expect(after.text).toContain('being finalised');
   });
 
-  it('draws 7 newcomer-only lobbies: 4 each, and every pair of newcomers meets exactly twice', () => {
+  it('draws 7 newcomer-only lobbies: 4 each, and every pair of newcomers meets', () => {
     const p = load({r:{}, fin:{}, rules:{}});
     const ch = p.run<string[]>('D.ch'), L = Object.values(lineups(p, 'ch'));
     expect(ch).toHaveLength(7);
@@ -84,9 +84,12 @@ describe('COD Challenger group', () => {
     expect(L).toHaveLength(7);
     for (const x of L){ expect(x).toHaveLength(4); expect(x.every(n => ch.includes(n))).toBe(true); }
     for (const n of ch) expect(L.filter(x => x.includes(n))).toHaveLength(4);
-    for (const a of ch) for (const b of ch) if (a < b) expect(L.filter(x => x.includes(a) && x.includes(b))).toHaveLength(2);
-    // The lobby the organisers asked for.
+    // Every pair meets 1 to 3 times (the two requested lobbies share 3 players, so exactly-twice cannot hold).
+    const meets = (a: string, b: string) => L.filter(x => x.includes(a) && x.includes(b)).length;
+    for (const a of ch) for (const b of ch) if (a < b){ expect(meets(a, b)).toBeGreaterThanOrEqual(1); expect(meets(a, b)).toBeLessThanOrEqual(3); }
+    // The lobbies the organisers asked for.
     expect([...p.run<string[]>('MI["CH-01"].p')].sort()).toEqual(['Joseph Silvester', 'Manthi Fernando', 'Pasindu Herath', 'Sasanka Edirisinghe']);
+    expect([...p.run<string[]>('MI["CH-03"].p')].sort()).toEqual(['Manthi Fernando', 'Pasindu Herath', 'Sasanka Edirisinghe', 'Tharindu Nuwan']);
     p.close();
   });
 
