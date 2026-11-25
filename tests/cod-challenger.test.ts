@@ -120,30 +120,35 @@ describe('COD Challenger group', () => {
     p.close();
   });
 
-  it('plays the Challenger 2v2 as a best of 3 on one banner, on its own view', () => {
-    const A = 'Aqeela Raban & Malith Silva', B = 'Lochana Fernando & Prathibha Gayawansha';
-    const banner = (p:ReturnType<typeof load>) => p.run<{games:number; score:string; crown:string | null; pills:string[]}>(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch', '2v2'); if (d.querySelector('.mgrid')) throw new Error('FFA lobbies on the 2v2 view');
-      const b = d.querySelector('.bo3'); return {games:b.querySelectorAll('.bo3-g').length, score:b.querySelector('.bo3-score span').textContent, crown:b.querySelector('.crown') && b.querySelector('.crown b').textContent, pills:[...b.querySelectorAll('.bo3-g .pill')].map(x => x.textContent)}; })()`);
+  it('plays the Challenger 2v2 as a round robin of 3 teams, on its own view', () => {
+    const A = 'Aqeela Raban & Malith Silva', B = 'Lochana Fernando & Prathibha Gayawansha', C = 'Andrew Saliheen & Miran Tennakoon';
+    const view = (p:ReturnType<typeof load>) => p.run<{cards:string[]; ring:string; ffa:boolean; crown:string}>(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch', '2v2');
+      return {cards:[...d.querySelectorAll('.match:not(.league) .mid')].map(x => x.textContent), ring:d.querySelector('.ring b').textContent, ffa:!!d.querySelector('#card-CH-01'), crown:d.querySelector('.ghead .meta').textContent}; })()`);
     const p0 = load({r:{}, fin:{}, rules:{}});
-    expect(p0.run('D.chTeams')).toEqual([A, B]);
-    expect(p0.run('IDS.c2.map(id => MI[id].p)')).toEqual([[A, B], [A, B], [A, B]]);
-    expect(banner(p0)).toEqual({games:3, score:'0–0', crown:null, pills:['To play', 'To play', 'To play']});
+    expect(p0.run('D.chTeams')).toEqual([A, B, C]);
+    // Every pair of teams meets exactly once.
+    const games = p0.run<string[][]>('IDS.c2.map(id => MI[id].p)');
+    expect(games).toEqual([[A, B], [B, C], [C, A]]);
+    expect(new Set(games.map(g => [...g].sort().join('|'))).size).toBe(3);
+    expect(view(p0)).toMatchObject({cards:['CH2-01', 'CH2-02', 'CH2-03'], ring:'0/3', ffa:false});
+    expect(p0.run('champion("c2")')).toBeNull();
+    expect(p0.run('EV.c2.path')).toBe('challenger/2v2');
     p0.close();
 
-    // 1–1 after two games: the decider is still needed.
-    const p1 = load({r:{'CH2-01':{s:[10, 6]}, 'CH2-02':{s:[8, 10]}}, fin:{}, rules:{}});
-    expect(banner(p1)).toMatchObject({score:'1–1', crown:null, pills:['Done', 'Done', 'To play']});
-    expect(p1.run('myRes(MI["CH2-02"], "Prathibha Gayawansha")')).toBe('Won 10–8 vs Aqeela & Malith');
-    p1.close();
+    // A beats B, B beats C, A beats C: A tops the table and takes the title.
+    const p = load({r:{'CH2-01':{s:[10, 6]}, 'CH2-02':{s:[10, 8]}, 'CH2-03':{s:[7, 10]}}, fin:{}, rules:{}});
+    expect(p.run('table("c2").rows.map(r => [r.n, r.w, r.l, r.pts])')).toEqual([[A, 2, 0, 6], [B, 1, 1, 3], [C, 0, 2, 0]]);
+    expect(p.run('champion("c2")')).toBe(A);
+    expect(view(p)).toMatchObject({ring:'3/3'});
+    expect(view(p).crown).toContain('Aqeela & Malith');
+    expect(p.run('myRes(MI["CH2-02"], "Miran Tennakoon")')).toBe('Lost 8–10 vs Lochana & Prathibha');
+    expect(p.run('PLAYERS.find(x => x.n === "Andrew Saliheen")')).toMatchObject({ffa:true, c2:C});
+    p.close();
 
-    // 2–0: the series is over, game 3 isn't needed and drops out of the match count.
-    const p2 = load({r:{'CH2-01':{s:[10, 6]}, 'CH2-02':{s:[10, 9]}}, fin:{}, rules:{}});
-    expect(banner(p2)).toEqual({games:3, score:'2–0', crown:'Aqeela & Malith', pills:['Done', 'Done', 'Not needed']});
-    expect(p2.run('champion("c2")')).toBe(A);
-    expect(p2.run(`(() => { const d = document.createElement('div'); d.innerHTML = viewEvent('ch', '2v2'); return d.querySelector('.ring b').textContent; })()`)).toBe('2/2');
-    expect(p2.run('EV.c2.path')).toBe('challenger/2v2');
-    expect(p2.run('PLAYERS.find(x => x.n === "Lochana Fernando")')).toMatchObject({ch:true, c2:B});
-    p2.close();
+    // Each team wins once with equal margins: level at the top, so no champion until a tiebreaker.
+    const t = load({r:{'CH2-01':{s:[10, 8]}, 'CH2-02':{s:[10, 8]}, 'CH2-03':{s:[10, 8]}}, fin:{}, rules:{}});
+    expect(t.run('champion("c2")')).toBeNull();
+    t.close();
   });
 
   it('keeps the last Grand Final seat for the play-in winner', () => {
