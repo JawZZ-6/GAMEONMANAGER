@@ -453,6 +453,36 @@ button.pick:active{transform:scale(.98)}
 .lnote{margin:9px 12px 6px;font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:flex-start}
 .lnote svg{width:15px;height:15px;margin-top:1px}
 .lnote.warn{color:var(--warn)}
+/* Classified: secret events as dossiers */
+.clgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px;align-items:start}
+.cl-open{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){ .cl-open{grid-template-columns:1fr} }
+.dossier{--cc:var(--warn);position:relative;overflow:hidden;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.dossier.locked{background:repeating-linear-gradient(135deg,transparent 0 16px,color-mix(in srgb,var(--fg) 2.5%,transparent) 16px 32px),var(--glass)}
+.dossier.open{--cc:var(--c-board);border-color:color-mix(in srgb,var(--cc) 40%,transparent);background:radial-gradient(130% 90% at 0% 0%,color-mix(in srgb,var(--cc) 16%,transparent),transparent 60%),var(--glass)}
+.ds-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ds-stamp{display:inline-flex;align-items:center;gap:7px;font:800 12px/1 "Space Grotesk",sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--cc);padding:7px 11px;border:2px solid currentColor;border-radius:7px;transform:rotate(-2deg)}
+.ds-stamp svg{width:14px;height:14px}
+.ds-no{font:700 12px "Space Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ds-redact{display:flex;flex-direction:column;gap:8px}
+.ds-redact i{display:block;height:11px;border-radius:3px;background:color-mix(in srgb,var(--fg) 16%,transparent)}
+.ds-title i{height:22px;border-radius:5px;background:color-mix(in srgb,var(--fg) 24%,transparent)}
+.ds-tease{margin:0;font-size:16px;font-style:italic;color:var(--fg)}
+.ds-name{margin:0;font-size:clamp(30px,4vw,42px);line-height:1}
+.ds-brief{margin:0;color:var(--muted);max-width:62ch}
+.ds-vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:12px;border-radius:16px;background:var(--sunk)}
+.ds-vs .vs{font:800 13px "Space Grotesk",sans-serif;letter-spacing:.1em;color:var(--cc)}
+.ds-side{display:flex;align-items:center;gap:10px;min-width:0}
+.ds-side:last-child{flex-direction:row-reverse;text-align:right}
+.ds-side span{display:flex;flex-direction:column;min-width:0}
+.ds-side b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ds-side small{font-size:12px;color:var(--muted)}
+.ds-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--stroke);font-size:13px;color:var(--muted)}
+.ds-foot > span{display:inline-flex;align-items:center;gap:7px}
+.ds-foot svg{width:15px;height:15px}
+@media (max-width:520px){ .ds-vs{grid-template-columns:1fr;text-align:center} .ds-side,.ds-side:last-child{flex-direction:row;text-align:left} .ds-vs .vs{justify-self:center} }
+/* Seven tabs (with Classified) on a 375px phone */
+.dock:has(a:nth-child(7)) a{font-size:9px;letter-spacing:-.02em;padding-inline:0}
 /* What's at stake */
 .skgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
 .stake .sk-in{display:flex;gap:10px;align-items:flex-start;margin:12px 12px 0;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--cc) 10%,transparent);border:1px solid color-mix(in srgb,var(--cc) 30%,transparent)}
@@ -471,7 +501,8 @@ button.pick:active{transform:scale(.98)}
 .stake ul{list-style:none;margin:4px 0 0;padding:0}
 .stake li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--stroke)}
 .stake li:last-child{border-bottom:0}
-.stake .sk-need{grid-column:1/-1;display:flex;gap:7px;align-items:center;font-size:13px;font-weight:600}
+.stake .sk-need{grid-column:1/-1;display:flex;gap:7px;align-items:center;font-size:13px;font-weight:600;padding-left:36px}
+.stake .sk-teams .sk-need{padding-left:55px} /* lines up with the name, past one avatar (28px + 8px gap) or a team's two */
 .stake .sk-need svg{width:15px;height:15px;flex:none;color:var(--cc)}
 .stake .sk-teams{margin:6px 2px 0}
 .stake .sk-in .sk-need,.stake li.sk-in .sk-need svg{color:var(--gold)}
@@ -848,8 +879,8 @@ Object.assign(IC, {
 const EV = {
   ffa:{key:'ffa', path:'ffa', name:'COD · Free-for-All', short:'FFA', cc:'var(--c-console)', icon:'crosshair', fid:'F-FFA'},
   t2:{key:'t2', path:'2v2', name:'COD · 2v2', short:'2v2', cc:'var(--c-pc)', icon:'users', fid:'F-2V2'},
-  // Newcomers play their own four-player lobbies. The Challenger #1 then plays the FFA leaderboard's last
-  // qualifier in a play-in for the final Grand Final seat.
+  // Newcomers play their own four-player lobbies. The Challenger #1 takes the last Grand Final seat, until the
+  // Duel is revealed (see Classified): then the Challenger #1 plays FFA #4 for it.
   ch:{key:'ch', path:'challenger', name:'COD · Challenger', short:'CH', cc:'var(--c-board)', icon:'zap', fid:'F-PLAYIN'},
   // The Challenger 2v2: a round robin between the newcomer teams, on its own view of the Challenger page.
   c2:{key:'c2', path:'challenger/2v2', name:'COD · Challenger 2v2', short:'CH 2v2', cc:'var(--c-pc)', icon:'users', fid:null}
@@ -886,7 +917,7 @@ const CHON = D.ch.length > 0 && IDS.ch.length > 0; // the Challenger group only 
 const CHREG = (D.ch.length > 0 || D.chTeams.length > 0) && !CHON; // newcomers have signed up but no lobbies are drawn yet, so only the line-up shows
 const EVS = CHON ? ['ffa', 't2', 'ch'] : ['ffa', 't2'];
 const isHost = (m, n) => m.ev === 'ch' && !D.ch.includes(n);
-// Lobbies (FFA and Challenger) are scored by place; the 2v2 games and the head-to-head play-in by score.
+// Lobbies (FFA and Challenger) are scored by place; the 2v2 games and the head-to-head Duel by score.
 const isLobby = id => { const m = MI[id]; return m.ev === 'ffa' || (m.ev === 'ch' && !m.final); };
 const people = m => lobby(m.ev) ? m.p : m.p.flatMap(t => t.split(' & '));
 const teamOf = n => D.teams.find(t => t.split(' & ').includes(n)) || null;
@@ -919,7 +950,7 @@ function moveResults(r){
   });
   return r;
 }
-const pick = c => { const p = clone({r:(c && c.r) || {}, fin:(c && c.fin) || {}, rules:(c && c.rules) || {}}); moveResults(p.r); return p; };
+const pick = c => { const p = clone({r:(c && c.r) || {}, fin:(c && c.fin) || {}, rules:(c && c.rules) || {}, reveal:(c && c.reveal) || {}}); moveResults(p.r); return p; };
 let EDIT = !!BOOT.edit;
 let BASE = pick(BOOT.cod); // the results the server last confirmed
 let S = Object.assign(clone(BASE), {track:''});
@@ -929,6 +960,9 @@ const save = () => { try { localStorage.setItem('cod26-track', S.track || ''); }
 const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:''}; // only: 'done' or 'due', set from the overview tiles
 const RU = () => Object.assign({}, R0, S.rules || {}, {t2Adv:2}); // the 2v2 final is always head-to-head
 let RR = RU(), CACHE = {};
+// Classified events organisers have revealed. Until the Duel is, the Challenger #1 goes straight to the Grand Final.
+const revealed = k => !!(S.reveal && S.reveal[k]);
+const DUEL = () => CHON && revealed('duel');
 function bust(){ CACHE = {}; RR = RU(); }
 
 /* ---------------- Scoring engine ---------------- */
@@ -1005,7 +1039,7 @@ function t2Table(ev = 't2'){
 const table = ev => CACHE[ev] || (CACHE[ev] = lobby(ev) ? ffaTable(ev) : t2Table(ev));
 const rankOf = (ev, n) => table(ev).rows.findIndex(r => r.n === n) + 1;
 const rankTxt = (ev, n) => table(ev).done ? `${{ffa:'Leaderboard', ch:'Challenger', c2:'Challenger 2v2'}[ev] || 'Table'} #${rankOf(ev, n)}` : 'Not ranked yet';
-// The play-in is a head-to-head between the FFA leaderboard's last qualifier and the Challenger #1.
+// The Duel is a head-to-head between the FFA leaderboard's last qualifier and the Challenger #1.
 function playIn(){
   const F = table('ffa'), C = table('ch'), a = F.done ? F.rows[F.adv-1] : null, b = C.done ? C.rows[0] : null;
   const T = {adv:2, done:F.done + C.done, total:F.total + C.total, complete:F.complete && C.complete, tie:F.tie || C.tie};
@@ -1023,12 +1057,18 @@ function finalists(ev){
   if (S.fin && S.fin[ev]) return {names:S.fin[ev], locked:true, prov:false, T};
   const top = T.done ? T.rows.slice(0, T.adv).map(r => r.n) : [];
   if (ev !== 'ffa' || !CHON) return {names:top, locked:false, prov:!T.complete || T.tie, T};
-  // With a Challenger group the last seat goes to the play-in winner, so it stays open until that is played.
+  // With a Challenger group the last seat goes to the Challenger #1, or once the Duel is revealed to its winner,
+  // so it stays open until that is known.
+  if (!DUEL()){
+    const C = table('ch'), c1 = C.done ? C.rows[0].n : null;
+    return {names:c1 ? [...top.slice(0, -1), c1] : top.slice(0, -1), locked:false, prov:!T.complete || T.tie || !C.complete || C.tie || !c1, T, wait:!c1};
+  }
   const w = champion('ch');
   return {names:w ? [...top.slice(0, -1), w] : top.slice(0, -1), locked:false, prov:!T.complete || T.tie || !w, T, wait:!w};
 }
 function champion(ev){
   if (ev === 'c2') return finalists('c2').names[0] || null;
+  if (ev === 'ch' && !DUEL()) return null; // the Duel's winner, which stays secret until it is revealed
   const F = finalists(ev), id = EV[ev].fid;
   if (F.prov || !F.names.length) return null;
   if (ev === 'ffa'){ if (!ffaDone(id, F.names)) return null; return F.names.find(n => S.r[id].pl[n] === 1) || null; }
@@ -1234,8 +1274,8 @@ function confetti(){
 const ghost = (b, s) => `<div class="sc-r ph"><span class="av ghost">?</span><span class="nm"><b>${b}</b><small>${s}</small></span></div>`;
 function rowsFFA(id, E, lock){
   const m = MI[id], fin = !!m.final;
-  // With a Challenger group the Grand Final's last seat waits for the play-in.
-  const seat = fin && m.ev === 'ffa' && finalists('ffa').wait ? ghost('Play-in winner', 'Wildcard play-in') : '';
+  // With a Challenger group the Grand Final's last seat waits for the Challenger #1, or the Duel once revealed.
+  const seat = fin && m.ev === 'ffa' && finalists('ffa').wait ? (DUEL() ? ghost('Duel winner', 'The Duel') : ghost('Challenger #1', 'Top of the Challenger table')) : '';
   if (!E.length) return `<div class="sc">${Array.from({length:RR.ffaAdv - (seat ? 1 : 0)}, (_,i) => ghost('To be decided', `Leaderboard #${i+1}`)).join('')}${seat}</div>`;
   const r = S.r[id] || {}, pl = r.pl || {}, kk = r.k || {};
   return `<div class="sc">${E.map((n,i) => {
@@ -1273,30 +1313,33 @@ function card(id){
     ${ws.length ? `<div class="mf warns">${ws.map(w => `<span class="${w.w ? 'w' : 'i2'}">${ic(w.w ? 'alert' : 'info')}<span>${esc(w.t)}</span></span>`).join('')}</div>` : ''}
   </article>`;
 }
-// The Grand Final for FFA and 2v2; for the Challenger group the same card is the wildcard play-in.
+// The Grand Final for FFA and 2v2; for the Challenger group the same card is the Duel.
 function finalCard(ev){
   const id = EV[ev].fid, F = finalists(ev), E = F.names, ch = champion(ev), T = F.T, pin = ev === 'ch';
   const lock = F.prov;
   const unit = ev === 't2' ? 'teams' : 'players', n = T.adv, left = T.total - T.done;
   const x = ev === 'ffa' ? null : t2Res(id);
-  const what = pin ? 'play-in' : 'final', who = pin ? 'Play-in line-up' : 'Finalists';
+  const what = pin ? 'Duel' : 'final', who = pin ? 'Duel line-up' : 'Finalists';
+  // Before the Duel is revealed, the FFA's last seat waits on the Challenger league as well.
+  const chLeft = ev === 'ffa' && CHON && !DUEL() ? table('ch').total - table('ch').done : 0;
+  const last = DUEL() ? 'the winner of The Duel' : 'the Challenger #1';
   let note;
   if (!lock && x && x.w === -1) note = {w:1, i:'zap', t:`A ${what} cannot end level. Play a decider and update the score.`};
   else if (F.locked) note = {i:'lock', t:`${who} locked in by ${EDIT ? 'you' : 'the organisers'}. League results no longer change this line-up.`};
-  else if (pin && !T.done) note = {i:'info', t:`Challenger #1 plays FFA leaderboard #${RR.ffaAdv} on Game Night, just before the Grand Final. The winner takes the last seat.`};
-  else if (!T.done) note = {i:'info', t:CHON && ev === 'ffa' ? `The top ${n - 1} qualify, and the last seat goes to the winner of the wildcard play-in. These slots fill in as results come in.` : `The top ${n} ${unit} qualify. These slots fill in as results come in.`};
-  else if (T.tie) note = {w:1, i:'zap', t:EDIT ? `Tie at the qualifying spot. Settle it with a tiebreaker, then lock in the ${pin ? 'play-in line-up' : 'finalists'}.` : `Tie at the qualifying spot. A tiebreaker will settle the last place in the ${what}.`};
-  else if (!T.complete) note = {i:'info', t:`Provisional: ${plural(left, pin ? 'FFA or Challenger match' : 'league match', pin ? 'FFA or Challenger matches' : 'league matches')} still to play.${EDIT ? ' Lock in early if some won’t be played.' : ''}`};
-  else if (F.wait) note = {i:'info', t:`League complete. The last seat goes to the winner of the wildcard play-in.`};
+  else if (pin && !T.done) note = {i:'info', t:`The Challenger #1 plays FFA leaderboard #${RR.ffaAdv} on Game Night, just before the Grand Final. The winner takes the last seat.`};
+  else if (!T.done) note = {i:'info', t:CHON && ev === 'ffa' ? `The top ${n - 1} qualify, and the last seat goes to ${last}. These slots fill in as results come in.` : `The top ${n} ${unit} qualify. These slots fill in as results come in.`};
+  else if (T.tie) note = {w:1, i:'zap', t:EDIT ? `Tie at the qualifying spot. Settle it with a tiebreaker, then lock in the ${pin ? 'Duel line-up' : 'finalists'}.` : `Tie at the qualifying spot. A tiebreaker will settle the last place in the ${what}.`};
+  else if (!T.complete || chLeft) note = {i:'info', t:`Provisional: ${plural(left + chLeft, pin || chLeft ? 'FFA or Challenger match' : 'league match', pin || chLeft ? 'FFA or Challenger matches' : 'league matches')} still to play.${EDIT ? ' Lock in early if some won’t be played.' : ''}`};
+  else if (F.wait) note = {i:'info', t:`League complete. The last seat goes to ${last}.`};
   else if (pin) note = {i:'check', t:ch ? `${ch} takes the last Grand Final seat.` : `Line-up confirmed. ${EDIT ? 'Enter each player’s score; the higher score wins.' : 'The higher score wins the last Grand Final seat.'}`};
   else note = {i:'check', t:`League complete. Finalists confirmed. ${EDIT ? 'Enter the final result' : 'The final is played'} on Game Night.`};
-  // An FFA final still waiting on the play-in can't be locked, or the wildcard seat would be lost;
-  // organisers lock the play-in line-up instead, then the final once the play-in is decided.
-  const btn = !EDIT ? '' : F.locked ? `<button class="btn" data-act="unlock" data-ev="${ev}">${ic('unlock')}Unlock ${pin ? 'play-in line-up' : 'finalists'}</button>`
-    : (T.done && E.length && lock && !F.wait) ? `<button class="btn trk" data-act="lock" data-ev="${ev}">${ic('lock')}${pin ? 'Lock in play-in line-up' : `Lock in current top ${n}`}</button>` : '';
+  // An FFA final still waiting on its last seat can't be locked, or that seat would be lost;
+  // organisers lock the Duel line-up instead, then the final once the Duel is decided.
+  const btn = !EDIT ? '' : F.locked ? `<button class="btn" data-act="unlock" data-ev="${ev}">${ic('unlock')}Unlock ${pin ? 'Duel line-up' : 'finalists'}</button>`
+    : (T.done && E.length && lock && !F.wait) ? `<button class="btn trk" data-act="lock" data-ev="${ev}">${ic('lock')}${pin ? 'Lock in Duel line-up' : `Lock in current top ${n}`}</button>` : '';
   return `<article class="match card final" id="card-${id}" style="--cc:${EV[ev].cc}">
-    <div class="mh"><span class="mid">${pin ? 'WILDCARD PLAY-IN' : 'GRAND FINAL'}</span><span class="when">${pin ? 'Game Night · before the final' : 'Game Night · time TBC'}</span></div>
-    ${ch ? `<div class="crown">${ic(pin ? 'zap' : 'crown')}<div><small>${pin ? 'Wildcard to the Grand Final' : `${EV[ev].short} champion${ev === 't2' ? 's' : ''}`}</small><b>${esc(ch)}</b></div></div>` : ''}
+    <div class="mh"><span class="mid">${pin ? 'THE DUEL' : 'GRAND FINAL'}</span><span class="when">${pin ? 'Game Night · before the final' : 'Game Night · time TBC'}</span></div>
+    ${ch ? `<div class="crown">${ic(pin ? 'zap' : 'crown')}<div><small>${pin ? 'Through to the Grand Final' : `${EV[ev].short} champion${ev === 't2' ? 's' : ''}`}</small><b>${esc(ch)}</b></div></div>` : ''}
     <div class="mt">${pill(status(id))}${lock && E.length ? ' <span class="pill">Provisional</span>' : ''}<span class="acts">${acts(id, lock || !EDIT)}</span></div>
     ${ev === 'ffa' ? rowsFFA(id, E, lock || !EDIT) : rowsT2(id, E, lock || !EDIT)}
     <div class="lnote ${note.w ? 'warn' : ''}">${ic(note.i)}<span>${note.t}</span></div>
@@ -1307,17 +1350,19 @@ function standCard(ev){
   const T = table(ev), F = finalists(ev), fin = new Set(F.names), lb = lobby(ev);
   const title = {ffa:'Leaderboard', ch:'Challenger table', c2:'Challenger 2v2 table'}[ev] || 'League table';
   const head = lb ? [['#','Rank'],['Player'],['P','Played'],['1st','First places'],['K','Kills'],['Pts','Points']] : [['#','Rank'],['Team'],['P','Played'],['W','Won'],['D','Drawn'],['L','Lost'],['±','Score difference'],['Pts','Points']];
+  // Before the Duel is revealed, FFA #4 has no route to the final, so only the top 3 are marked.
+  const cut = ev === 'ffa' && CHON && !DUEL() ? T.adv - 1 : T.adv;
   const rows = T.rows.map((r,i) => {
     const cells = lb ? [r.p, r.w, r.k, r.pts] : [r.p, r.w, r.d, r.l, sgn(r.sf - r.sa), r.pts];
-    const adv = F.locked ? fin.has(r.n) : (T.done && i < T.adv);
-    return `<tr class="${adv ? 'adv' : ''} ${!F.locked && T.done && i === T.adv ? 'cut' : ''} ${trackHit(r.n) ? 'tracked' : ''}"><td>${i+1}</td><td><span>${lb ? av(r.n) : avs(r.n)}<span class="tn" title="${esc(r.n)}">${esc(lb ? r.n : tShort(r.n))}</span></span></td>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+    const adv = F.locked ? fin.has(r.n) : (T.done && i < cut);
+    return `<tr class="${adv ? 'adv' : ''} ${!F.locked && T.done && i === cut ? 'cut' : ''} ${trackHit(r.n) ? 'tracked' : ''}"><td>${i+1}</td><td><span>${lb ? av(r.n) : avs(r.n)}<span class="tn" title="${esc(r.n)}">${esc(lb ? r.n : tShort(r.n))}</span></span></td>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
   }).join('');
   const pts = lb ? `1st ${RR.place[0]} · 2nd ${RR.place[1]} · 3rd ${RR.place[2]} · 4th ${RR.place[3]}${RR.kill ? ` · ${RR.kill} per kill` : ''}` : `Win ${RR.win} · draw ${RR.draw} · loss ${RR.loss}`;
   const ties = lb ? 'Ties split by most 1st places, then most kills.' : 'Ties split by score difference, then score for.';
   const c2w = ev === 'c2' ? champion('c2') : null;
-  const goes = ev === 'ch' ? '#1 plays the wildcard play-in.'
+  const goes = ev === 'ch' ? (DUEL() ? '#1 faces FFA #4 in The Duel for the last Grand Final seat.' : '#1 takes the last Grand Final seat.')
     : ev === 'c2' ? (c2w ? `${tShort(c2w)} are the Challenger 2v2 champions.` : T.tie && T.complete ? 'Level at the top: a tiebreaker game decides the title.' : 'The top of the table takes the Challenger 2v2 title.')
-    : ev === 'ffa' && CHON ? `Top ${T.adv - 1} reach the final; #${T.adv} plays the Challenger #1 for the last seat.` : `Top ${T.adv} reach the final.`;
+    : ev === 'ffa' && CHON ? `Top ${T.adv - 1} reach the final; ${DUEL() ? `#${T.adv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `Top ${T.adv} reach the final.`;
   return `<article class="match card league" style="--cc:${EV[ev].cc}" aria-label="${title}">
     <div class="mh"><span class="mid">${title}</span><span class="when">${T.done}/${T.total} played</span></div>
     <table><thead><tr>${head.map(([h,l]) => `<th scope="col"${l ? ` aria-label="${l}" title="${l}"` : ''}>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
@@ -1434,14 +1479,14 @@ function stakeFFA(){
   };
   const gap = (x, h) => { const d = h.pts - x.pts; return d > 0 ? `to close a ${d}-pt gap in ${plural(g[x.n], 'lobby', 'lobbies')}` : `to finish ahead in ${plural(g[x.n], 'lobby', 'lobbies')}`; };
   const seats = CHON ? T.adv - 1 : T.adv, spots = [];
-  [[seats, 'final'], ...(CHON ? [[T.adv, 'playin']] : [])].forEach(([pos, kind]) => {
+  [[seats, 'final'], ...(DUEL() ? [[T.adv, 'playin']] : [])].forEach(([pos, kind]) => {
     const h = T.rows[pos - 1]; if (!h || sure(h, pos)) return;
     const chasers = T.rows.slice(pos).filter(x => canPass(x, h))
       .map(x => ({n:x.n, pts:x.pts, id:mine(x.n)[0] || null, need:(!g[h.n] && g[x.n] === 1 && need(x, h)) || gap(x, h)}));
     spots.push({pos, kind, holder:{n:h.n, pts:h.pts, left:g[h.n]}, chasers});
   });
   const locked = T.rows.filter(x => sure(x, seats)).map(x => x.n);
-  const playin = CHON ? T.rows.filter(x => !locked.includes(x.n) && sure(x, T.adv)).map(x => x.n) : [];
+  const playin = DUEL() ? T.rows.filter(x => !locked.includes(x.n) && sure(x, T.adv)).map(x => x.n) : [];
   return CACHE.sk1 = {left:left.length, locked, playin, spots};
 }
 // 2v2: every way the games left can go (win, draw or loss). Score margins are unknown, so two teams level
@@ -1497,9 +1542,9 @@ function stakeCard(ev){
   let body = '';
   if (lb){
     if (s.locked.length) body += `<div class="sk-in">${ic('shield')}<span><small>Into the Grand Final</small><b>${s.locked.map(esc).join(', ')}</b></span></div>`;
-    if (s.playin.length) body += `<div class="sk-in">${ic('zap')}<span><small>Sure of at least the play-in</small><b>${s.playin.map(esc).join(', ')}</b></span></div>`;
+    if (s.playin.length) body += `<div class="sk-in">${ic('zap')}<span><small>Sure of at least The Duel</small><b>${s.playin.map(esc).join(', ')}</b></span></div>`;
     body += s.spots.map(x => `<section class="sk-spot">
-      <div class="sk-h"><span class="sk-pos">${ORD[x.pos] || '#' + x.pos}</span>${x.kind === 'final' ? 'Last Grand Final seat' : 'Play-in vs the Challenger #1'}</div>
+      <div class="sk-h"><span class="sk-pos">${ORD[x.pos] || '#' + x.pos}</span>${x.kind === 'final' ? (CHON ? 'Last FFA seat in the Grand Final' : 'Last Grand Final seat') : 'The Duel vs the Challenger #1'}</div>
       <div class="sk-hold">${who(x.holder.n)}<span class="sk-st">Defending · ${x.holder.pts} pts · ${x.holder.left ? plural(x.holder.left, 'lobby', 'lobbies') + ' left' : 'all played'}</span></div>
       ${x.chasers.length ? `<ul>${x.chasers.map(c => `<li>${who(c.n)}<span class="sk-st">${c.pts} pts${c.id ? ` · ${go(c.id)}` : ''}</span><span class="sk-need">${ic('target')}${c.need === 'any finish' ? 'Just needs to play' : `Needs ${esc(c.need)}`}</span></li>`).join('')}</ul>` : ''}
     </section>`).join('');
@@ -1515,9 +1560,52 @@ function stakeCard(ev){
   </article>`;
 }
 
+/* ---------------- Classified ---------------- */
+// Secret events for Game Night. Each is a locked dossier until organisers reveal it; reveals are saved on the
+// server, so everyone watching sees them at once. This keeps them off the screen, not out of the page source.
+const CL = [
+  {key:'duel', no:'01', tease:'Someone thought they were out.'},
+  {key:'e2', no:'02', tease:'Not everything on Game Night is on the schedule.', soon:true}, // still being planned: no reveal yet
+];
+const CL_NAME = {duel:'The Duel', e2:'Event 02'};
+const bars = ws => ws.map(w => `<i style="width:${w}%"></i>`).join('');
+function lockedCard(x){
+  return `<article class="dossier card locked" aria-label="Classified event ${x.no}, still locked">
+    <div class="ds-top"><span class="ds-stamp">${ic('lock')}Classified</span><span class="ds-no">Event ${x.no}</span></div>
+    <div class="ds-redact ds-title" aria-hidden="true">${bars([62, 30])}</div>
+    <p class="ds-tease">“${esc(x.tease)}”</p>
+    <div class="ds-redact" aria-hidden="true">${bars([94, 80, 88, 46])}</div>
+    <div class="ds-foot"><span>${ic('clock')}${x.soon ? 'Briefing still in progress' : 'Unlocks when the organisers give the word'}</span>${EDIT && !x.soon ? `<button class="btn primary" data-act="reveal" data-key="${x.key}">${ic('unlock')}Reveal to everyone</button>` : ''}</div>
+  </article>`;
+}
+function duelCard(x){
+  const P = finalists('ch'), [a, b] = P.names, side = (n, s) => `<div class="ds-side">${n ? av(n) : '<span class="av ghost">?</span>'}<span><b>${esc(n || 'To be decided')}</b><small>${s}</small></span></div>`;
+  return `<section class="cl-open" aria-label="Event ${x.no}: The Duel">
+    <article class="dossier card open">
+      <div class="ds-top"><span class="ds-stamp">${ic('unlock')}Declassified</span><span class="ds-no">Event ${x.no}</span></div>
+      <h2 class="display ds-name">The Duel</h2>
+      <p class="ds-tease">“${esc(x.tease)}”</p>
+      <p class="ds-brief">FFA leaderboard #${RR.ffaAdv} gets one last shot at the Grand Final: a 1v1 against the Challenger #1, on Game Night just before the final. The higher score wins, and the winner takes the last Grand Final seat.</p>
+      <div class="ds-vs">${side(a, `FFA leaderboard #${RR.ffaAdv}`)}<span class="vs">VS</span>${side(b, 'Challenger #1')}</div>
+      <div class="meta"><span>${ic('target')}1v1</span><span>${ic('cal')}Game Night · before the final</span><span>${ic('pin')}Paradise Room</span><span>${ic('trophy')}Last Grand Final seat</span></div>
+      ${EDIT ? `<div class="ds-foot"><span>${ic('info')}Revealed to everyone</span><button class="btn" data-act="hide" data-key="${x.key}">${ic('lock')}Hide again</button></div>` : ''}
+    </article>
+    ${finalCard('ch')}
+  </section>`;
+}
+function viewClassified(){
+  const open = CL.filter(x => !x.soon && revealed(x.key)).length;
+  return `<section class="ghead glass clhead" style="--cc:var(--warn)">
+    <div><span class="badge">${ic('lock')}Classified · Game Night</span><h1 class="display">Classified</h1>
+    <p class="fmt">Secret events for Game Night. Each one unlocks here when the organisers give the word, and everyone watching sees it straight away.</p>
+    <div class="meta"><span>${ic('lock')}${plural(CL.length, 'secret event')}</span><span>${ic('unlock')}${open} revealed</span></div></div>
+  </section>
+  <div class="clgrid">${CL.map(x => !x.soon && revealed(x.key) ? duelCard(x) : lockedCard(x)).join('')}</div>`;
+}
+
 /* ---------------- Views ---------------- */
 const unitTxt = ev => ev === 'ffa' ? D.ffa.length + ' players' : ev === 'ch' ? D.ch.length + ' newcomers' : D.teams.length + ' teams';
-const chFfaFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} four-player lobbies: 4 matches each, and everyone meets every other newcomer at least once. Points for finishing place; Challenger #1 plays FFA #${RR.ffaAdv} for the last Grand Final seat.`;
+const chFfaFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} four-player lobbies: 4 matches each, and everyone meets every other newcomer at least once. Points for finishing place; ${DUEL() ? `Challenger #1 faces FFA #${RR.ffaAdv} in The Duel for the last Grand Final seat.` : 'Challenger #1 takes the last Grand Final seat.'}`;
 const chFmt = () => `${chFfaFmt()}${IDS.c2.length ? ` In the Challenger 2v2, ${D.chTeams.map(tShort).join(' and ')} play a round robin; the top of the table takes the title.` : ''}`;
 function viewOverview(){
   const now = NOW(), f0 = TIMED[0], firstT = f0.w.start, lastEnd = TIMED[TIMED.length-1].w.end;
@@ -1543,7 +1631,7 @@ function viewOverview(){
   const ecard = ev => {
     const E = EV[ev], T = table(ev), ch = champion(ev);
     const top = T.done ? T.rows.slice(0, 3).map((r,i) => `<li><span class="rk">${i+1}</span>${lobby(ev) ? av(r.n) : avs(r.n)}<span class="tn">${esc(lobby(ev) ? r.n : tShort(r.n))}</span><b>${r.pts}<small>pts</small></b></li>`).join('') : '';
-    const fmt = ev === 'ffa' ? `16 players, 20 four-player lobbies, 5 each. Points for finishing place. ${CHON ? `Top ${RR.ffaAdv - 1} play the Grand Final; #${RR.ffaAdv} plays the Challenger #1 for the last seat.` : `Top ${RR.ffaAdv} play the Grand Final.`}`
+    const fmt = ev === 'ffa' ? `16 players, 20 four-player lobbies, 5 each. Points for finishing place. ${CHON ? `Top ${RR.ffaAdv - 1} play the Grand Final; ${DUEL() ? `#${RR.ffaAdv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `Top ${RR.ffaAdv} play the Grand Final.`}`
       : ev === 'ch' ? chFmt() : `5 fixed teams, full round robin, 4 matches each. Top ${RR.t2Adv} meet in the Final.`;
     return `<a class="gcard card" href="#/${E.path}" style="--cc:${E.cc}">
       <div class="gtop"><span class="gico">${ic(E.icon)}</span><h3 class="display">${E.name}</h3>${ic('arrow','i go')}</div>
@@ -1644,7 +1732,7 @@ function viewEvent(ev, sub){
   const E = EV[ev], T = table(ev), ids = IDS[ev], now = NOW(), ch = champion(ev);
   const dn = ids.filter(done).length;
   const fmt = ev === 'ffa'
-    ? `16 players across 20 four-player lobbies, 5 matches each. Points for finishing place${RR.kill ? ' plus kills' : ''}; no-shows score 0. ${CHON ? `The top ${T.adv - 1} on the leaderboard play the Grand Final; #${T.adv} plays the Challenger #1 for the last seat.` : `The top ${T.adv} on the leaderboard play the Grand Final.`}`
+    ? `16 players across 20 four-player lobbies, 5 matches each. Points for finishing place${RR.kill ? ' plus kills' : ''}; no-shows score 0. ${CHON ? `The top ${T.adv - 1} on the leaderboard play the Grand Final; ${DUEL() ? `#${T.adv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `The top ${T.adv} on the leaderboard play the Grand Final.`}`
     : ev === 'ch' ? chFfaFmt()
     : `5 fixed teams in a full round robin: 10 matches, 4 per team. Enter each team’s score; the higher score wins. The top ${T.adv} teams meet in the Final.`;
   const isDue = id => status(id).k === 'warn';
@@ -1659,12 +1747,12 @@ function viewEvent(ev, sub){
   const segs = [['all','All',ids.length], ['todo','To play',ids.filter(id => !done(id)).length], ['due','Needs result',ids.filter(isDue).length], ['done','Done',dn]];
   return `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
     <div><span class="badge">${ic(E.icon)}${E.short} · Paradise Room · 20 min</span><h1 class="display">${E.name}</h1><p class="fmt">${fmt}</p>
-    <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${ids.length} matches</span><span>${ic('trophy')}${ev === 'ch' ? '#1 to the play-in' : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + play-in winner to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
+    <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${ids.length} matches</span><span>${ic('trophy')}${ev === 'ch' ? (DUEL() ? '#1 to The Duel' : '#1 to the Grand Final') : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + ${DUEL() ? 'Duel winner' : 'Challenger #1'} to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
     ${ringHTML(dn, ids.length)}
   </section>
   ${ev === 'ch' ? chToggle('ffa') : ''}
   <div class="evgrid">
-    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${finalCard(ev)}</aside>
+    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${ev !== 'ch' || DUEL() ? finalCard(ev) : ''}</aside>
     <div>
       <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? 'Tap each player’s finishing place, then add kills' : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
       ${list}
@@ -1753,7 +1841,7 @@ function standingsText(){
     const C = table('ch'), w = champion('ch');
     L.push('', `COD Challenger table (${C.done}/${C.total} played)`);
     C.rows.forEach((r,i) => L.push(`${i+1}. ${r.n}: ${plural(r.pts, 'pt')} (${plural(r.w, 'win')}, ${plural(r.k, 'kill')})`));
-    if (w) L.push(`Wildcard play-in won by ${w}`);
+    if (w) L.push(`The Duel won by ${w}`);
     if (IDS.c2.length){
       const T2 = table('c2'), w2 = champion('c2');
       L.push('', `COD Challenger 2v2 table (${T2.done}/${T2.total} played)`);
@@ -1769,6 +1857,7 @@ function standingsText(){
 /* ---------------- Router & render ---------------- */
 const TABS = [['home','#/','Overview','home'], ['ffa','#/ffa','FFA','crosshair'], ['t2','#/2v2','2v2','users'], ['schedule','#/schedule','Schedule','cal'], ['players','#/players','Players','user']];
 if (CHON || CHREG) TABS.splice(3, 0, ['ch','#/challenger','Challenger','zap']);
+if (CHON) TABS.splice(4, 0, ['cl','#/classified','Classified','lock']);
 function route(){
   const h = location.hash.replace(/^#\/?/, '');
   const [path, qs] = h.split('?');
@@ -1794,6 +1883,7 @@ function render(keepScroll){
   if (parts[0] === 'ffa'){ tab = 'ffa'; html = viewEvent('ffa'); }
   else if (parts[0] === '2v2'){ tab = 't2'; html = viewEvent('t2'); }
   else if (parts[0] === 'challenger' && (CHON || CHREG)){ tab = 'ch'; html = CHON ? viewEvent('ch', parts[1]) : viewChallengers(); }
+  else if (parts[0] === 'classified' && CHON){ tab = 'cl'; html = viewClassified(); }
   else if (parts[0] === 'schedule'){ tab = 'schedule'; html = viewSchedule(); }
   else if (parts[0] === 'players'){ tab = 'players'; html = viewPlayers(); }
   else html = viewOverview();
@@ -1855,7 +1945,7 @@ function ffModal(id){
 }
 
 /* ---------------- Sync with GameON ---------------- */
-const WRITES = new Set(['pl', 'clear', 'ff', 'lock', 'unlock', 'rules', 'import', 'reset']);
+const WRITES = new Set(['pl', 'clear', 'ff', 'lock', 'unlock', 'rules', 'import', 'reset', 'reveal', 'hide']);
 const eq = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const editing = () => { const a = document.activeElement; return !!(a && a.matches && a.matches('input[data-k],input[data-s]')); };
 // Local edits the server has not confirmed yet, as one change per match, final line-up or rule set.
@@ -1865,6 +1955,7 @@ function pending(){
   new Set([...Object.keys(S.r), ...Object.keys(BASE.r)]).forEach(id => { if (!eq(S.r[id], BASE.r[id])) ch.push({op:'result', id, value:S.r[id] || null}); });
   ['ffa', 't2', 'ch'].forEach(ev => { if (!eq(fin[ev], BASE.fin[ev])) ch.push({op:'finalists', ev, names:fin[ev] || null}); });
   if (!eq(S.rules || {}, BASE.rules)) ch.push({op:'rules', rules:S.rules || {}});
+  ['duel', 'e2'].forEach(key => { const on = !!(S.reveal || {})[key]; if (on !== !!(BASE.reveal || {})[key]) ch.push({op:'reveal', key, on}); });
   return ch;
 }
 // Take the server's results but keep anything this organiser changed and has not saved yet.
@@ -1875,6 +1966,7 @@ function adopt(cod){
   mine.forEach(c => {
     if (c.op === 'result'){ if (c.value) S.r[c.id] = c.value; else delete S.r[c.id]; }
     else if (c.op === 'finalists'){ if (c.names) S.fin[c.ev] = c.names; else delete S.fin[c.ev]; }
+    else if (c.op === 'reveal'){ S.reveal = S.reveal || {}; S.reveal[c.key] = c.on; }
     else S.rules = c.rules;
   });
 }
@@ -1966,7 +2058,18 @@ document.addEventListener('click', e => {
     else openModal({title:`Clear ${MI[id].final ? 'the Final' : id}?`, icon:'reset', tone:'danger', sub:'This removes the places, kills or scores entered for this match.', actions:[{label:'Keep it', focus:true}, {label:'Clear result', cls:'danger', icon:'reset', fn:go}]});
   }
   else if (act === 'ff'){ ffModal(id); }
-  else if (act === 'lock'){ const F = finalists(t.dataset.ev); S.fin = S.fin || {}; S.fin[t.dataset.ev] = F.names.slice(); commit(`${t.dataset.ev === 'ch' ? 'Play-in line-up' : 'Finalists'} locked: ${F.names.map(x => t.dataset.ev === 'ffa' ? first(x) : tShort(x)).join(', ')}`); }
+  else if (act === 'lock'){ const F = finalists(t.dataset.ev); S.fin = S.fin || {}; S.fin[t.dataset.ev] = F.names.slice(); commit(`${t.dataset.ev === 'ch' ? 'Duel line-up' : 'Finalists'} locked: ${F.names.map(x => t.dataset.ev === 'ffa' ? first(x) : tShort(x)).join(', ')}`); }
+  else if (act === 'reveal' || act === 'hide'){
+    const key = t.dataset.key, on = act === 'reveal', nm = CL_NAME[key] || 'this event';
+    openModal({title:on ? `Reveal ${nm} to everyone?` : `Hide ${nm} again?`, icon:on ? 'unlock' : 'lock',
+      sub:on ? 'Everyone watching sees it straight away. The FFA and Challenger pages switch from “the Challenger #1 takes the last seat” to The Duel.'
+        : 'It goes back to a locked card, and the rest of the site says the Challenger #1 takes the last seat again. Scores already entered are kept.',
+      actions:[{label:'Cancel', focus:true}, {label:on ? 'Reveal to everyone' : 'Hide again', cls:'primary', icon:on ? 'unlock' : 'lock', fn:() => {
+        S.reveal = Object.assign({}, S.reveal, {[key]:on});
+        commit(on ? `${nm} is revealed` : `${nm} is hidden again`);
+        if (on) confetti();
+      }}]});
+  }
   else if (act === 'unlock'){ delete S.fin[t.dataset.ev]; commit('Finalists unlocked. They follow the table again.'); }
   else if (act === 'stat'){ Object.assign(UI, {sev:'all', hideDone:false, only:t.dataset.only || '', day:t.dataset.day || 'all'}); }
   else if (act === 'only-x'){ UI.only = ''; render(true); }

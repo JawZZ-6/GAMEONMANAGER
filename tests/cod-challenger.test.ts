@@ -156,20 +156,25 @@ describe('COD Challenger group', () => {
     t.close();
   });
 
-  it('keeps the last Grand Final seat for the play-in winner', () => {
+  it('gives the last Grand Final seat to the Challenger #1, or to the Duel winner once the Duel is revealed', () => {
     const boot = load({r:{}, fin:{}, rules:{}});
     const r:Record<string, unknown> = {...inOrder(lineups(boot, 'ffa')), ...inOrder(lineups(boot, 'ch'))};
     boot.close();
 
-    const before = load({r, fin:{}, rules:{}});
-    const top = before.run<string[]>('table("ffa").rows.slice(0, 4).map(r => r.n)');
-    const chTop = before.run<string>('table("ch").rows[0].n');
+    // While the Duel is secret, the Challenger #1 goes straight in.
+    const secret = load({r, fin:{}, rules:{}});
+    const top = secret.run<string[]>('table("ffa").rows.slice(0, 4).map(r => r.n)');
+    const chTop = secret.run<string>('table("ch").rows[0].n');
+    expect(secret.run('finalists("ffa")')).toMatchObject({names:[...top.slice(0, 3), chTop], prov:false});
+    secret.close();
+
+    const before = load({r, fin:{}, rules:{}, reveal:{duel:true}});
     expect(before.run('finalists("ch").names')).toEqual([top[3], chTop]);
     expect(before.run('finalists("ffa")')).toMatchObject({names:top.slice(0, 3), wait:true, prov:true});
     before.close();
 
-    // The Challenger #1 wins the play-in and takes the 4th seat; the FFA #4 drops out.
-    const after = load({r:{...r, 'F-PLAYIN':{s:[10, 12]}}, fin:{}, rules:{}});
+    // The Challenger #1 wins the Duel and takes the 4th seat; the FFA #4 drops out.
+    const after = load({r:{...r, 'F-PLAYIN':{s:[10, 12]}}, fin:{}, rules:{}, reveal:{duel:true}});
     expect(after.run('finalists("ffa")')).toMatchObject({names:[...top.slice(0, 3), chTop], prov:false});
     after.close();
   });

@@ -12,12 +12,16 @@ const forfeit = z.object({ff:z.union([z.literal(0), z.literal(1)])}).strict();
 export const codResultSchema = z.union([forfeit, t2Result, ffaResult]);
 const finalists = z.array(player).min(1).max(16);
 const points = z.number().int().min(0).max(99);
+// Classified events stay hidden on the scorecard until organisers reveal them.
+const revealKey = z.enum(['duel', 'e2']);
+export const codRevealSchema = z.object({duel:z.boolean(), e2:z.boolean()}).partial().strict();
 export const codRulesSchema = z.object({place:z.array(points).length(4), kill:points, ffaAdv:z.number().int().min(2).max(16), win:points, draw:points, loss:points}).partial().strict();
 export const codSchema = z.object({
   r:z.record(matchId, codResultSchema).refine(r => Object.keys(r).length <= 100, 'Too many matches').default({}),
   // ch is the locked wildcard play-in line-up: FFA leaderboard #4 against the Challenger #1.
   fin:z.object({ffa:finalists, t2:finalists, ch:finalists}).partial().strict().default({}),
   rules:codRulesSchema.default({}),
+  reveal:codRevealSchema.default({}),
 });
 export type CodState = z.infer<typeof codSchema>;
 
@@ -25,16 +29,18 @@ const change = z.discriminatedUnion('op', [
   z.object({op:z.literal('result'), id:matchId, value:codResultSchema.nullable()}),
   z.object({op:z.literal('finalists'), ev:z.enum(['ffa', 't2', 'ch']), names:finalists.nullable()}),
   z.object({op:z.literal('rules'), rules:codRulesSchema}),
+  z.object({op:z.literal('reveal'), key:revealKey, on:z.boolean()}),
 ]);
 export const codChangesSchema = z.object({changes:z.array(change).min(1).max(200)}).strict();
 export type CodChange = z.infer<typeof change>;
 
-// Each change touches one match, one final line-up or the rules, so organisers scoring different
+// Each change touches one match, one final line-up, the rules or one reveal, so organisers scoring different
 // matches at the same time never overwrite each other.
 export function applyCodChanges(cod:CodState, changes:CodChange[]){
   for (const c of changes){
     if (c.op === 'result'){ if (c.value) cod.r[c.id] = c.value; else delete cod.r[c.id]; }
     else if (c.op === 'finalists'){ if (c.names) cod.fin[c.ev] = c.names; else delete cod.fin[c.ev]; }
+    else if (c.op === 'reveal') cod.reveal[c.key] = c.on;
     else cod.rules = c.rules;
   }
 }

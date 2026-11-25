@@ -20,6 +20,8 @@ function load(cod:object){
 // The live results on 25 Nov 2026: 17 of 20 FFA lobbies and 6 of 10 2v2 games played.
 type Res = {r:Record<string, unknown>; fin:object; rules:object};
 const LIVE = JSON.parse(readFileSync(new URL('./fixtures/cod-results-2026-11-25.json', import.meta.url), 'utf8')) as Res;
+// The race for 4th only matters once the Duel (FFA #4 vs the Challenger #1) is revealed.
+const DUEL = {...LIVE, reveal:{duel:true}};
 type Chaser = {n:string; pts:number; id:string; need:string};
 type Spot = {pos:number; kind:string; holder:{n:string; pts:number; left:number}; chasers:Chaser[]};
 type FFA = {left:number; locked:string[]; spots:Spot[]};
@@ -27,7 +29,7 @@ type Team = {n:string; pts:number; left:number; state:string; txt:string; next:s
 
 describe('COD what’s at stake', () => {
   it('shows who is through, who holds each FFA cut-off spot, and what each chaser needs', () => {
-    const p = load(LIVE);
+    const p = load(DUEL);
     const s = p.run<FFA>('stakeFFA()');
     expect(s.left).toBe(3);
     // Nobody can reach Viraj’s 19, so the top two are through.
@@ -62,7 +64,7 @@ describe('COD what’s at stake', () => {
   it('moves on as results come in', () => {
     // Malith wins CODF-18: 17 points and a third win take 3rd, so Aqeela now defends the play-in spot.
     const r = {...LIVE.r, 'CODF-18':{pl:{'Malith Silva':1, 'Janith Fernando':2, 'Uresh Hettiarachchi':3, 'Chris Demotte':4}, k:{'Malith Silva':60}}};
-    const p = load({...LIVE, r});
+    const p = load({...DUEL, r});
     const s = p.run<FFA>('stakeFFA()');
     expect(s.locked).toEqual(['Jawahar Jegathananthan', 'Viraj Madhusanka', 'Malith Silva']);
     expect(s.spots).toHaveLength(1);
