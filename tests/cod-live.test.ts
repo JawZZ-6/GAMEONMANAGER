@@ -23,7 +23,7 @@ describe('COD live scorecard page',()=>{
     const {app,store}=await fixture();await store.updateCod({changes:[ffa]});
     const res=await request(app).get('/live').expect(200).expect('Content-Type',/html/).expect('Cache-Control','no-store');
     expect(res.text).toContain('COD Showdown');expect(res.text).not.toContain('<!--COD-BOOT-->');
-    expect(boot(res.text)).toEqual({cod:{r:{'CODF-01':ffa.value},fin:{},rules:{}},edit:false});
+    expect(boot(res.text)).toEqual({cod:{r:{'CODF-01':ffa.value},fin:{},rules:{},reveal:{}},edit:false});
     await request(app).get('/live/').expect(200).expect('Content-Type',/html/);
   });
   it('marks signed-in organisers as editors',async()=>{
@@ -42,7 +42,7 @@ describe('COD live scorecard page',()=>{
 describe('COD results API',()=>{
   it('lets anyone read results but only organisers save them',async()=>{
     const {app}=await fixture();
-    expect((await request(app).get('/api/cod').expect(200)).body).toEqual({r:{},fin:{},rules:{}});
+    expect((await request(app).get('/api/cod').expect(200)).body).toEqual({r:{},fin:{},rules:{},reveal:{}});
     await request(app).post('/api/cod').set('Origin',origin).send({changes:[ffa]}).expect(401);
     const agent=await organiser(app);
     await agent.post('/api/cod').set('Origin','https://evil.test').send({changes:[ffa]}).expect(403);
@@ -56,7 +56,7 @@ describe('COD results API',()=>{
     await b.post('/api/cod').set('Origin',origin).send({changes:[{op:'result',id:'COD2-01',value:{s:[3,1]}}]}).expect(200);
     const cod=store.read().cod;expect(Object.keys(cod.r).sort()).toEqual(['COD2-01','CODF-01']);
     await a.post('/api/cod').set('Origin',origin).send({changes:[{op:'result',id:'CODF-01',value:null},{op:'rules',rules:{win:4}},{op:'finalists',ev:'t2',names:['Team A','Team B']}]}).expect(200);
-    expect(store.read().cod).toEqual({r:{'COD2-01':{s:[3,1]}},fin:{t2:['Team A','Team B']},rules:{win:4}});
+    expect(store.read().cod).toEqual({r:{'COD2-01':{s:[3,1]}},fin:{t2:['Team A','Team B']},rules:{win:4},reveal:{}});
   });
   it('is not blocked by registrations or other edits that bump the event revision',async()=>{
     const {app,store}=await fixture();const agent=await organiser(app);
@@ -65,10 +65,10 @@ describe('COD results API',()=>{
   });
   it('rejects malformed results without changing anything',async()=>{
     const {app,store,dir}=await fixture();const agent=await organiser(app);
-    for(const changes of [[],[{op:'result',id:'../x',value:null}],[{op:'result',id:'CODF-01',value:{pl:{A:99}}}],[{op:'result',id:'COD2-01',value:{s:[1,2],extra:true}}],[{op:'rules',rules:{ffaAdv:1}}],[{op:'nuke'}]])
+    for(const changes of [[],[{op:'result',id:'../x',value:null}],[{op:'result',id:'CODF-01',value:{pl:{A:99}}}],[{op:'result',id:'COD2-01',value:{s:[1,2],extra:true}}],[{op:'rules',rules:{ffaAdv:1}}],[{op:'reveal',key:'e3',on:true}],[{op:'reveal',key:'duel',on:'yes'}],[{op:'nuke'}]])
       await agent.post('/api/cod').set('Origin',origin).send({changes}).expect(400);
-    expect(store.read().cod).toEqual({r:{},fin:{},rules:{}});
-    expect(JSON.parse(await readFile(join(dir,'event.json'),'utf8')).cod).toEqual({r:{},fin:{},rules:{}});
+    expect(store.read().cod).toEqual({r:{},fin:{},rules:{},reveal:{}});
+    expect(JSON.parse(await readFile(join(dir,'event.json'),'utf8')).cod).toEqual({r:{},fin:{},rules:{},reveal:{}});
   });
   it('pushes saved results to live viewers',async()=>{
     const {app,store}=await fixture();const server=app.listen(0,'127.0.0.1');servers.push(server);await new Promise(r=>server.once('listening',r));
@@ -86,16 +86,26 @@ describe('COD results data',()=>{
     const {dir,store}=await fixture();await store.close();stores.splice(0);
     const file=join(dir,'event.json');const saved=JSON.parse(await readFile(file,'utf8'));delete saved.cod;await writeFile(file,JSON.stringify(saved));
     const reopened=await JsonStore.open(dir);stores.push(reopened);
-    expect(reopened.read().cod).toEqual({r:{},fin:{},rules:{}});
+    expect(reopened.read().cod).toEqual({r:{},fin:{},rules:{},reveal:{}});
   });
   it('stores Challenger lobbies, the play-in score and a locked play-in line-up',async()=>{
     const {app,store}=await fixture();const agent=await organiser(app);
     await agent.post('/api/cod').set('Origin',origin).send({changes:[{op:'result',id:'CHF-01',value:{pl:{'New One':2,'Jawahar Jegathananthan':1},k:{}}},{op:'result',id:'F-PLAYIN',value:{s:[10,12]}},{op:'finalists',ev:'ch',names:['Viraj Madhusanka','New One']}]}).expect(200);
     expect(store.read().cod).toMatchObject({r:{'CHF-01':{pl:{'New One':2}},'F-PLAYIN':{s:[10,12]}},fin:{ch:['Viraj Madhusanka','New One']}});
   });
+  it('saves organiser reveals of classified events for everyone, and can hide them again',async()=>{
+    const {app,store}=await fixture();
+    await request(app).post('/api/cod').set('Origin',origin).send({changes:[{op:'reveal',key:'duel',on:true}]}).expect(401);
+    const agent=await organiser(app);
+    await agent.post('/api/cod').set('Origin',origin).send({changes:[{op:'reveal',key:'duel',on:true}]}).expect(200);
+    expect(store.read().cod.reveal).toEqual({duel:true});
+    expect(boot((await request(app).get('/live')).text).cod.reveal).toEqual({duel:true});
+    await agent.post('/api/cod').set('Origin',origin).send({changes:[{op:'reveal',key:'duel',on:false}]}).expect(200);
+    expect(store.read().cod.reveal).toEqual({duel:false});
+  });
   it('applies forfeits and clears final line-ups',()=>{
     const cod=codSchema.parse({fin:{ffa:['A','B']}});
     applyCodChanges(cod,[{op:'result',id:'COD2-02',value:{ff:1}},{op:'finalists',ev:'ffa',names:null}]);
-    expect(cod).toEqual({r:{'COD2-02':{ff:1}},fin:{},rules:{}});
+    expect(cod).toEqual({r:{'COD2-02':{ff:1}},fin:{},rules:{},reveal:{}});
   });
 });
