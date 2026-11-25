@@ -1,0 +1,295 @@
+{
+ "fin": {},
+ "r": {
+  "CH-01": {
+   "k": {
+    "Joseph Silvester": 22,
+    "Manthi Fernando": 28,
+    "Pasindu Herath": 46,
+    "Sasanka Edirisinghe": 34
+   },
+   "pl": {
+    "Joseph Silvester": 4,
+    "Manthi Fernando": 3,
+    "Pasindu Herath": 1,
+    "Sasanka Edirisinghe": 2
+   }
+  },
+  "CH2-03": {
+   "s": [
+    790,
+    625
+   ]
+  },
+  "COD2-01": {
+   "s": [
+    545,
+    725
+   ]
+  },
+  "COD2-02": {
+   "s": [
+    950,
+    440
+   ]
+  },
+  "COD2-03": {
+   "s": [
+    385,
+    650
+   ]
+  },
+  "COD2-04": {
+   "s": [
+    880,
+    395
+   ]
+  },
+  "COD2-05": {
+   "s": [
+    880,
+    470
+   ]
+  },
+  "COD2-06": {
+   "s": [
+    815,
+    440
+   ]
+  },
+  "CODF-01": {
+   "k": {
+    "Aqeela Raban": 45,
+    "Jawahar Jegathananthan": 68,
+    "Uresh Hettiarachchi": 9
+   },
+   "pl": {
+    "Aqeela Raban": 2,
+    "Jawahar Jegathananthan": 1,
+    "Nadeesha Edirisuriya": 0,
+    "Uresh Hettiarachchi": 3
+   }
+  },
+  "CODF-02": {
+   "k": {
+    "Aqeela Raban": 45,
+    "Jehan Dabara": 23,
+    "Malith Silva": 45,
+    "Upeksha DeSilva": 23
+   },
+   "pl": {
+    "Aqeela Raban": 1,
+    "Jehan Dabara": 4,
+    "Malith Silva": 2,
+    "Upeksha DeSilva": 3
+   }
+  },
+  "CODF-03": {
+   "k": {
+    "Aqeela Raban": 58,
+    "Prabath Gunasekara": 5,
+    "Prathibha Gayawansha": 37
+   },
+   "pl": {
+    "Aqeela Raban": 1,
+    "Janith Fernando": 0,
+    "Prabath Gunasekara": 3,
+    "Prathibha Gayawansha": 2
+   }
+  },
+  "CODF-04": {
+   "k": {
+    "Prathibha Gayawansha": 51,
+    "Upeksha DeSilva": 21,
+    "Uresh Hettiarachchi": 34,
+    "Viraj Madhusanka": 52
+   },
+   "pl": {
+    "Prathibha Gayawansha": 2,
+    "Upeksha DeSilva": 4,
+    "Uresh Hettiarachchi": 3,
+    "Viraj Madhusanka": 1
+   }
+  },
+  "CODF-05": {
+   "k": {
+    "Harin Goonathilake": 64,
+    "Jawahar Jegathananthan": 98,
+    "Jehan Dabara": 13
+   },
+   "pl": {
+    "Harin Goonathilake": 2,
+    "Janith Fernando": 0,
+    "Jawahar Jegathananthan": 1,
+    "Jehan Dabara": 3
+   }
+  },
+  "CODF-06": {
+   "k": {
+    "Andrew Saliheen": 29,
+    "Jawahar Jegathananthan": 92,
+    "Malith Silva": 40,
+    "Viraj Madhusanka": 51
+   },
+   "pl": {
+    "Andrew Saliheen": 4,
+    "Jawahar Jegathananthan": 1,
+    "Malith Silva": 3,
+    "Viraj Madhusanka": 2
+   }
+  },
+  "CODF-07": {
+   "k": {
+    "Andrew Saliheen": 72,
+    "Harin Goonathilake": 75,
+    "Prabath Gunasekara": 29,
+    "Uresh Hettiarachchi": 29
+   },
+   "pl": {
+    "Andrew Saliheen": 2,
+    "Harin Goonathilake": 1,
+    "Prabath Gunasekara": 3,
+    "Uresh Hettiarachchi": 4
+   }
+  },
+  "CODF-08": {
+   "k": {
+    "Aqeela Raban": 52,
+    "Harin Goonathilake": 51,
+    "Miran Tennakoon": 30,
+    "Viraj Madhusanka": 58
+   },
+   "pl": {
+    "Aqeela Raban": 2,
+    "Harin Goonathilake": 3,
+    "Miran Tennakoon": 4,
+    "Viraj Madhusanka": 1
+   }
+  },
+  "CODF-09": {
+   "k": {
+    "Chris Demotte": 18,
+    "Jehan Dabara": 43,
+    "Prabath Gunasekara": 31,
+    "Viraj Madhusanka": 92
+   },
+   "pl": {
+    "Chris Demotte": 4,
+    "Jehan Dabara": 2,
+    "Prabath Gunasekara": 3,
+    "Viraj Madhusanka": 1
+   }
+  },
+  "CODF-10": {
+   "k": {
+    "Abilash Devaneson": 47,
+    "Janith Fernando": 32,
+    "Nadeesha Edirisuriya": 25,
+    "Viraj Madhusanka": 53
+   },
+   "pl": {
+    "Abilash Devaneson": 2,
+    "Janith Fernando": 3,
+    "Nadeesha Edirisuriya": 4,
+    "Viraj Madhusanka": 1
+   }
+  },
+  "CODF-11": {
+   "k": {
+    "Andrew Saliheen": 64,
+    "Janith Fernando": 37,
+    "Miran Tennakoon": 38,
+    "Upeksha DeSilva": 36
+   },
+   "pl": {
+    "Andrew Saliheen": 1,
+    "Janith Fernando": 3,
+    "Miran Tennakoon": 2,
+    "Upeksha DeSilva": 4
+   }
+  },
+  "CODF-12": {
+   "k": {
+    "Chris Demotte": 9,
+    "Jawahar Jegathananthan": 97,
+    "Miran Tennakoon": 26,
+    "Prathibha Gayawansha": 63
+   },
+   "pl": {
+    "Chris Demotte": 4,
+    "Jawahar Jegathananthan": 1,
+    "Miran Tennakoon": 3,
+    "Prathibha Gayawansha": 2
+   }
+  },
+  "CODF-13": {
+   "k": {
+    "Abilash Devaneson": 54,
+    "Harin Goonathilake": 58,
+    "Malith Silva": 64,
+    "Prathibha Gayawansha": 40
+   },
+   "pl": {
+    "Abilash Devaneson": 3,
+    "Harin Goonathilake": 2,
+    "Malith Silva": 1,
+    "Prathibha Gayawansha": 4
+   }
+  },
+  "CODF-14": {
+   "k": {
+    "Malith Silva": 31,
+    "Miran Tennakoon": 24,
+    "Nadeesha Edirisuriya": 21
+   },
+   "pl": {
+    "Malith Silva": 1,
+    "Miran Tennakoon": 2,
+    "Nadeesha Edirisuriya": 3,
+    "Prabath Gunasekara": 0
+   }
+  },
+  "CODF-15": {
+   "k": {
+    "Abilash Devaneson": 82,
+    "Jehan Dabara": 38,
+    "Miran Tennakoon": 69,
+    "Uresh Hettiarachchi": 50
+   },
+   "pl": {
+    "Abilash Devaneson": 1,
+    "Jehan Dabara": 4,
+    "Miran Tennakoon": 2,
+    "Uresh Hettiarachchi": 3
+   }
+  },
+  "CODF-16": {
+   "k": {
+    "Abilash Devaneson": 55,
+    "Jawahar Jegathananthan": 117,
+    "Upeksha DeSilva": 35
+   },
+   "pl": {
+    "Abilash Devaneson": 2,
+    "Jawahar Jegathananthan": 1,
+    "Prabath Gunasekara": 0,
+    "Upeksha DeSilva": 3
+   }
+  },
+  "CODF-19": {
+   "k": {
+    "Abilash Devaneson": 54,
+    "Andrew Saliheen": 85,
+    "Aqeela Raban": 72,
+    "Chris Demotte": 12
+   },
+   "pl": {
+    "Abilash Devaneson": 3,
+    "Andrew Saliheen": 1,
+    "Aqeela Raban": 2,
+    "Chris Demotte": 4
+   }
+  }
+ },
+ "rules": {}
+}
