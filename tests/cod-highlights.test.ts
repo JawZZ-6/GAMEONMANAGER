@@ -8,10 +8,16 @@ const { JSDOM } = createRequire(import.meta.url)('jsdom') as {JSDOM:new (html:st
 
 // Runs the real /live scorecard script with the given results.
 const page = readFileSync(new URL('../server/live/cod.html', import.meta.url), 'utf8');
-function load(cod:object){
+function load(cod:object, now = 0){
   const html = page.replace('<!--COD-BOOT-->', `<script>window.COD_BOOT=${JSON.stringify({cod, edit:false})};</script>`);
   const dom = new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/live', beforeParse(w){
     Object.assign(w, {fetch:() => new Promise(() => {}), matchMedia:() => ({matches:false, addEventListener(){}, addListener(){}}), scrollTo(){}});
+    // Freeze the page clock when a test asks for a time of day.
+    if (now){
+      const Real = (w as {Date:DateConstructor}).Date;
+      class Fixed extends Real { constructor(...a:[]){ super(...(a.length ? a : [now] as unknown as [])); } static now(){ return now; } }
+      (w as {Date:DateConstructor}).Date = Fixed as DateConstructor;
+    }
   }});
   const run = <T>(code:string) => dom.window.eval(code) as T;
   return {run, close:() => dom.window.close()};
@@ -69,6 +75,16 @@ describe('COD highlights', () => {
     expect(h.close).toMatchObject({names:[T2[1].p[0]], stat:'6–5'});
     expect(h.unbeaten).toBeUndefined();
     expect(h.rising).toBeUndefined(); // no Challenger lobbies are drawn yet
+    p.close();
+  });
+
+  it('counts a lobby played ahead of its slot as played today for Player of the Day', () => {
+    // On Wed 25 Nov, CODF-16 (Wed) and CODF-19 (scheduled Fri 27, played early) are both in.
+    const live = JSON.parse(readFileSync(new URL('./fixtures/cod-results-2026-11-25.json', import.meta.url), 'utf8'));
+    const p = load(live, new Date(2026, 10, 25, 15, 0).getTime());
+    const h = highlights(p);
+    expect(h.day).toMatchObject({names:['Jawahar Jegathananthan'], stat:'117', note:'top fragger on Wednesday 25'});
+    expect(h.lobby.note).toBe('CODF-16 · Wed 25');
     p.close();
   });
 
