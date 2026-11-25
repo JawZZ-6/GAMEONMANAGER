@@ -85,6 +85,8 @@ describe('COD Challenger group', () => {
     for (const x of L){ expect(x).toHaveLength(4); expect(x.every(n => ch.includes(n))).toBe(true); }
     for (const n of ch) expect(L.filter(x => x.includes(n))).toHaveLength(4);
     for (const a of ch) for (const b of ch) if (a < b) expect(L.filter(x => x.includes(a) && x.includes(b))).toHaveLength(2);
+    // The lobby the organisers asked for.
+    expect([...p.run<string[]>('MI["CH-01"].p')].sort()).toEqual(['Joseph Silvester', 'Manthi Fernando', 'Pasindu Herath', 'Sasanka Edirisinghe']);
     p.close();
   });
 
