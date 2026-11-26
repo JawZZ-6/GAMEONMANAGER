@@ -41,6 +41,7 @@ describe('COD Classified tab', () => {
     const p = load(LIVE);
     expect(p.run<string>(OUTSIDE)).not.toMatch(/play-in|wildcard|duel/i);
     expect(p.run<string>(OUTSIDE)).toContain('Challenger #1 takes the last Grand Final seat');
+    expect(p.run<string>(OUTSIDE)).not.toMatch(/Shipment|Search & Destroy/);
     expect(p.run<string[]>('finalists("ffa").names')).toEqual(['Jawahar Jegathananthan', 'Viraj Madhusanka', 'Aqeela Raban', 'Pasindu Herath']);
     // Only the top 3 are marked as going through on the leaderboard, and the race only covers 3rd.
     expect(p.run<number>(`(() => { const d = document.createElement('div'); d.innerHTML = standCard('ffa'); return d.querySelectorAll('tr.adv').length; })()`)).toBe(3);
@@ -56,6 +57,11 @@ describe('COD Classified tab', () => {
     expect(v).toContain('Abilash Devaneson');
     expect(v).toContain('Pasindu Herath');
     expect(v).toContain('id="card-F-PLAYIN"');
+    // The format: Search & Destroy on Shipment, pistols only, best of 13 rounds.
+    const txt = p.run<string>(`(() => { const d = document.createElement('div'); d.innerHTML = viewClassified(); return d.textContent.replace(/\\s+/g, ' '); })()`);
+    expect(txt).toContain('Search & Destroy on Shipment, pistols only, and no bomb plants');
+    expect(txt).toContain('first to 7 rounds takes the last Grand Final seat');
+    expect(txt).toContain('Pistols only · best of 13');
     expect(v).toContain('Someone thought they were out.'); // the teaser for Event 02 is different, so this is the Duel's
     expect(p.run<number>(`(() => { const d = document.createElement('div'); d.innerHTML = viewClassified(); return d.querySelectorAll('.dossier.locked').length; })()`)).toBe(1); // Event 02 stays locked
     // The rest of the site switches to the Duel.
