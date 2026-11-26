@@ -71,7 +71,7 @@ describe('COD Classified tab', () => {
   it('lets organisers reveal the Duel and hide it again, saved as one change', () => {
     const p = load(LIVE, true);
     p.run(`location.hash = '#/classified'; render()`);
-    expect(p.run<number>(`document.querySelectorAll('[data-act="reveal"]').length`)).toBe(1); // Event 02 has nothing to reveal yet
+    expect(p.run<number>(`document.querySelectorAll('[data-act="reveal"]').length`)).toBe(2); // the Duel and Event 02
     p.run(`document.querySelector('[data-act="reveal"]').click()`);
     p.run(`[...document.querySelectorAll('#modal [data-act="modal-a"]')].find(b => /Reveal/.test(b.textContent)).click()`);
     expect(p.run<boolean>('S.reveal.duel')).toBe(true);
