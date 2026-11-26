@@ -322,6 +322,50 @@ a.stat:hover .sgo,a.stat:focus-visible .sgo{opacity:1;transform:translateX(3px)}
   .ghead.art::before{background:linear-gradient(180deg,transparent calc((100vw - 32px) / 3 - 34px),var(--abg) calc((100vw - 32px) / 3 + 4px)),var(--art) top/100% auto no-repeat}
   .ghead.art::after{background:radial-gradient(120% 60% at 50% 100%,color-mix(in srgb,var(--ac) 16%,transparent),transparent 70%);-webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none}
 }
+/* 2v2 Grand Final banner: takes over the 2v2 header once the league is over. Blue corner for the #1 seed, orange for the #2. */
+.art-t2f{--art:url(/2v2-final-banner.webp);--ac:#4FD8F0;--abg:#0B1220;--bc:#FF8A3D}
+.ghead.gfb{display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;gap:16px}
+.gfb-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.gfb-top .acts{display:flex;gap:6px}
+.ghead.gfb h1{margin:8px 0 0}
+.gfb-champ{display:inline-flex;align-items:center;gap:12px;margin-top:10px;padding:10px 16px;border-radius:16px;color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,rgba(0,0,0,.4));border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+.gfb-champ svg{width:26px;height:26px}
+.gfb-champ small{display:block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.gfb-champ b{display:block;font:700 20px/1.2 "Space Grotesk",sans-serif;color:#fff}
+.gfb-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+.gfb-side{--sc:var(--ac);display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"av nm sc" "av rec sc";align-items:center;gap:2px 12px;min-width:0;padding:12px 14px;border-radius:18px;
+  background:color-mix(in srgb,var(--abg) 58%,transparent);border:1px solid color-mix(in srgb,var(--sc) 50%,transparent);box-shadow:0 0 36px -12px var(--sc),inset 0 1px 0 rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity .25s,background .25s}
+.gfb-side.b{--sc:var(--bc);grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"sc nm av" "sc rec av";text-align:right}
+.gfb-side .avs{grid-area:av}
+.gfb-side .av{width:40px;height:40px;border-radius:12px;font-size:13px}
+.gfb-name{grid-area:nm;font:700 clamp(17px,1.7vw,23px)/1.15 "Space Grotesk",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gfb-rec{grid-area:rec;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gfb-sc{grid-area:sc}
+.gfb-score{font:700 34px/1 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums}
+.gfb-side.win{--sc:var(--gold);background:color-mix(in srgb,var(--gold) 18%,color-mix(in srgb,var(--abg) 58%,transparent))}
+.gfb-side.win .gfb-score{color:var(--gold)}
+.gfb-side.lose{opacity:.6}
+.gfb-mid{display:grid;place-items:center}
+.gfb-vs{font:800 clamp(30px,3.4vw,48px)/1 "Space Grotesk",sans-serif;letter-spacing:.04em;background:linear-gradient(90deg,var(--ac),var(--bc));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 14px rgba(0,0,0,.7))}
+.gfb-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 16px;margin-top:12px;font-size:13px;color:var(--muted)}
+.gfb-foot > span{display:inline-flex;align-items:center;gap:7px;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.gfb-foot svg{width:15px;height:15px}
+.gfb-foot .warn{color:var(--warn)}
+.lgdone{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;width:100%;padding:12px 16px;margin-bottom:16px;border-radius:16px;font:inherit;font-size:14px;color:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
+.lgdone:hover{border-color:color-mix(in srgb,var(--c-pc) 45%,transparent)}
+.lgdone:focus-visible{outline:2px solid var(--c-pc);outline-offset:2px}
+.lgdone .lg-tog{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-weight:700;color:var(--fg)}
+.lgdone .lg-tog svg{color:currentColor;transition:transform .25s}
+.lgdone.open .lg-tog svg{transform:rotate(180deg)}
+.lgdone svg{width:18px;height:18px;color:var(--ok)}
+.lgdone span{color:var(--muted)}
+@media (max-width:640px){
+  .gfb-row{grid-template-columns:1fr;gap:8px}
+  .gfb-side.b{grid-template-areas:"av nm sc" "av rec sc";text-align:left}
+  .gfb-name,.gfb-rec{white-space:normal}
+  .gfb-score{font-size:28px}
+  .gfb-vs{font-size:26px}
+}
 /* Challenger line-up cards: plain glass like the other cards, with amber accents. */
 .chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
 .chcard{--cc:var(--c-board);position:relative;padding:44px 18px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
@@ -957,7 +1001,7 @@ let S = Object.assign(clone(BASE), {track:''});
 try { S.track = localStorage.getItem('cod26-track') || ''; } catch(e) {}
 // Player tracking stays in this browser; results go to GameON for everyone.
 const save = () => { try { localStorage.setItem('cod26-track', S.track || ''); } catch(e) {} queueSync(); };
-const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:''}; // only: 'done' or 'due', set from the overview tiles
+const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:'', lg:false}; // only: 'done' or 'due', set from the overview tiles
 const RU = () => Object.assign({}, R0, S.rules || {}, {t2Adv:2}); // the 2v2 final is always head-to-head
 let RR = RU(), CACHE = {};
 // Classified events organisers have revealed. Until the Duel is, the Challenger #1 goes straight to the Grand Final.
@@ -988,6 +1032,9 @@ function t2Res(id){
   return null;
 }
 const done = id => isLobby(id) ? ffaDone(id) : !!t2Res(id);
+// Events whose league scores are final: read-only for organisers too. Their Grand Final stays open.
+const LOCKED = new Set(['t2']);
+const scoresLocked = id => { const m = MI[id]; return !!m && !m.final && LOCKED.has(m.ev); };
 
 // FFA and Challenger tables score the same way. Only the event's own roster is ranked, so hosts in
 // Challenger lobbies (who are FFA players) get nothing from those games on either table.
@@ -1308,8 +1355,8 @@ function card(id){
   const m = MI[id], E = m.p, ws = EDIT ? warns(m) : [];
   return `<article class="match card ${done(id) ? 'done' : ''}" id="card-${id}" style="--cc:${EV[m.ev].cc}">
     <div class="mh"><span class="mid">${id}</span><span class="stn">${esc(m.loc)}</span><span class="when">${m.w || m.final ? esc(fmtShort(m.w)) : ''}</span></div>
-    <div class="mt">${pill(status(id))}<span class="acts">${acts(id, !EDIT)}</span></div>
-    ${lobby(m.ev) ? rowsFFA(id, E, !EDIT) : rowsT2(id, E, !EDIT)}
+    <div class="mt">${pill(status(id))}${EDIT && scoresLocked(id) ? ` <span class="pill locked" title="League scores are final">${ic('lock')}Locked</span>` : ''}<span class="acts">${acts(id, !EDIT || scoresLocked(id))}</span></div>
+    ${lobby(m.ev) ? rowsFFA(id, E, !EDIT || scoresLocked(id)) : rowsT2(id, E, !EDIT || scoresLocked(id))}
     ${ws.length ? `<div class="mf warns">${ws.map(w => `<span class="${w.w ? 'w' : 'i2'}">${ic(w.w ? 'alert' : 'info')}<span>${esc(w.t)}</span></span>`).join('')}</div>` : ''}
   </article>`;
 }
@@ -1727,6 +1774,37 @@ function viewCh2(){
     </div>
   </div>`;
 }
+// Once the 2v2 league is over, the Grand Final takes over the 2v2 header: the two finalists face off on
+// the final's artwork, and organisers type the final scores right on it. It is the final's card, so the
+// sidebar no longer repeats it.
+function gfBanner(F, open){
+  const id = EV.t2.fid, E = F.names, T = table('t2'), x = t2Res(id), ch = champion('t2'), s = (S.r[id] || {}).s || [];
+  const rec = n => { const i = T.rows.findIndex(t => t.n === n), o = T.rows[i]; return o ? `#${i + 1} seed · ${o.w}–${o.l}${o.d ? ` (${plural(o.d, 'draw')})` : ''} · ${sgn(o.sf - o.sa)}` : ''; };
+  // Their league game, if they met (in a round robin they always do).
+  const g = IDS.t2.map(i => ({i, m:MI[i], x:t2Res(i)})).find(g => g.x && E.every(n => g.m.p.includes(n)));
+  const meet = !g ? '' : g.x.ff ? `League meeting: ${tShort(g.m.p[g.x.w])} won by forfeit (${g.i})`
+    : g.x.w === -1 ? `League meeting: ${tShort(E[0])} and ${tShort(E[1])} drew ${g.x.a}–${g.x.b} (${g.i})`
+    : `League meeting: ${tShort(g.m.p[g.x.w])} won ${Math.max(g.x.a, g.x.b)}–${Math.min(g.x.a, g.x.b)} (${g.i})`;
+  const side = i => {
+    const n = E[i], st = x ? (x.w === -1 ? 'draw' : x.w === i ? 'win' : 'lose') : '';
+    const sc = EDIT ? `<label class="kin big"><span class="sr">Score for ${esc(n)}</span><input id="s-${id}-${i}" type="number" inputmode="numeric" min="0" max="999" placeholder="–" value="${num(s[i]) ? +s[i] : ''}" data-s="${id}" data-i="${i}" ${x && x.ff ? 'disabled' : ''}></label>`
+      : x && !x.ff ? `<b class="gfb-score">${i ? x.b : x.a}</b>` : '';
+    const ff = x && x.ff ? ` · ${x.w === i ? 'wins by forfeit' : 'forfeited'}` : '';
+    return `<div class="gfb-side ${i ? 'b' : 'a'} ${st}" title="${esc(n)}">${avs(n)}<b class="gfb-name">${esc(tShort(n))}</b><span class="gfb-rec">${rec(n)}${ff}</span><span class="gfb-sc">${sc}</span></div>`;
+  };
+  return `<section class="ghead glass art art-t2f gfb ${ch ? 'crowned' : ''}" id="card-${id}" style="--cc:${EV.t2.cc}">
+    <div class="gfb-head">
+      <div class="gfb-top"><span class="badge">${ic('trophy')}COD · 2v2 · Paradise Room</span>${pill(status(id))}${EDIT ? `<span class="acts">${acts(id, false)}</span>` : ''}</div>
+      <h1 class="display">2v2 Grand Final</h1>
+      ${ch ? `<div class="gfb-champ">${ic('crown')}<span><small>2v2 champions</small><b>${esc(tShort(ch))}</b></span></div>` : ''}
+    </div>
+    <div>
+      <div class="gfb-row">${side(0)}<div class="gfb-mid"><span class="gfb-vs">VS</span></div>${side(1)}</div>
+      <div class="gfb-foot">${meet ? `<span>${ic('swap')}${esc(meet)}</span>` : ''}${x && x.w === -1 ? `<span class="warn">${ic('zap')}A final cannot end level. Play a decider and update the score.</span>` : ''}${EDIT && F.locked ? `<button class="btn" data-act="unlock" data-ev="t2">${ic('unlock')}Unlock finalists</button>` : ''}</div>
+    </div>
+  </section>
+  <button type="button" class="lgdone glass ${open ? 'open' : ''}" data-act="lg" aria-expanded="${open}" aria-controls="lgbody">${ic('check')}<b>League stage complete</b><span>${T.done}/${T.total} played · the top ${T.adv} meet in the Grand Final</span><span class="lg-tog">${open ? 'Hide league' : 'Show league'}${ic('chev')}</span></button>`;
+}
 function viewEvent(ev, sub){
   if (ev === 'ch' && sub === '2v2' && IDS.c2.length) return viewCh2();
   const E = EV[ev], T = table(ev), ids = IDS[ev], now = NOW(), ch = champion(ev);
@@ -1745,19 +1823,23 @@ function viewEvent(ev, sub){
     return `<section class="dayblk"><h2 class="day-h glass display">${w.dowl}, Nov ${w.day}${sameDay(now, w.start) ? ' <span class="pill today">Today</span>' : ''}<small>${plural(ms.length, 'match', 'matches')}</small></h2><div class="mgrid">${ms.map(card).join('')}</div></section>`;
   }).join('') || emptyHTML('Nothing here', 'No matches fit this filter.');
   const segs = [['all','All',ids.length], ['todo','To play',ids.filter(id => !done(id)).length], ['due','Needs result',ids.filter(isDue).length], ['done','Done',dn]];
-  return `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
+  const F2 = ev === 't2' ? finalists('t2') : null, gf = !!F2 && !F2.prov && F2.names.length === 2;
+  // Under the Grand Final banner the finished league folds away, so the final has the page. A link to a
+  // league game opens it, so the game can still be found.
+  const rm = route().m, open = !gf || UI.lg || !!(rm && MI[rm] && MI[rm].ev === ev && !MI[rm].final);
+  return `${gf ? gfBanner(F2, open) : `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
     <div><span class="badge">${ic(E.icon)}${E.short} · Paradise Room · 20 min</span><h1 class="display">${E.name}</h1><p class="fmt">${fmt}</p>
     <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${ids.length} matches</span><span>${ic('trophy')}${ev === 'ch' ? (DUEL() ? '#1 to The Duel' : '#1 to the Grand Final') : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + ${DUEL() ? 'Duel winner' : 'Challenger #1'} to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
     ${ringHTML(dn, ids.length)}
-  </section>
+  </section>`}
   ${ev === 'ch' ? chToggle('ffa') : ''}
-  <div class="evgrid">
-    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${ev !== 'ch' || DUEL() ? finalCard(ev) : ''}</aside>
+  ${open ? `<div class="evgrid" id="lgbody">
+    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${(ev !== 'ch' || DUEL()) && !gf ? finalCard(ev) : ''}</aside>
     <div>
-      <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? 'Tap each player’s finishing place, then add kills' : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
+      <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? 'Tap each player’s finishing place, then add kills' : LOCKED.has(ev) ? 'League scores are locked' : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
       ${list}
     </div>
-  </div>`;
+  </div>` : ''}`;
 }
 function viewSchedule(){
   const now = NOW(), days = [...new Set(TIMED.map(m => m.date))];
@@ -2039,6 +2121,7 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-act]'); if (!t) return;
   const act = t.dataset.act, id = t.dataset.id, n = t.dataset.n;
   if (!EDIT && WRITES.has(act)) return;
+  if (id && scoresLocked(id) && ['pl', 'clear', 'ff'].includes(act)) return;
   if (act === 'pl'){
     snap(id);
     const v = +t.dataset.v, r = S.r[id] = S.r[id] || {};
@@ -2074,6 +2157,7 @@ document.addEventListener('click', e => {
   else if (act === 'stat'){ Object.assign(UI, {sev:'all', hideDone:false, only:t.dataset.only || '', day:t.dataset.day || 'all'}); }
   else if (act === 'only-x'){ UI.only = ''; render(true); }
   else if (act === 'f'){ UI.f = t.dataset.f; render(true); }
+  else if (act === 'lg'){ UI.lg = !UI.lg; render(true); }
   else if (act === 'day'){ UI.day = t.dataset.d; render(true); }
   else if (act === 'sev'){ UI.sev = t.dataset.v; render(true); }
   else if (act === 'hide'){ UI.hideDone = !UI.hideDone; render(true); }
@@ -2117,7 +2201,7 @@ popEl.addEventListener('pointerdown', e => e.preventDefault());
 popEl.addEventListener('mousemove', e => { const o = e.target.closest('.opt'); if (o && POP && +o.dataset.i !== POP.idx){ POP.idx = +o.dataset.i; popEl.querySelectorAll('.opt.act').forEach(x => x.classList.remove('act')); o.classList.add('act'); spotIn.setAttribute('aria-activedescendant', o.id); } });
 document.addEventListener('input', e => {
   const t = e.target;
-  if ((t.dataset.k || t.dataset.s) && !EDIT) return;
+  if ((t.dataset.k || t.dataset.s) && (!EDIT || scoresLocked(t.dataset.k || t.dataset.s))) return;
   if (t.dataset.k){
     const id = t.dataset.k; snap(id);
     const r = S.r[id] = S.r[id] || {}; r.k = r.k || {}; r.pl = r.pl || {}; delete r.ff; delete r.s;
