@@ -1441,7 +1441,7 @@ function finalCard(ev){
   else if (T.tie) note = {w:1, i:'zap', t:EDIT ? `Tie at the qualifying spot. Settle it with a tiebreaker, then lock in the ${pin ? 'Duel line-up' : 'finalists'}.` : `Tie at the qualifying spot. A tiebreaker will settle the last place in the ${what}.`};
   else if (!T.complete || chLeft) note = {i:'info', t:`Provisional: ${plural(left + chLeft, pin || chLeft ? 'FFA or Challenger match' : 'league match', pin || chLeft ? 'FFA or Challenger matches' : 'league matches')} still to play.${EDIT ? ' Lock in early if some won’t be played.' : ''}`};
   else if (F.wait) note = {i:'info', t:`League complete. The last seat goes to ${last}.`};
-  else if (pin) note = {i:'check', t:ch ? `${ch} takes the last Grand Final seat.` : `Line-up confirmed. ${EDIT ? 'Enter each player’s score; the higher score wins.' : 'The higher score wins the last Grand Final seat.'}`};
+  else if (pin) note = {i:'check', t:ch ? `${ch} takes the last Grand Final seat.` : `Line-up confirmed. ${EDIT ? 'Enter the rounds each player won: first to 7 takes the seat.' : 'First to 7 rounds takes the last Grand Final seat.'}`};
   else note = {i:'check', t:ev === 'ffa' ? `Finalists confirmed. The final is a best of 3 on Game Night, ${GN.final}: place points add up over the three games.${EDIT ? ' Enter each game below.' : ''}` : `League complete. Finalists confirmed. ${EDIT ? 'Enter the final result' : 'The final is played'} on Game Night, ${GN.final}.`};
   // An FFA final still waiting on its last seat can't be locked, or that seat would be lost;
   // organisers lock the Duel line-up instead, then the final once the Duel is decided.
@@ -1696,9 +1696,9 @@ function duelCard(x){
       <div class="ds-top"><span class="ds-stamp">${ic('unlock')}Declassified</span><span class="ds-no">Event ${x.no}</span></div>
       <h2 class="display ds-name">The Duel</h2>
       <p class="ds-tease">“${esc(x.tease)}”</p>
-      <p class="ds-brief">FFA leaderboard #${RR.ffaAdv} gets one last shot at the Grand Final: a 1v1 against the Challenger #1, on ${GN.duelL} in the Paradise Room, before the Grand Final. The higher score wins, and the winner takes the last Grand Final seat.</p>
+      <p class="ds-brief">FFA leaderboard #${RR.ffaAdv} gets one last shot at the Grand Final: a 1v1 against the Challenger #1, on ${GN.duelL} in the Paradise Room, before the Grand Final. Search &amp; Destroy on Shipment, pistols only, and no bomb plants: every round is a fight to the death. Best of 13, so the first to 7 rounds takes the last Grand Final seat.</p>
       <div class="ds-vs">${side(a, `FFA leaderboard #${RR.ffaAdv}`)}<span class="vs">VS</span>${side(b, 'Challenger #1')}</div>
-      <div class="meta"><span>${ic('target')}1v1</span><span>${ic('cal')}${GN.duel}</span><span>${ic('pin')}Paradise Room</span><span>${ic('trophy')}Last Grand Final seat</span></div>
+      <div class="meta"><span>${ic('target')}1v1 · Search &amp; Destroy · Shipment</span><span>${ic('crosshair')}Pistols only · best of 13</span><span>${ic('cal')}${GN.duel}</span><span>${ic('pin')}Paradise Room</span><span>${ic('trophy')}Last Grand Final seat</span></div>
       ${EDIT ? `<div class="ds-foot"><span>${ic('info')}Revealed to everyone</span><button class="btn" data-act="hide" data-key="${x.key}">${ic('lock')}Hide again</button></div>` : ''}
     </article>
     ${finalCard('ch')}
