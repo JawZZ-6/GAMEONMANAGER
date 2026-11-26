@@ -89,7 +89,7 @@ describe('COD 2v2 Grand Final banner', () => {
 
   it('keeps the 2v2 league scores read-only for organisers, while the Grand Final stays open', () => {
     const p = load(DONE, true);
-    p.run('UI.lg = true'); // open the league section
+    p.run('UI.lg.t2 = true'); // open the league section
     const v = p.run<{open:string[]; shut:number; acts:number; lockPills:number}>(`(() => {
       const d = document.createElement('div'); d.innerHTML = viewEvent('t2');
       const ins = [...d.querySelectorAll('input[data-s]')];

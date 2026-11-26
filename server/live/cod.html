@@ -366,6 +366,32 @@ a.stat:hover .sgo,a.stat:focus-visible .sgo{opacity:1;transform:translateX(3px)}
   .gfb-score{font-size:28px}
   .gfb-vs{font-size:26px}
 }
+/* FFA Grand Final banner: the settled qualifiers plus the last seat, on the FFA artwork. */
+.ffb-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ffb-seat{--sc:var(--ac);display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"av nm" "av rec";align-items:center;gap:2px 10px;min-width:0;padding:11px 12px;border-radius:16px;
+  background:color-mix(in srgb,var(--abg) 60%,transparent);border:1px solid color-mix(in srgb,var(--sc) 45%,transparent);box-shadow:0 0 30px -14px var(--sc),inset 0 1px 0 rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity .25s}
+.ffb-seat > .av{grid-area:av;width:40px;height:40px;border-radius:12px;font-size:13px}
+.ffb-name{grid-area:nm;font:700 clamp(15px,1.3vw,18px)/1.2 "Space Grotesk",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ffb-rec{grid-area:rec;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ffb-pl{grid-area:pl;display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.ffb-pl i{font-style:normal;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.1)}
+.ffb-pl i.gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,transparent)}
+.ffb-seat.scored{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"av nm tot" "av rec tot" "pl pl pl"}
+.ffb-seat.scored .ffb-name{white-space:normal;overflow-wrap:anywhere}
+.ffb-tot{grid-area:tot;font:700 22px/1 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ffb-seat.lead{--sc:var(--ok)}
+.ffb-seat.lead .ffb-tot{color:var(--ok)}
+.ffb-seat.win .ffb-tot{color:var(--gold)}
+.ffb-seat.ghost{--sc:var(--warn);border-style:dashed}
+.ffb-seat.duel{--sc:var(--accent)}
+.ffb-seat.win{--sc:var(--gold);background:color-mix(in srgb,var(--gold) 18%,color-mix(in srgb,var(--abg) 60%,transparent))}
+.ffb-seat.lose{opacity:.6}
+@media (max-width:900px){ .ffb-row{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:480px){ .ffb-row{grid-template-columns:1fr;gap:8px} .ffb-seat{padding:9px 12px} .ffb-seat.scored{grid-template-areas:"av nm tot" "av rec tot" "av pl pl"} }
+/* Champion of Champions: the running table and the two game cards beside the dossier. */
+.coc-games{display:grid;gap:16px;align-content:start}
+.coc-pts{margin-left:auto;font:700 18px/1 "Space Grotesk",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.coc-board .sc-r.p1 .coc-pts{color:var(--gold)}
 /* Challenger line-up cards: plain glass like the other cards, with amber accents. */
 .chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
 .chcard{--cc:var(--c-board);position:relative;padding:44px 18px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
@@ -953,7 +979,15 @@ const MATCHES = D.matches.map(m => {
 const TIMED = MATCHES.filter(m => m.w);
 const MI = {};
 MATCHES.forEach(m => MI[m.id] = m);
-MI['F-FFA'] = {id:'F-FFA', ev:'ffa', final:true, loc:'Game Night', w:null};
+// The FFA Grand Final is a best of 3: three 10-minute games, place points added up. Game 1 keeps the old id.
+const FG = ['F-FFA', 'F-FFA-2', 'F-FFA-3'];
+FG.forEach((id, i) => MI[id] = {id, ev:'ffa', final:true, game:i + 1, loc:'Game Night', w:null});
+// Classified Event 02, Champion of Champions: the 2v2 champions and the Challenger 2v2 champions split up for
+// two 10-minute free-for-all games on Game Night, after the 2v2 final.
+const COC = ['F-COC-1', 'F-COC-2'];
+COC.forEach((id, i) => MI[id] = {id, ev:'coc', final:true, game:i + 1, loc:'Game Night', w:null});
+// Game Night is Tue 1 Dec; The Duel is played that day at 12 PM in the Paradise Room, before the Grand Final.
+const GN = {final:'Tue 1 Dec', duel:'Tue 1 Dec · 12 PM', duelL:'Tuesday 1 Dec at 12 PM'};
 MI['F-2V2'] = {id:'F-2V2', ev:'t2', final:true, loc:'Game Night', w:null};
 MI['F-PLAYIN'] = {id:'F-PLAYIN', ev:'ch', final:true, loc:'Paradise Room', w:null};
 const IDS = {ffa:MATCHES.filter(m => m.ev === 'ffa').map(m => m.id), t2:MATCHES.filter(m => m.ev === 't2').map(m => m.id), ch:MATCHES.filter(m => m.ev === 'ch').map(m => m.id), c2:MATCHES.filter(m => m.ev === 'c2').map(m => m.id)};
@@ -962,7 +996,7 @@ const CHREG = (D.ch.length > 0 || D.chTeams.length > 0) && !CHON; // newcomers h
 const EVS = CHON ? ['ffa', 't2', 'ch'] : ['ffa', 't2'];
 const isHost = (m, n) => m.ev === 'ch' && !D.ch.includes(n);
 // Lobbies (FFA and Challenger) are scored by place; the 2v2 games and the head-to-head Duel by score.
-const isLobby = id => { const m = MI[id]; return m.ev === 'ffa' || (m.ev === 'ch' && !m.final); };
+const isLobby = id => { const m = MI[id]; return m.ev === 'ffa' || m.ev === 'coc' || (m.ev === 'ch' && !m.final); };
 const people = m => lobby(m.ev) ? m.p : m.p.flatMap(t => t.split(' & '));
 const teamOf = n => D.teams.find(t => t.split(' & ').includes(n)) || null;
 const tShort = t => t.split(' & ').map(n => n.split(' ')[0]).join(' & ');
@@ -1001,7 +1035,7 @@ let S = Object.assign(clone(BASE), {track:''});
 try { S.track = localStorage.getItem('cod26-track') || ''; } catch(e) {}
 // Player tracking stays in this browser; results go to GameON for everyone.
 const save = () => { try { localStorage.setItem('cod26-track', S.track || ''); } catch(e) {} queueSync(); };
-const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:'', lg:false}; // only: 'done' or 'due', set from the overview tiles
+const UI = {f:'all', day:'all', sev:'all', hideDone:false, pq:'', only:'', lg:{}}; // only: 'done' or 'due', set from the overview tiles
 const RU = () => Object.assign({}, R0, S.rules || {}, {t2Adv:2}); // the 2v2 final is always head-to-head
 let RR = RU(), CACHE = {};
 // Classified events organisers have revealed. Until the Duel is, the Challenger #1 goes straight to the Grand Final.
@@ -1093,6 +1127,7 @@ function playIn(){
   return {names:a && b ? [a.n, b.n] : [], T};
 }
 function finalists(ev){
+  if (ev === 'coc'){ const a = champion('t2'), b = champion('c2'); return {names:a && b ? [...a.split(' & '), ...b.split(' & ')] : [], locked:false, prov:!(a && b)}; }
   // The Challenger 2v2 has no final: the top of the table takes the title once every game is played.
   if (ev === 'c2'){ const T = table('c2'), ok = T.complete && !T.tie && T.rows.length > 0; return {names:ok ? [T.rows[0].n] : [], locked:false, prov:!ok, T}; }
   if (ev === 'ch'){
@@ -1113,18 +1148,46 @@ function finalists(ev){
   const w = champion('ch');
   return {names:w ? [...top.slice(0, -1), w] : top.slice(0, -1), locked:false, prov:!T.complete || T.tie || !w, T, wait:!w};
 }
+// The FFA final's running table: place points over the games played so far. Level on points goes to most
+// final wins, then most kills, then the higher league seed.
+function gamesTable(ids, E, last){
+  const played = ids.map(id => ffaDone(id, E));
+  const rows = E.map((n, seed) => {
+    const o = {n, seed, pts:0, w:0, k:0, pl:[]};
+    ids.forEach((id, g) => {
+      if (!played[g]){ o.pl.push(null); return; }
+      const r = S.r[id], v = r.pl[n], k = v > 0 ? +((r.k || {})[n]) || 0 : 0;
+      o.pl.push(v); o.pts += ffaPts(v, k); o.k += k; if (v === 1) o.w++;
+    });
+    return o;
+  }).sort((a, b) => b.pts - a.pts || b.w - a.w || b.k - a.k || last(a, b));
+  const n = played.filter(Boolean).length;
+  return {rows, played:n, complete:n === ids.length};
+}
+function ffaFinal(){
+  if ('ffz' in CACHE) return CACHE.ffz;
+  return CACHE.ffz = gamesTable(FG, finalists('ffa').names, (a, b) => a.seed - b.seed);
+}
+// Champion of Champions: the same, and level on kills goes to the better finish in game 2.
+function cocTable(){
+  if ('coz' in CACHE) return CACHE.coz;
+  const fin = o => o.pl[COC.length - 1] || 99; // DNS or not played counts as the worst finish
+  return CACHE.coz = gamesTable(COC, finalists('coc').names, (a, b) => fin(a) - fin(b));
+}
 function champion(ev){
   if (ev === 'c2') return finalists('c2').names[0] || null;
   if (ev === 'ch' && !DUEL()) return null; // the Duel's winner, which stays secret until it is revealed
+  if (ev === 'coc'){ const z = cocTable(); return z.complete && z.rows.length ? z.rows[0].n : null; }
   const F = finalists(ev), id = EV[ev].fid;
   if (F.prov || !F.names.length) return null;
-  if (ev === 'ffa'){ if (!ffaDone(id, F.names)) return null; return F.names.find(n => S.r[id].pl[n] === 1) || null; }
+  if (ev === 'ffa'){ const z = ffaFinal(); return z.complete ? z.rows[0].n : null; }
   const x = t2Res(id);
   return x && x.w >= 0 ? F.names[x.w] : null;
 }
 function status(id){
   const m = MI[id];
-  if (m.final && m.ev === 'ch') return champion('ch') ? {k:'done', t:'Done', i:'check'} : {k:'', t:'Game Night'};
+  if (m.final && m.ev === 'ch') return champion('ch') ? {k:'done', t:'Done', i:'check'} : {k:'', t:GN.duel};
+  if (m.final && m.game && !champion(m.ev) && done(id)) return {k:'done', t:'Done', i:'check'};
   if (m.final) return champion(m.ev) ? {k:'gold', t:'Crowned', i:'crown'} : {k:'', t:'Game Night'};
   if (done(id)) return {k:'done', t:'Done', i:'check'};
   const now = NOW(), w = m.w;
@@ -1328,7 +1391,7 @@ function rowsFFA(id, E, lock){
   return `<div class="sc">${E.map((n,i) => {
     const v = pl[n], k = kk[n], p = ffaPts(v, k), host = isHost(m, n);
     const sub = host ? (v === 0 ? 'Host · no-show' : v ? `Host · ${ORD[v]} · not counted` : 'Host · not counted')
-      : v === 0 ? 'No-show · 0 pts' : v ? (fin ? `Finished ${ORD[v]}` : `${ORD[v]} · ${plural(p, 'pt')}`) : fin ? `Seed ${i+1}` : rankTxt(m.ev, n);
+      : v === 0 ? 'No-show · 0 pts' : v ? (fin ? `Finished ${ORD[v]}` : `${ORD[v]} · ${plural(p, 'pt')}`) : fin ? (m.ev === 'coc' ? (i < 2 ? '2v2 champion' : 'Challenger 2v2 champion') : `Seed ${i+1}`) : rankTxt(m.ev, n);
     const bt = (val, lab, cls, aria) => `<button class="${cls}" data-act="pl" data-id="${id}" data-n="${esc(n)}" data-v="${val}" aria-pressed="${v === val}" aria-label="${esc(aria)}" ${lock ? 'disabled' : ''}>${lab}</button>`;
     const btns = E.map((_,j) => bt(j+1, ORD[j+1], j === 0 ? 'g1' : '', `${n} finished ${ORD[j+1]}`)).join('') + bt(0, 'DNS', 'dn', `${n} did not show`);
     return `<div class="sc-r ${v === 1 ? 'p1' : ''} ${v === 0 ? 'dns' : ''} ${host ? 'host' : ''} ${trackHit(n) ? 'tracked' : ''}">${av(n)}<span class="nm"><b>${esc(n)}</b><small>${esc(sub)}</small></span><label class="kin">Kills<input id="k-${id}-${i}" type="number" inputmode="numeric" min="0" max="999" placeholder="0" value="${num(k) ? +k : ''}" data-k="${id}" data-n="${esc(n)}" aria-label="Kills for ${esc(n)}" ${lock || v === 0 ? 'disabled' : ''}></label><div class="plc" role="group" aria-label="Finishing place for ${esc(n)}">${btns}</div></div>`;
@@ -1373,25 +1436,26 @@ function finalCard(ev){
   let note;
   if (!lock && x && x.w === -1) note = {w:1, i:'zap', t:`A ${what} cannot end level. Play a decider and update the score.`};
   else if (F.locked) note = {i:'lock', t:`${who} locked in by ${EDIT ? 'you' : 'the organisers'}. League results no longer change this line-up.`};
-  else if (pin && !T.done) note = {i:'info', t:`The Challenger #1 plays FFA leaderboard #${RR.ffaAdv} on Game Night, just before the Grand Final. The winner takes the last seat.`};
+  else if (pin && !T.done) note = {i:'info', t:`The Challenger #1 plays FFA leaderboard #${RR.ffaAdv} on ${GN.duelL} in the Paradise Room, before the Grand Final. The winner takes the last Grand Final seat.`};
   else if (!T.done) note = {i:'info', t:CHON && ev === 'ffa' ? `The top ${n - 1} qualify, and the last seat goes to ${last}. These slots fill in as results come in.` : `The top ${n} ${unit} qualify. These slots fill in as results come in.`};
   else if (T.tie) note = {w:1, i:'zap', t:EDIT ? `Tie at the qualifying spot. Settle it with a tiebreaker, then lock in the ${pin ? 'Duel line-up' : 'finalists'}.` : `Tie at the qualifying spot. A tiebreaker will settle the last place in the ${what}.`};
   else if (!T.complete || chLeft) note = {i:'info', t:`Provisional: ${plural(left + chLeft, pin || chLeft ? 'FFA or Challenger match' : 'league match', pin || chLeft ? 'FFA or Challenger matches' : 'league matches')} still to play.${EDIT ? ' Lock in early if some won’t be played.' : ''}`};
   else if (F.wait) note = {i:'info', t:`League complete. The last seat goes to ${last}.`};
   else if (pin) note = {i:'check', t:ch ? `${ch} takes the last Grand Final seat.` : `Line-up confirmed. ${EDIT ? 'Enter each player’s score; the higher score wins.' : 'The higher score wins the last Grand Final seat.'}`};
-  else note = {i:'check', t:`League complete. Finalists confirmed. ${EDIT ? 'Enter the final result' : 'The final is played'} on Game Night.`};
+  else note = {i:'check', t:ev === 'ffa' ? `Finalists confirmed. The final is a best of 3 on Game Night, ${GN.final}: place points add up over the three games.${EDIT ? ' Enter each game below.' : ''}` : `League complete. Finalists confirmed. ${EDIT ? 'Enter the final result' : 'The final is played'} on Game Night, ${GN.final}.`};
   // An FFA final still waiting on its last seat can't be locked, or that seat would be lost;
   // organisers lock the Duel line-up instead, then the final once the Duel is decided.
   const btn = !EDIT ? '' : F.locked ? `<button class="btn" data-act="unlock" data-ev="${ev}">${ic('unlock')}Unlock ${pin ? 'Duel line-up' : 'finalists'}</button>`
     : (T.done && E.length && lock && !F.wait) ? `<button class="btn trk" data-act="lock" data-ev="${ev}">${ic('lock')}${pin ? 'Lock in Duel line-up' : `Lock in current top ${n}`}</button>` : '';
-  return `<article class="match card final" id="card-${id}" style="--cc:${EV[ev].cc}">
-    <div class="mh"><span class="mid">${pin ? 'THE DUEL' : 'GRAND FINAL'}</span><span class="when">${pin ? 'Game Night · before the final' : 'Game Night · time TBC'}</span></div>
-    ${ch ? `<div class="crown">${ic(pin ? 'zap' : 'crown')}<div><small>${pin ? 'Through to the Grand Final' : `${EV[ev].short} champion${ev === 't2' ? 's' : ''}`}</small><b>${esc(ch)}</b></div></div>` : ''}
-    <div class="mt">${pill(status(id))}${lock && E.length ? ' <span class="pill">Provisional</span>' : ''}<span class="acts">${acts(id, lock || !EDIT)}</span></div>
-    ${ev === 'ffa' ? rowsFFA(id, E, lock || !EDIT) : rowsT2(id, E, lock || !EDIT)}
-    <div class="lnote ${note.w ? 'warn' : ''}">${ic(note.i)}<span>${note.t}</span></div>
-    ${btn ? `<div class="lact">${btn}</div>` : ''}
+  const one = (gid, i) => `<article class="match card final" id="card-${gid}" style="--cc:${EV[ev].cc}">
+    <div class="mh"><span class="mid">${pin ? 'THE DUEL' : ev === 'ffa' ? `GRAND FINAL · Game ${i + 1} of ${FG.length}` : 'GRAND FINAL'}</span><span class="when">${pin ? `${GN.duel} · Paradise Room` : `${GN.final} · Game Night`}</span></div>
+    ${ch && !i ? `<div class="crown">${ic(pin ? 'zap' : 'crown')}<div><small>${pin ? 'Through to the Grand Final' : `${EV[ev].short} champion${ev === 't2' ? 's' : ''}`}</small><b>${esc(ch)}</b></div></div>` : ''}
+    <div class="mt">${pill(status(gid))}${lock && E.length ? ' <span class="pill">Provisional</span>' : ''}<span class="acts">${acts(gid, lock || !EDIT)}</span></div>
+    ${ev === 'ffa' ? rowsFFA(gid, E, lock || !EDIT) : rowsT2(gid, E, lock || !EDIT)}
+    ${i ? '' : `<div class="lnote ${note.w ? 'warn' : ''}">${ic(note.i)}<span>${note.t}</span></div>
+    ${btn ? `<div class="lact">${btn}</div>` : ''}`}
   </article>`;
+  return ev === 'ffa' ? FG.map(one).join('') : one(id, 0);
 }
 function standCard(ev){
   const T = table(ev), F = finalists(ev), fin = new Set(F.names), lb = lobby(ev);
@@ -1612,9 +1676,9 @@ function stakeCard(ev){
 // server, so everyone watching sees them at once. This keeps them off the screen, not out of the page source.
 const CL = [
   {key:'duel', no:'01', tease:'Someone thought they were out.'},
-  {key:'e2', no:'02', tease:'Not everything on Game Night is on the schedule.', soon:true}, // still being planned: no reveal yet
+  {key:'e2', no:'02', tease:'Not everything on Game Night is on the schedule.'},
 ];
-const CL_NAME = {duel:'The Duel', e2:'Event 02'};
+const CL_NAME = {duel:'The Duel', e2:'Champion of Champions'};
 const bars = ws => ws.map(w => `<i style="width:${w}%"></i>`).join('');
 function lockedCard(x){
   return `<article class="dossier card locked" aria-label="Classified event ${x.no}, still locked">
@@ -1632,13 +1696,49 @@ function duelCard(x){
       <div class="ds-top"><span class="ds-stamp">${ic('unlock')}Declassified</span><span class="ds-no">Event ${x.no}</span></div>
       <h2 class="display ds-name">The Duel</h2>
       <p class="ds-tease">“${esc(x.tease)}”</p>
-      <p class="ds-brief">FFA leaderboard #${RR.ffaAdv} gets one last shot at the Grand Final: a 1v1 against the Challenger #1, on Game Night just before the final. The higher score wins, and the winner takes the last Grand Final seat.</p>
+      <p class="ds-brief">FFA leaderboard #${RR.ffaAdv} gets one last shot at the Grand Final: a 1v1 against the Challenger #1, on ${GN.duelL} in the Paradise Room, before the Grand Final. The higher score wins, and the winner takes the last Grand Final seat.</p>
       <div class="ds-vs">${side(a, `FFA leaderboard #${RR.ffaAdv}`)}<span class="vs">VS</span>${side(b, 'Challenger #1')}</div>
-      <div class="meta"><span>${ic('target')}1v1</span><span>${ic('cal')}Game Night · before the final</span><span>${ic('pin')}Paradise Room</span><span>${ic('trophy')}Last Grand Final seat</span></div>
+      <div class="meta"><span>${ic('target')}1v1</span><span>${ic('cal')}${GN.duel}</span><span>${ic('pin')}Paradise Room</span><span>${ic('trophy')}Last Grand Final seat</span></div>
       ${EDIT ? `<div class="ds-foot"><span>${ic('info')}Revealed to everyone</span><button class="btn" data-act="hide" data-key="${x.key}">${ic('lock')}Hide again</button></div>` : ''}
     </article>
     ${finalCard('ch')}
   </section>`;
+}
+function cocCard(x){
+  const a = champion('t2'), b = champion('c2'), side = (t, s) => `<div class="ds-side">${t ? avs(t) : '<span class="av ghost">?</span>'}<span><b>${esc(t ? tShort(t) : 'To be decided')}</b><small>${s}</small></span></div>`;
+  return `<section class="cl-open" aria-label="Event ${x.no}: Champion of Champions">
+    <article class="dossier card open">
+      <div class="ds-top"><span class="ds-stamp">${ic('unlock')}Declassified</span><span class="ds-no">Event ${x.no}</span></div>
+      <h2 class="display ds-name">Champion of Champions</h2>
+      <p class="ds-tease">“${esc(x.tease)}”</p>
+      <p class="ds-brief">The last word of Game Night. The 2v2 champions and the Challenger 2v2 champions split up and play two 10-minute free-for-all games: every player for themselves, partners included. Place points add up (${RR.place.join(' / ')}); level on points goes to most wins, then kills, then the better finish in game 2. The top scorer is crowned Champion of Champions.</p>
+      <div class="ds-vs">${side(a, '2v2 champions')}<span class="vs">VS</span>${side(b, 'Challenger 2v2 champions')}</div>
+      <div class="meta"><span>${ic('crosshair')}Free-for-all · 2 games</span><span>${ic('cal')}${GN.final} · after the 2v2 final</span><span>${ic('pin')}Game Night</span><span>${ic('crown')}Champion of Champions</span></div>
+      ${EDIT ? `<div class="ds-foot"><span>${ic('info')}Revealed to everyone</span><button class="btn" data-act="hide" data-key="${x.key}">${ic('lock')}Hide again</button></div>` : ''}
+    </article>
+    <div class="coc-games">${cocBoard()}${COC.map(cocGame).join('')}</div>
+  </section>`;
+}
+// The running table, once a game is in.
+function cocBoard(){
+  const z = cocTable(), ch = champion('coc');
+  if (!z.played) return '';
+  return `<article class="match card final coc-board" style="--cc:var(--gold)">
+    <div class="mh"><span class="mid">CHAMPION OF CHAMPIONS</span><span class="when">${ch ? 'Final standings' : `After game ${z.played} of ${COC.length}`}</span></div>
+    ${ch ? `<div class="crown">${ic('crown')}<div><small>Champion of Champions</small><b>${esc(ch)}</b></div></div>` : ''}
+    <div class="sc">${z.rows.map((o, i) => `<div class="sc-r ${ch === o.n ? 'p1' : ''}">${av(o.n)}<span class="nm"><b>${esc(o.n)}</b><small>${o.pl.map((v, g) => v === null ? '' : `G${g + 1} ${v ? ORD[v] : 'DNS'}`).filter(Boolean).join(' · ')}${o.k ? ` · ${plural(o.k, 'kill')}` : ''}</small></span><b class="coc-pts">${plural(o.pts, 'pt')}</b></div>`).join('')}</div>
+  </article>`;
+}
+function cocGame(id, i){
+  const F = finalists('coc'), E = F.names, lock = F.prov || !EDIT;
+  const wait = () => { const a = champion('t2'), b = champion('c2'), g = (t, s) => (t ? t.split(' & ') : [null, null]).map(n => ghost(n ? esc(n) : 'To be decided', s)).join('');
+    return `<div class="sc">${g(a, '2v2 champion')}${g(b, 'Challenger 2v2 champion')}</div>`; };
+  return `<article class="match card final" id="card-${id}" style="--cc:var(--gold)">
+    <div class="mh"><span class="mid">CHAMPION OF CHAMPIONS · Game ${i + 1} of ${COC.length}</span><span class="when">${GN.final} · after the 2v2 final</span></div>
+    <div class="mt">${pill(status(id))}<span class="acts">${acts(id, lock)}</span></div>
+    ${E.length ? rowsFFA(id, E, lock) : wait()}
+    ${!i && !E.length ? `<div class="lnote">${ic('info')}<span>The four players fill in once the 2v2 Grand Final and the Challenger 2v2 are decided.</span></div>` : ''}
+  </article>`;
 }
 function viewClassified(){
   const open = CL.filter(x => !x.soon && revealed(x.key)).length;
@@ -1647,7 +1747,7 @@ function viewClassified(){
     <p class="fmt">Secret events for Game Night. Each one unlocks here when the organisers give the word, and everyone watching sees it straight away.</p>
     <div class="meta"><span>${ic('lock')}${plural(CL.length, 'secret event')}</span><span>${ic('unlock')}${open} revealed</span></div></div>
   </section>
-  <div class="clgrid">${CL.map(x => !x.soon && revealed(x.key) ? duelCard(x) : lockedCard(x)).join('')}</div>`;
+  <div class="clgrid">${CL.map(x => !x.soon && revealed(x.key) ? (x.key === 'duel' ? duelCard(x) : cocCard(x)) : lockedCard(x)).join('')}</div>`;
 }
 
 /* ---------------- Views ---------------- */
@@ -1678,7 +1778,7 @@ function viewOverview(){
   const ecard = ev => {
     const E = EV[ev], T = table(ev), ch = champion(ev);
     const top = T.done ? T.rows.slice(0, 3).map((r,i) => `<li><span class="rk">${i+1}</span>${lobby(ev) ? av(r.n) : avs(r.n)}<span class="tn">${esc(lobby(ev) ? r.n : tShort(r.n))}</span><b>${r.pts}<small>pts</small></b></li>`).join('') : '';
-    const fmt = ev === 'ffa' ? `16 players, 20 four-player lobbies, 5 each. Points for finishing place. ${CHON ? `Top ${RR.ffaAdv - 1} play the Grand Final; ${DUEL() ? `#${RR.ffaAdv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `Top ${RR.ffaAdv} play the Grand Final.`}`
+    const fmt = ev === 'ffa' ? `16 players, 20 four-player lobbies, 5 each. Points for finishing place. ${CHON ? `Top ${RR.ffaAdv - 1} play the best-of-3 Grand Final; ${DUEL() ? `#${RR.ffaAdv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `Top ${RR.ffaAdv} play the Grand Final.`}`
       : ev === 'ch' ? chFmt() : `5 fixed teams, full round robin, 4 matches each. Top ${RR.t2Adv} meet in the Final.`;
     return `<a class="gcard card" href="#/${E.path}" style="--cc:${E.cc}">
       <div class="gtop"><span class="gico">${ic(E.icon)}</span><h3 class="display">${E.name}</h3>${ic('arrow','i go')}</div>
@@ -1712,7 +1812,7 @@ function viewOverview(){
   ${STK.length ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--warn)">${ic('flame')}</span>What’s at stake <small>Updates with every result</small></h2><div class="skgrid">${STK.join('')}</div></section>` : ''}
   ${HL.length ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-board)">${ic('star')}</span>Highlights <small>From ${plural(dn, 'finished match', 'finished matches')}</small></h2><div class="hlgrid">${HL.map(hlCard).join('')}</div></section>` : ''}
   <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--c-pc)">${ic('pc')}</span>Events <small>${EVS.length} events · ${MATCHES.length} league matches</small></h2><div class="ggrid">${EVS.map(ecard).join('')}</div></section>
-  <section><h2 class="sec-h display"><span class="ico">${ic('crown')}</span>Champions <small>${['ffa','t2'].filter(champion).length} of 2 crowned</small></h2><div class="wall" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">${['ffa','t2'].map(ev => { const ch = champion(ev); return `<a class="wtile card ${ch ? 'won' : 'tbd'}" href="#/${EV[ev].path}" style="--cc:${EV[ev].cc}"><span>${EV[ev].name}</span><b>${ch ? esc(ch) : 'To be decided on Game Night'}</b>${ch ? ic('crown') : ''}</a>`; }).join('')}</div></section>
+  <section><h2 class="sec-h display"><span class="ico">${ic('crown')}</span>Champions <small>${['ffa','t2'].filter(champion).length} of 2 crowned</small></h2><div class="wall" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">${['ffa','t2'].map(ev => { const ch = champion(ev); return `<a class="wtile card ${ch ? 'won' : 'tbd'}" href="#/${EV[ev].path}" style="--cc:${EV[ev].cc}"><span>${EV[ev].name}</span><b>${ch ? esc(ch) : `To be decided on Game Night, ${GN.final}`}</b>${ch ? ic('crown') : ''}</a>`; }).join('')}</div></section>
   ${EDIT ? `<section><h2 class="sec-h display"><span class="ico" style="--cc:var(--warn)">${ic('zap')}</span>Needs attention</h2><div class="ggrid">
     <div class="card att" style="--cc:var(--warn)"><h3 class="display">${ic('alert')}Waiting for a result <span class="pill ${due.length ? 'warn' : 'done'}">${due.length}</span></h3>${due.length ? `<ul class="upl">${due.map(m => attRow(m, lobby(m.ev) ? m.p.map(first).join(', ') : m.p.map(tShort).join(' vs '))).join('')}</ul>` : `<p class="none">Every match played so far has a result.</p>`}</div>
     <div class="card att" style="--cc:var(--track)"><h3 class="display">${ic('info')}Heads-up for upcoming matches</h3>${upOff.length ? `<ul class="upl">${upOff.map(m => attRow(m, warns(m).find(w => w.w).t)).join('')}</ul>` : `<p class="none">No clashes or off-day bookings coming up.</p>`}</div>
@@ -1803,14 +1903,63 @@ function gfBanner(F, open){
       <div class="gfb-foot">${meet ? `<span>${ic('swap')}${esc(meet)}</span>` : ''}${x && x.w === -1 ? `<span class="warn">${ic('zap')}A final cannot end level. Play a decider and update the score.</span>` : ''}${EDIT && F.locked ? `<button class="btn" data-act="unlock" data-ev="t2">${ic('unlock')}Unlock finalists</button>` : ''}</div>
     </div>
   </section>
-  <button type="button" class="lgdone glass ${open ? 'open' : ''}" data-act="lg" aria-expanded="${open}" aria-controls="lgbody">${ic('check')}<b>League stage complete</b><span>${T.done}/${T.total} played · the top ${T.adv} meet in the Grand Final</span><span class="lg-tog">${open ? 'Hide league' : 'Show league'}${ic('chev')}</span></button>`;
+  <button type="button" class="lgdone glass ${open ? 'open' : ''}" data-act="lg" data-ev="t2" aria-expanded="${open}" aria-controls="lgbody">${ic('check')}<b>League stage complete</b><span>${T.done}/${T.total} played · the top ${T.adv} meet in the Grand Final</span><span class="lg-tog">${open ? 'Hide league' : 'Show league'}${ic('chev')}</span></button>`;
+}
+// The FFA's settled Grand Final seats: the top 3 (top 4 without a Challenger group) once nobody below can
+// still catch them, even with lobbies left to play. Null until then.
+function ffaSeated(){
+  const T = table('ffa'), seats = CHON ? T.adv - 1 : T.adv, F = finalists('ffa');
+  if (F.locked) return F.names.slice(0, seats);
+  if (T.complete) return T.tie && !CHON ? null : T.rows.slice(0, seats).map(r => r.n);
+  const k = stakeFFA();
+  return k && k.locked.length >= seats ? T.rows.slice(0, seats).map(r => r.n) : null;
+}
+// Once the FFA's top seats are settled, the Grand Final takes over the FFA header: the qualifiers on the
+// FFA artwork, and the last seat for the Challenger #1 (or, once revealed, the Duel winner). Organisers
+// enter the final on the usual scorecard just below it.
+function ffaBanner(N, open){
+  const T = table('ffa'), ch = champion('ffa'), Z = ffaFinal(), lead = Z.played && !ch ? Z.rows[0].n : null;
+  const res = n => { const o = Z.played && Z.rows.find(x => x.n === n); return o ? `<span class="ffb-pl">${o.pl.map((v, g) => v === null ? '' : `<i class="${v === 1 ? 'gold' : ''}">G${g + 1} ${v ? ORD[v] : 'DNS'}</i>`).join('')}</span><b class="ffb-tot">${plural(o.pts, 'pt')}</b>` : ''; };
+  const seat = (n, i, rec) => {
+    const o = T.rows.find(x => x.n === n), sub = rec || (o ? `#${i + 1} · ${plural(o.pts, 'pt')} · ${plural(o.w, 'win')}` : `Seed ${i + 1}`);
+    const x = res(n);
+    return `<div class="ffb-seat ${x ? 'scored' : ''} ${ch === n ? 'win' : ch ? 'lose' : lead === n ? 'lead' : ''}" title="${esc(n)}">${av(n)}<b class="ffb-name">${esc(n)}</b><span class="ffb-rec">${esc(sub)}</span>${x}</div>`;
+  };
+  const ghostSeat = (cls, name, sub) => `<div class="ffb-seat ghost ${cls}"><span class="av ghost">?</span><b class="ffb-name">${name}</b><span class="ffb-rec">${esc(sub)}</span></div>`;
+  // The last seat: the Challenger #1 while the Duel is secret, the Duel winner once it is revealed.
+  let last = '';
+  const F = finalists('ffa'), f4 = !F.prov && F.names[N.length];
+  if (f4) last = seat(f4, N.length, CHON ? (DUEL() ? 'Won The Duel' : 'Challenger #1') : undefined);
+  else if (CHON){
+    const C = table('ch'), c1 = C.complete && !C.tie ? C.rows[0].n : null;
+    if (DUEL()){
+      const w = champion('ch'), k = stakeFFA(), f4 = T.complete ? (T.rows[T.adv - 1] || {}).n : k && k.playin[0];
+      last = w ? seat(w, T.adv - 1, 'Won The Duel') : ghostSeat('duel', 'Duel winner', `${f4 ? first(f4) : `FFA #${T.adv}`} vs ${c1 ? first(c1) : 'Challenger #1'}`);
+    } else {
+      last = c1 ? seat(c1, T.adv - 1, 'Challenger #1')
+        : ghostSeat('', 'Challenger #1', C.done ? `${first(C.rows[0].n)} leads · ${plural(C.total - C.done, 'game')} left` : 'Top of the Challenger table');
+    }
+  }
+  const left = T.total - T.done;
+  const stage = ch ? pill(status(FG[0])) : Z.played ? pill({k:'today', t:`After game ${Z.played} of ${FG.length}`}) : pill({k:'', t:`${GN.final} · Game Night`});
+  return `<section class="ghead glass art art-ffa gfb ffb ${ch ? 'crowned' : ''}" ${EDIT ? '' : `id="card-${FG[0]}"`} style="--cc:${EV.ffa.cc}">
+    <div class="gfb-head">
+      <div class="gfb-top"><span class="badge">${ic('trophy')}COD · FFA · Paradise Room</span>${stage}</div>
+      <h1 class="display">FFA Grand Final</h1>
+      ${ch ? `<div class="gfb-champ">${ic('crown')}<span><small>FFA champion</small><b>${esc(ch)}</b></span></div>` : ''}
+    </div>
+    <div><div class="ffb-row">${N.map((n, i) => seat(n, i)).join('')}${last}</div>
+      <div class="gfb-foot"><span>${ic('trophy')}Best of 3 · three 10-minute games · place points add up (${RR.place.join(' / ')})</span><span>${ic('info')}Level on points: most final wins, then kills</span></div></div>
+  </section>
+  <button type="button" class="lgdone glass ${open ? 'open' : ''}" data-act="lg" data-ev="ffa" aria-expanded="${open}" aria-controls="lgbody">${ic('check')}<b>${T.complete ? 'League stage complete' : `Top ${N.length} settled`}</b><span>${T.done}/${T.total} played · ${left ? `${plural(left, 'lobby', 'lobbies')} left, but ${left === 1 ? 'it' : 'they'} can’t change the top ${N.length}` : `the top ${N.length} are in the Grand Final`}</span><span class="lg-tog">${open ? 'Hide league' : 'Show league'}${ic('chev')}</span></button>
+  ${EDIT ? finalCard('ffa') : ''}`;
 }
 function viewEvent(ev, sub){
   if (ev === 'ch' && sub === '2v2' && IDS.c2.length) return viewCh2();
   const E = EV[ev], T = table(ev), ids = IDS[ev], now = NOW(), ch = champion(ev);
   const dn = ids.filter(done).length;
   const fmt = ev === 'ffa'
-    ? `16 players across 20 four-player lobbies, 5 matches each. Points for finishing place${RR.kill ? ' plus kills' : ''}; no-shows score 0. ${CHON ? `The top ${T.adv - 1} on the leaderboard play the Grand Final; ${DUEL() ? `#${T.adv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `The top ${T.adv} on the leaderboard play the Grand Final.`}`
+    ? `16 players across 20 four-player lobbies, 5 matches each. Points for finishing place${RR.kill ? ' plus kills' : ''}; no-shows score 0. ${CHON ? `The top ${T.adv - 1} on the leaderboard play the best-of-3 Grand Final; ${DUEL() ? `#${T.adv} faces the Challenger #1 in The Duel for the last seat.` : 'the Challenger #1 takes the last Grand Final seat.'}` : `The top ${T.adv} on the leaderboard play the Grand Final.`}`
     : ev === 'ch' ? chFfaFmt()
     : `5 fixed teams in a full round robin: 10 matches, 4 per team. Enter each team’s score; the higher score wins. The top ${T.adv} teams meet in the Final.`;
   const isDue = id => status(id).k === 'warn';
@@ -1826,15 +1975,16 @@ function viewEvent(ev, sub){
   const F2 = ev === 't2' ? finalists('t2') : null, gf = !!F2 && !F2.prov && F2.names.length === 2;
   // Under the Grand Final banner the finished league folds away, so the final has the page. A link to a
   // league game opens it, so the game can still be found.
-  const rm = route().m, open = !gf || UI.lg || !!(rm && MI[rm] && MI[rm].ev === ev && !MI[rm].final);
-  return `${gf ? gfBanner(F2, open) : `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
+  const N = ev === 'ffa' ? ffaSeated() : null, ban = gf || !!N;
+  const rm = route().m, open = !ban || !!UI.lg[ev] || !!(rm && MI[rm] && MI[rm].ev === ev && !MI[rm].final);
+  return `${gf ? gfBanner(F2, open) : N ? ffaBanner(N, open) : `<section class="ghead glass art art-${ev}" style="--cc:${E.cc}">
     <div><span class="badge">${ic(E.icon)}${E.short} · Paradise Room · 20 min</span><h1 class="display">${E.name}</h1><p class="fmt">${fmt}</p>
     <div class="meta"><span>${ic('users')}${unitTxt(ev)}</span><span>${ic('cal')}${ids.length} matches</span><span>${ic('trophy')}${ev === 'ch' ? (DUEL() ? '#1 to The Duel' : '#1 to the Grand Final') : ev === 'ffa' && CHON ? `Top ${T.adv - 1} + ${DUEL() ? 'Duel winner' : 'Challenger #1'} to the final` : `Top ${T.adv} to the final`}</span>${ch ? `<span style="color:var(--gold);font-weight:700">${ic('crown')}${esc(ch)}</span>` : ''}</div></div>
     ${ringHTML(dn, ids.length)}
   </section>`}
   ${ev === 'ch' ? chToggle('ffa') : ''}
   ${open ? `<div class="evgrid" id="lgbody">
-    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${(ev !== 'ch' || DUEL()) && !gf ? finalCard(ev) : ''}</aside>
+    <aside class="evside" aria-label="Standings and final">${standCard(ev)}${stakeCard(ev)}${(ev !== 'ch' || DUEL()) && !ban ? finalCard(ev) : ''}</aside>
     <div>
       <div class="subtabs"><div class="seg" role="group" aria-label="Filter matches" style="--cc:${E.cc}">${segs.map(([k,l,c]) => `<button class="${UI.f === k ? 'on' : ''}" data-act="f" data-f="${k}" aria-pressed="${UI.f === k}">${l}<span class="num" style="opacity:.65">${c}</span></button>`).join('')}</div>${EDIT ? `<span class="hint">${ic('pointer')}${lobby(ev) ? 'Tap each player’s finishing place, then add kills' : LOCKED.has(ev) ? 'League scores are locked' : 'Type each team’s score. Higher score wins'}</span>` : ''}</div>
       ${list}
@@ -2009,7 +2159,7 @@ function report(){
   let crowned = null;
   Object.keys(PRE).forEach(id => {
     const m = MI[id], was = PRE[id], d = done(id);
-    if (m.final){ const c = champion(m.ev); if (c && c !== was.c) crowned = `${c} crowned ${EV[m.ev].short} champion${m.ev === 't2' ? 's' : ''}`; }
+    if (m.final){ const c = champion(m.ev); if (c && c !== was.c) crowned = m.ev === 'coc' ? `${c} crowned Champion of Champions` : `${c} crowned ${EV[m.ev].short} champion${m.ev === 't2' ? 's' : ''}`; else if (m.game && d && !was.d) msgs.push(`${m.ev === 'coc' ? 'Champion of Champions' : 'Grand Final'} game ${m.game} saved`); }
     else if (d && !was.d) msgs.push(`${id} saved · ${resText(id)}`);
     else if (!d && was.d) msgs.push(`${id} is incomplete again`);
   });
@@ -2145,7 +2295,8 @@ document.addEventListener('click', e => {
   else if (act === 'reveal' || act === 'hide'){
     const key = t.dataset.key, on = act === 'reveal', nm = CL_NAME[key] || 'this event';
     openModal({title:on ? `Reveal ${nm} to everyone?` : `Hide ${nm} again?`, icon:on ? 'unlock' : 'lock',
-      sub:on ? 'Everyone watching sees it straight away. The FFA and Challenger pages switch from “the Challenger #1 takes the last seat” to The Duel.'
+      sub:key === 'e2' ? (on ? 'Everyone watching sees it straight away: the 2v2 champions and the Challenger 2v2 champions play two free-for-all games for Champion of Champions.' : 'It goes back to a locked card. Scores already entered are kept.')
+        : on ? 'Everyone watching sees it straight away. The FFA and Challenger pages switch from “the Challenger #1 takes the last seat” to The Duel.'
         : 'It goes back to a locked card, and the rest of the site says the Challenger #1 takes the last seat again. Scores already entered are kept.',
       actions:[{label:'Cancel', focus:true}, {label:on ? 'Reveal to everyone' : 'Hide again', cls:'primary', icon:on ? 'unlock' : 'lock', fn:() => {
         S.reveal = Object.assign({}, S.reveal, {[key]:on});
@@ -2157,7 +2308,7 @@ document.addEventListener('click', e => {
   else if (act === 'stat'){ Object.assign(UI, {sev:'all', hideDone:false, only:t.dataset.only || '', day:t.dataset.day || 'all'}); }
   else if (act === 'only-x'){ UI.only = ''; render(true); }
   else if (act === 'f'){ UI.f = t.dataset.f; render(true); }
-  else if (act === 'lg'){ UI.lg = !UI.lg; render(true); }
+  else if (act === 'lg'){ const e = t.dataset.ev; UI.lg[e] = !UI.lg[e]; render(true); }
   else if (act === 'day'){ UI.day = t.dataset.d; render(true); }
   else if (act === 'sev'){ UI.sev = t.dataset.v; render(true); }
   else if (act === 'hide'){ UI.hideDone = !UI.hideDone; render(true); }
