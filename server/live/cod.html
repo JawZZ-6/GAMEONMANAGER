@@ -283,6 +283,17 @@ a.stat:hover .sgo,a.stat:focus-visible .sgo{opacity:1;transform:translateX(3px)}
 .pbar{flex:1;height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--cc);border-radius:99px;box-shadow:0 0 12px var(--cc);transition:width .5s cubic-bezier(.2,.8,.3,1)}
 .champ{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--gold);font-size:14px}
+/* Finals Day tiles */
+.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:760px){ .fgrid{grid-template-columns:1fr} }
+.ftile .fmt{flex:0 0 auto;-webkit-line-clamp:unset;display:block}
+.ftile .top3{flex:1}
+.ftile .ft{font:600 11px "DM Sans",sans-serif;color:var(--muted);white-space:nowrap}
+.ftile .top3 li.gh .tn{color:var(--muted);font-weight:500}
+.ftile .fstat{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.ftile.locked{border-style:dashed}
+.ftile.locked .ds-redact i{height:9px}
+.ftile .gtop h3{min-width:0}
 
 /* ---------- Game page ---------- */
 .gnav{display:flex;gap:18px;overflow-x:auto;padding:8px 10px;margin-bottom:14px;scrollbar-width:none;border-radius:99px}
@@ -990,8 +1001,9 @@ FG.forEach((id, i) => MI[id] = {id, ev:'ffa', final:true, game:i + 1, loc:'Game 
 // two 10-minute free-for-all games on Game Night, after the 2v2 final.
 const COC = ['F-COC-1', 'F-COC-2'];
 COC.forEach((id, i) => MI[id] = {id, ev:'coc', final:true, game:i + 1, loc:'Game Night', w:null});
-// Game Night is Tue 1 Dec; The Showdown is played that day at 12 PM in the Paradise Room, before the Grand Final.
-const GN = {final:'Tue 1 Dec', duel:'Tue 1 Dec · 12 PM', duelL:'Tuesday 1 Dec at 12 PM'};
+// Game Night is Tue 1 Dec from 6 PM; The Showdown is played that day at 12 PM in the Paradise Room, before the Grand Final.
+// No final on Game Night gets a time of its own.
+const GN = {final:'Tue 1 Dec', duel:'Tue 1 Dec · 12 PM', duelL:'Tuesday 1 Dec at 12 PM', night:'from 6 PM', sdAt:new Date(2026, 11, 1, 12, 0), nightAt:new Date(2026, 11, 1, 18, 0)};
 MI['F-2V2'] = {id:'F-2V2', ev:'t2', final:true, loc:'Game Night', w:null};
 // The Showdown is two 10-minute free-for-all games; game 1 keeps the old id.
 const SDG = ['F-PLAYIN', 'F-PLAYIN-2'];
@@ -1785,7 +1797,93 @@ function viewClassified(){
 const unitTxt = ev => ev === 'ffa' ? D.ffa.length + ' players' : ev === 'ch' ? D.ch.length + ' newcomers' : D.teams.length + ' teams';
 const chFfaFmt = () => `${D.ch.length} newcomers in ${IDS.ch.length} four-player lobbies: 4 matches each, and everyone meets every other newcomer at least once. Points for finishing place; ${DUEL() ? `Challenger #1 and #2 meet FFA #${RR.ffaAdv} and #${RR.ffaAdv + 1} in The Showdown for the last Grand Final seat.` : 'Challenger #1 takes the last Grand Final seat.'}`;
 const chFmt = () => `${chFfaFmt()}${IDS.c2.length ? ` In the Challenger 2v2, ${D.chTeams.map(tShort).join(' and ')} play a round robin; the top of the table takes the title.` : ''}`;
+// Finals Day: once every league match has a result, the overview is only about the finals.
+const FINALS = () => MATCHES.length > 0 && MATCHES.every(m => done(m.id));
+// What the countdown points at: The Showdown (only once it is revealed), then Game Night.
+function finalsClock(now){
+  const next = [...(DUEL() ? [{t:GN.sdAt, big:`The Showdown · ${GN.duel}`}] : []), {t:GN.nightAt, big:`Game Night · ${GN.final} · ${GN.night}`}].find(x => now < x.t);
+  if (next) return {eb:'Countdown', big:next.big, t:+next.t};
+  const all = champion('ffa') && champion('t2') && (!revealed('e2') || champion('coc'));
+  return {eb:'Right now', big:all ? 'Every title decided' : 'Game Night is on', t:null};
+}
+function viewFinals(){
+  const clk = finalsClock(NOW()), sd = DUEL(), e2 = revealed('e2');
+  const cd = clk.t ? `<div class="cd" id="cd" data-t="${clk.t}" role="timer" aria-label="Time until ${esc(clk.big)}"><div><b data-u="d">0</b><span>Days</span></div><div><b data-u="h">00</b><span>Hrs</span></div><div><b data-u="m">00</b><span>Min</span></div><div><b data-u="s">00</b><span>Sec</span></div></div>` : '';
+  // One row per player or team: rank and points once scored, a grey "?" for a seat still to be decided.
+  const rows = xs => `<ol class="top3">${xs.map(x => `<li class="${x.n ? '' : 'gh'}"><span class="rk">${x.rk || ''}</span>${!x.n ? '<span class="av ghost">?</span>' : x.team ? avs(x.n) : av(x.n)}<span class="tn">${esc(x.lab)}</span>${x.tag ? `<small class="ft">${esc(x.tag)}</small>` : ''}${x.pts !== undefined ? `<b>${x.pts}${x.unit === undefined ? '<small>pts</small>' : x.unit}</b>` : ''}</li>`).join('')}</ol>`;
+  const scored = z => z.rows.map((o, i) => ({n:o.n, lab:o.n, pts:o.pts, rk:i + 1}));
+  const stat = (i, t) => `<div class="fstat">${ic(i)}${t}</div>`;
+  const crown = (lab, n) => `<div class="champ">${ic('crown')}${lab}${esc(n)}</div>`;
+  const tile = (k, href, cc, icon, name, fmt, body, meta, foot) => `<a class="gcard card ftile" data-final="${k}" href="${href}" style="--cc:${cc}">
+    <div class="gtop"><span class="gico">${ic(icon)}</span><h3 class="display">${name}</h3>${ic('arrow','i go')}</div>
+    <p class="fmt">${fmt}</p>${body}
+    <div class="meta">${meta}</div>${foot}
+  </a>`;
+  // A secret event that is still locked shows only the teaser the Classified tab already shows.
+  const locked = (k, x) => `<a class="gcard card ftile locked" data-final="${k}" href="#/classified" style="--cc:var(--warn)">
+    <div class="gtop"><span class="gico">${ic('lock')}</span><h3 class="display">Classified · Event ${x.no}</h3>${ic('arrow','i go')}</div>
+    <p class="ds-tease">“${esc(x.tease)}”</p>
+    <div class="ds-redact" aria-hidden="true">${bars([90, 72, 48])}</div>
+    ${stat('clock', 'Unlocks when the organisers give the word')}
+  </a>`;
+  const [cl1, cl2] = CL;
+  const sdTile = () => {
+    const z = sdTable(), ch = champion('ch');
+    const body = z.played ? rows(scored(z)) : rows(sdSeats().map(o => ({n:o.n, lab:o.n || 'To be decided', tag:o.lab.replace('FFA leaderboard', 'FFA').replace('Challenger', 'CH')})));
+    return tile('sd', '#/classified', EV.ch.cc, 'zap', 'The Showdown', `FFA #${RR.ffaAdv} and #${RR.ffaAdv + 1} vs the Challenger #1 and #2. Two free-for-all games, place points add up: the top scorer takes the last Grand Final seat.`, body,
+      `<span>${ic('cal')}${GN.duel}</span><span>${ic('pin')}Paradise Room</span><span>${ic('unlock')}Classified · Event ${cl1.no}</span>`,
+      ch ? crown('Through: ', ch) : stat('clock', z.played ? `After game ${z.played} of ${SDG.length}` : `${SDG.length} games · not started`));
+  };
+  const ffaTile = () => {
+    const F = finalists('ffa'), z = ffaFinal(), ch = champion('ffa');
+    const xs = z.played ? scored(z) : F.names.map(n => ({n, lab:n}));
+    if (F.wait) xs.push({lab:'Showdown winner', tag:'Last seat'});
+    return tile('ffa', '#/ffa', EV.ffa.cc, EV.ffa.icon, 'FFA Grand Final', `Best of 3: three 10-minute free-for-all games, place points add up (${RR.place.join(' / ')}).`, rows(xs),
+      `<span>${ic('cal')}${GN.final} · ${GN.night}</span><span>${ic('pin')}Game Night</span>`,
+      ch ? crown('Champion: ', ch) : stat('clock', z.played ? `Game ${z.played} of ${FG.length} played` : `Best of ${FG.length} · not started`));
+  };
+  const t2Tile = () => {
+    const F = finalists('t2'), x = t2Res(EV.t2.fid), ch = champion('t2');
+    const sc = i => !x ? undefined : x.ff ? (x.w === i ? 'W' : 'FF') : i ? x.b : x.a;
+    const xs = [0, 1].map(i => { const n = F.names[i]; return {n, team:true, lab:n ? tShort(n) : 'To be decided', pts:sc(i), unit:''}; });
+    return tile('t2', '#/2v2', EV.t2.cc, EV.t2.icon, '2v2 Grand Final', 'The top two teams from the league table play one final for the title.', rows(xs),
+      `<span>${ic('cal')}${GN.final} · ${GN.night}</span><span>${ic('pin')}Game Night</span>`,
+      ch ? crown('Champions: ', tShort(ch)) : stat('clock', x ? 'Draw: replay to decide' : 'Not started'));
+  };
+  const cocTile = () => {
+    const a = champion('t2'), b = champion('c2'), z = cocTable(), ch = champion('coc');
+    const body = z.played ? rows(scored(z)) : rows([[a, '2v2 champions'], [b, 'Challenger 2v2 champions']].map(([n, tag]) => ({n, team:true, lab:n ? tShort(n) : 'To be decided', tag})));
+    return tile('coc', '#/classified', 'var(--gold)', 'crown', 'Champion of Champions', 'The 2v2 champions and the Challenger 2v2 champions split up: two free-for-all games, every player for themselves.', body,
+      `<span>${ic('cal')}${GN.final} · after the 2v2 final</span><span>${ic('pin')}Game Night</span><span>${ic('unlock')}Classified · Event ${cl2.no}</span>`,
+      ch ? crown('Champion of Champions: ', ch) : stat('clock', z.played ? `After game ${z.played} of ${COC.length}` : `${COC.length} games · not started`));
+  };
+  const tiles = [sd ? sdTile() : locked('sd', cl1), ffaTile(), t2Tile(), e2 ? cocTile() : locked('coc', cl2)];
+  // The running order, without times: only The Showdown has one, and only once it is revealed.
+  const order = [sd && ['The Showdown', 'Paradise Room', EV.ch.cc, '#/classified'], ['FFA Grand Final', 'Game Night', EV.ffa.cc, '#/ffa'], ['2v2 Grand Final', 'Game Night', EV.t2.cc, '#/2v2'], e2 && ['Champion of Champions', 'Game Night', 'var(--gold)', '#/classified']].filter(Boolean);
+  const ol = order.map(([n, w, cc, href], i) => `<li><a href="${href}"><time>${String(i + 1).padStart(2, '0')}</time><span class="dot" style="--cc:${cc}"></span><span>${n} · ${w}</span></a></li>`).join('');
+  // The champions wall; a secret event joins it once revealed.
+  const W = [['ffa', EV.ffa.name, EV.ffa.cc, '#/ffa'], ['t2', EV.t2.name, EV.t2.cc, '#/2v2'], ['c2', EV.c2.name, EV.c2.cc, '#/challenger/2v2'], sd && ['ch', 'The Showdown', EV.ch.cc, '#/classified'], e2 && ['coc', 'Champion of Champions', 'var(--gold)', '#/classified']].filter(Boolean);
+  const wall = W.map(([ev, name, cc, href]) => { const c = champion(ev), n = c && (ev === 't2' || ev === 'c2') ? tShort(c) : c;
+    return `<a class="wtile card ${c ? 'won' : 'tbd'}" href="${href}" style="--cc:${cc}"><span>${name}</span><b>${c ? esc(n) : `To be decided on ${GN.final}`}</b>${c ? ic('crown') : ''}</a>`; }).join('');
+  return `<section class="hero">
+    <div class="glass hero-main">
+      <span class="eyebrow">${ic('trophy')}Game on for Charity · COD Finals Day</span>
+      <h1 class="display">Finals Day.<br><span class="gt">Every title on the line.</span></h1>
+      <p>The leagues are done and every title is decided on ${GN.final}. ${EDIT ? 'Score each final from its page. Everyone watching sees results straight away.' : 'Follow every final here as it is played.'}</p>
+      <div class="hero-cta"><a class="btn primary" href="#/ffa">${ic('crosshair')}FFA Grand Final</a><a class="btn" href="#/2v2">${ic('users')}2v2 Grand Final</a><a class="btn" href="#/classified">${ic('lock')}Classified</a></div>
+    </div>
+    <div class="glass cdp">
+      <span class="eyebrow">${ic('clock')}${clk.eb}</span>
+      <div class="big display">${esc(clk.big)}</div>
+      ${cd}
+      <span class="eyebrow" style="margin-top:4px">On the day</span><ul class="upl">${ol}</ul>
+    </div>
+  </section>
+  <section><h2 class="sec-h display"><span class="ico" style="--cc:var(--gold)">${ic('trophy')}</span>The finals <small>${GN.final}</small></h2><div class="ggrid fgrid">${tiles.join('')}</div></section>
+  <section><h2 class="sec-h display"><span class="ico">${ic('crown')}</span>Champions <small>${W.filter(w => champion(w[0])).length} of ${W.length} crowned</small></h2><div class="wall" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${wall}</div></section>`;
+}
 function viewOverview(){
+  if (FINALS()) return viewFinals();
   const now = NOW(), f0 = TIMED[0], firstT = f0.w.start, lastEnd = TIMED[TIMED.length-1].w.end;
   let eb = 'Right now', big, list = [], lh = 'In the Paradise Room', cd = '';
   if (now < firstT){
