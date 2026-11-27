@@ -156,26 +156,36 @@ describe('COD Challenger group', () => {
     t.close();
   });
 
-  it('gives the last Grand Final seat to the Challenger #1, or to the Duel winner once the Duel is revealed', () => {
+  it('gives the last Grand Final seat to the Challenger #1, or to the Showdown winner once it is revealed', () => {
     const boot = load({r:{}, fin:{}, rules:{}});
     const r:Record<string, unknown> = {...inOrder(lineups(boot, 'ffa')), ...inOrder(lineups(boot, 'ch'))};
     boot.close();
 
-    // While the Duel is secret, the Challenger #1 goes straight in.
+    // While the Showdown is secret, the Challenger #1 goes straight in.
     const secret = load({r, fin:{}, rules:{}});
-    const top = secret.run<string[]>('table("ffa").rows.slice(0, 4).map(r => r.n)');
-    const chTop = secret.run<string>('table("ch").rows[0].n');
+    const top = secret.run<string[]>('table("ffa").rows.slice(0, 5).map(r => r.n)');
+    const [chTop, ch2] = secret.run<string[]>('table("ch").rows.slice(0, 2).map(r => r.n)');
     expect(secret.run('finalists("ffa")')).toMatchObject({names:[...top.slice(0, 3), chTop], prov:false});
     secret.close();
 
     const before = load({r, fin:{}, rules:{}, reveal:{duel:true}});
-    expect(before.run('finalists("ch").names')).toEqual([top[3], chTop]);
+    // The Showdown: FFA #4 and #5 and the Challenger #1 and #2, in one free-for-all.
+    expect(before.run('finalists("ch").names')).toEqual([top[3], top[4], chTop, ch2]);
     expect(before.run('finalists("ffa")')).toMatchObject({names:top.slice(0, 3), wait:true, prov:true});
+    // The FFA players are in the Showdown, not hosting it.
+    expect(before.run<string>('finalCard("ch")')).not.toContain('Host');
     before.close();
 
-    // The Challenger #1 wins the Duel and takes the 4th seat; the FFA #4 drops out.
-    const after = load({r:{...r, 'F-PLAYIN':{s:[10, 12]}}, fin:{}, rules:{}, reveal:{duel:true}});
-    expect(after.run('finalists("ffa")')).toMatchObject({names:[...top.slice(0, 3), chTop], prov:false});
+    // No winner until both games are in.
+    const g1 = {pl:{[top[3]]:2, [top[4]]:3, [chTop]:4, [ch2]:1}, k:{}};
+    const half = load({r:{...r, 'F-PLAYIN':g1}, fin:{}, rules:{}, reveal:{duel:true}});
+    expect(half.run('champion("ch")')).toBeNull();
+    half.close();
+    // The Challenger #2 wins both games and takes the 4th seat; the rest drop out.
+    const after = load({r:{...r, 'F-PLAYIN':g1, 'F-PLAYIN-2':g1}, fin:{}, rules:{}, reveal:{duel:true}});
+    expect(after.run('champion("ch")')).toBe(ch2);
+    expect(after.run('finalists("ffa")')).toMatchObject({names:[...top.slice(0, 3), ch2], prov:false});
+    expect(after.run<string>('standingsText()')).toContain(`The Showdown won by ${ch2}`);
     after.close();
   });
 });

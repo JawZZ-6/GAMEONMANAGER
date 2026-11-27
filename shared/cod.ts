@@ -18,7 +18,7 @@ export const codRevealSchema = z.object({duel:z.boolean(), e2:z.boolean()}).part
 export const codRulesSchema = z.object({place:z.array(points).length(4), kill:points, ffaAdv:z.number().int().min(2).max(16), win:points, draw:points, loss:points}).partial().strict();
 export const codSchema = z.object({
   r:z.record(matchId, codResultSchema).refine(r => Object.keys(r).length <= 100, 'Too many matches').default({}),
-  // ch is the locked wildcard play-in line-up: FFA leaderboard #4 against the Challenger #1.
+  // ch is the locked Showdown line-up: FFA leaderboard #4 and #5 and the Challenger #1 and #2.
   fin:z.object({ffa:finalists, t2:finalists, ch:finalists}).partial().strict().default({}),
   rules:codRulesSchema.default({}),
   reveal:codRevealSchema.default({}),

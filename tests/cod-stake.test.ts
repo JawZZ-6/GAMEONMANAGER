@@ -20,11 +20,11 @@ function load(cod:object){
 // The live results on 25 Nov 2026: 17 of 20 FFA lobbies and 6 of 10 2v2 games played.
 type Res = {r:Record<string, unknown>; fin:object; rules:object};
 const LIVE = JSON.parse(readFileSync(new URL('./fixtures/cod-results-2026-11-25.json', import.meta.url), 'utf8')) as Res;
-// The race for 4th only matters once the Duel (FFA #4 vs the Challenger #1) is revealed.
+// The race for 5th only matters once the Showdown (FFA #4 and #5 vs the Challenger #1 and #2) is revealed.
 const DUEL = {...LIVE, reveal:{duel:true}};
 type Chaser = {n:string; pts:number; id:string; need:string};
 type Spot = {pos:number; kind:string; holder:{n:string; pts:number; left:number}; chasers:Chaser[]};
-type FFA = {left:number; locked:string[]; spots:Spot[]};
+type FFA = {left:number; locked:string[]; playin:string[]; spots:Spot[]};
 type Team = {n:string; pts:number; left:number; state:string; txt:string; next:string|null};
 
 describe('COD what’s at stake', () => {
@@ -41,11 +41,12 @@ describe('COD what’s at stake', () => {
       {n:'Malith Silva', pts:13, id:'CODF-18', need:'a win'},
       {n:'Harin Goonathilake', pts:13, id:'CODF-17', need:'a win with 13+ kills'},
     ]);
-    expect(fourth).toMatchObject({pos:4, kind:'playin', holder:{n:'Abilash Devaneson', pts:14, left:0}});
+    // Aqeela is sure of at least a Showdown seat; Malith holds 5th with a lobby to play.
+    expect(s.playin).toEqual(['Aqeela Raban']);
+    expect(fourth).toMatchObject({pos:5, kind:'playin', holder:{n:'Malith Silva', pts:13, left:1}});
     expect(fourth.chasers.map(c => [c.n, c.need])).toEqual([
-      ['Malith Silva', 'any finish'],
-      ['Harin Goonathilake', 'top 3, or 4th with 33+ kills'],
-      ['Andrew Saliheen', 'top 3'],
+      ['Harin Goonathilake', 'to finish ahead in 1 lobby'],
+      ['Andrew Saliheen', 'to close a 1-pt gap in 1 lobby'],
     ]);
     p.close();
   });
@@ -62,14 +63,15 @@ describe('COD what’s at stake', () => {
   });
 
   it('moves on as results come in', () => {
-    // Malith wins CODF-18: 17 points and a third win take 3rd, so Aqeela now defends the play-in spot.
+    // Malith wins CODF-18: 17 points and a third win take 3rd. Aqeela is sure of the Showdown, and Abilash defends 5th.
     const r = {...LIVE.r, 'CODF-18':{pl:{'Malith Silva':1, 'Janith Fernando':2, 'Uresh Hettiarachchi':3, 'Chris Demotte':4}, k:{'Malith Silva':60}}};
     const p = load({...DUEL, r});
     const s = p.run<FFA>('stakeFFA()');
     expect(s.locked).toEqual(['Jawahar Jegathananthan', 'Viraj Madhusanka', 'Malith Silva']);
     expect(s.spots).toHaveLength(1);
-    expect(s.spots[0]).toMatchObject({pos:4, holder:{n:'Aqeela Raban'}});
-    expect(s.spots[0].chasers).toEqual([{n:'Harin Goonathilake', pts:13, id:'CODF-17', need:'a win with 13+ kills'}]);
+    expect(s.playin).toEqual(['Aqeela Raban']);
+    expect(s.spots[0]).toMatchObject({pos:5, holder:{n:'Abilash Devaneson'}});
+    expect(s.spots[0].chasers.map(c => [c.n, c.need])).toEqual([['Harin Goonathilake', 'top 3, or 4th with 33+ kills'], ['Andrew Saliheen', 'top 3']]);
     // Tharindu & Viraj beat Janith & Uresh: through. Janith & Uresh can only reach 6, so they need help.
     const r2 = {...LIVE.r, 'COD2-07':{s:[300, 700]}};
     const q = load({...LIVE, r:r2});
