@@ -43,7 +43,7 @@ describe('COD FFA Grand Final banner', () => {
     expect(v.seats[2]).toContain('Malith Silva');
     // While the Duel is secret, the last seat is the Challenger #1’s, and nothing hints at FFA #4.
     expect(v.seats[3]).toContain('Challenger #1');
-    expect(v.banner).not.toMatch(/Duel|Harin/);
+    expect(v.banner).not.toMatch(/Duel|Showdown|Harin/);
     // The last lobby is still to play, and the strip says so.
     expect(v.strip).toContain('Top 3 settled');
     expect(v.strip).toContain('1 lobby left');
@@ -53,11 +53,12 @@ describe('COD FFA Grand Final banner', () => {
     p.close();
   });
 
-  it('shows the Duel in the last seat once it is revealed', () => {
+  it('shows the Showdown in the last seat once it is revealed', () => {
     const p = load(DUEL);
     const v = view(p);
-    expect(v.seats[3]).toContain('Duel winner');
-    expect(v.seats[3]).toContain('Harin vs Challenger #1');
+    // FFA #4 and #5 are settled; the Challenger #1 and #2 are not yet.
+    expect(v.seats[3]).toContain('Showdown winner');
+    expect(v.seats[3]).toContain('Harin · Aqeela · CH #1 · CH #2');
     p.close();
   });
 
